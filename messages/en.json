@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "classes": "Classes",
+    "grades": "Grades",
+    "attendance": "Attendance",
+    "finance": "Finance",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "login": {
+    "title": "Login",
+    "subtitle": "Access your school dashboard",
+    "schoolCode": "School code",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "loading": "Signing in...",
+    "error": "Invalid credentials"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your school",
+    "students": "Students",
+    "absences": "Absences",
+    "pending": "Pending",
+    "grades": "Grades entered",
+    "revenue": "Monthly revenue",
+    "recovery": "Recovery rate"
+  },
+  "students": {
+    "title": "Student Management",
+    "add": "Add student",
+    "search": "Search students...",
+    "name": "Full name",
+    "class": "Class",
+    "registration": "Registration No.",
+    "parent": "Parent",
+    "phone": "Phone"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "noData": "No data",
+    "actions": "Actions",
+    "year": "School year"
+  }
+}

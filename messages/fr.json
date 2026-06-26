@@ -1,0 +1,52 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "students": "Élèves",
+    "classes": "Classes",
+    "grades": "Notes",
+    "attendance": "Présences",
+    "finance": "Finance",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Accédez à votre espace établissement",
+    "schoolCode": "Code établissement",
+    "email": "Email",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "loading": "Connexion en cours...",
+    "error": "Identifiants incorrects"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Vue d'ensemble de votre établissement",
+    "students": "Élèves",
+    "absences": "Absences",
+    "pending": "En attente",
+    "grades": "Notes saisies",
+    "revenue": "Revenus du mois",
+    "recovery": "Taux de recouvrement"
+  },
+  "students": {
+    "title": "Gestion des élèves",
+    "add": "Ajouter un élève",
+    "search": "Rechercher un élève...",
+    "name": "Nom complet",
+    "class": "Classe",
+    "registration": "Matricule",
+    "parent": "Parent",
+    "phone": "Téléphone"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "loading": "Chargement...",
+    "noData": "Aucune donnée",
+    "actions": "Actions",
+    "year": "Année scolaire"
+  }
+}
