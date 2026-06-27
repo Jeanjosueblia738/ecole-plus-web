@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, BookOpen, ClipboardList,
-  DollarSign, Settings, LogOut, School, GraduationCap, FileText, PenLine,
+DollarSign, Settings, LogOut, School, GraduationCap, FileText, Pencil, UserCheck,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 
@@ -16,8 +16,9 @@ const navItems = [
   { href: '/presences', icon: ClipboardList, label: 'Présences' },
   { href: '/finance', icon: DollarSign, label: 'Finance' },
   { href: '/bulletins', icon: FileText, label: 'Bulletins' },
-  { href: '/cahier', icon: PenLine, label: 'Cahier de texte' },
+  { href: '/cahier', icon: Pencil, label: 'Cahier de texte' },
   { href: '/enseignants', icon: Users, label: 'Enseignants' },
+  { href: '/utilisateurs', icon:UserCheck, label: 'Utilisateurs' },
   { href: '/parametres', icon: Settings, label: 'Paramètres' },
 ];
 
