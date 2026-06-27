@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import PhotoUpload from '@/components/PhotoUpload';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
@@ -23,6 +24,7 @@ export default function NouvelUtilisateurPage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [tempId] = useState(() => crypto.randomUUID());
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -30,6 +32,7 @@ export default function NouvelUtilisateurPage() {
     password: '',
     role: 'TEACHER',
     phone: '',
+    photoUrl: '',
   });
 
   useEffect(() => {
@@ -68,6 +71,18 @@ export default function NouvelUtilisateurPage() {
               {error}
             </div>
           )}
+
+          {/* Photo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center mb-6">
+            <p className="text-sm font-semibold text-gray-700 mb-4">Photo de profil</p>
+            <PhotoUpload
+              name={form.firstName && form.lastName ? `${form.firstName} ${form.lastName}` : 'Utilisateur'}
+              folder="eleves"
+              entityId={tempId}
+              onUpload={(url) => set('photoUrl', url)}
+              size="lg"
+            />
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
