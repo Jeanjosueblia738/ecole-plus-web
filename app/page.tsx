@@ -26,10 +26,16 @@ export default function LandingPage() {
             <a href="#tarifs" className="hover:text-[#1B3A6B] transition-colors">Tarifs</a>
             <a href="#contact" className="hover:text-[#1B3A6B] transition-colors">Contact</a>
           </div>
-          <Link href="/login"
-            className="bg-[#1B3A6B] text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
-            Se connecter
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/login"
+              className="text-gray-600 text-sm font-medium hover:text-[#1B3A6B] transition-colors">
+              Se connecter
+            </Link>
+            <Link href="/onboarding"
+              className="bg-[#1B3A6B] text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+              Commencer gratuitement
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -54,10 +60,11 @@ export default function LandingPage() {
               Accéder à la plateforme
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <a href="#contact"
-              className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors">
-              Demander une démo
-            </a>
+            <Link href="/onboarding"
+              className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors flex items-center gap-2 justify-center">
+              Commencer gratuitement
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
 
           {/* Stats */}
@@ -239,7 +246,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/login"
+                <Link href={p.plan === 'Enterprise' ? '#contact' : '/onboarding'}
                   className={`block w-full py-3 rounded-xl text-center font-medium transition-colors ${
                     p.highlight
                       ? 'bg-[#1B3A6B] text-white hover:bg-blue-800'
@@ -268,10 +275,11 @@ export default function LandingPage() {
               Accéder à la plateforme
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <a href="#contact"
-              className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors">
-              Demander une démo gratuite
-            </a>
+            <Link href="/onboarding"
+              className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition-colors flex items-center gap-2 justify-center">
+              Commencer gratuitement
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
@@ -329,7 +337,7 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-4 text-gray-300">Contact</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>contact@ecoleplus.ci</li>
-                <li>+225 07 00 00 00</li>
+                <li>+225 07 58 79 74 28</li>
                 <li>Abidjan, Côte d'Ivoire</li>
               </ul>
             </div>
