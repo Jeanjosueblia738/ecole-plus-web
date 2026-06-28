@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GraduationCap, Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
-import Cookies from 'js-cookie';
+
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
@@ -21,9 +21,9 @@ export default function SuperAdminLoginPage() {
     try {
       const { data } = await api.post('/auth/super-admin/login', { email, password });
 
-      // Stocker le token super admin séparément
-      Cookies.set('sa_token', data.access_token, { expires: 7 });
-      Cookies.set('sa_user', JSON.stringify(data.user), { expires: 7 });
+      // Stocker le token super admin dans localStorage
+      localStorage.setItem('sa_token', data.access_token);
+      localStorage.setItem('sa_user', JSON.stringify(data.user));
 
       router.push('/super-admin');
     } catch (e: any) {
