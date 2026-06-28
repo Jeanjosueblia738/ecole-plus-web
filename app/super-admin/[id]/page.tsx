@@ -1,255 +1,305 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Building2, Users, CheckCircle, XCircle,
-  RefreshCw, Shield, ShieldOff, Mail, Phone, MapPin, Calendar
+  Building2, Users, TrendingUp, CheckCircle, XCircle,
+  RefreshCw, Plus, Search, Eye, ShieldOff, Shield,
+  BarChart2, DollarSign, Clock
 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
-import { authStorage } from '@/lib/auth';
+import Cookies from 'js-cookie';
+
 
 const PLAN_COLORS: Record<string, string> = {
-  TRIAL: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  STARTER: 'bg-blue-50 text-blue-700 border-blue-200',
-  PRO: 'bg-purple-50 text-purple-700 border-purple-200',
-  GROUP: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  TRIAL:      'bg-yellow-50 text-yellow-700 border-yellow-200',
+  STARTER:    'bg-blue-50 text-blue-700 border-blue-200',
+  PRO:        'bg-purple-50 text-purple-700 border-purple-200',
+  GROUP:      'bg-indigo-50 text-indigo-700 border-indigo-200',
   ENTERPRISE: 'bg-green-50 text-green-700 border-green-200',
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Administrateur', DIRECTOR: 'Directeur', CENSOR: 'Censeur',
-  TEACHER: 'Enseignant', SECRETARY: 'Secrétaire', ACCOUNTANT: 'Comptable',
-  CASHIER: 'Caissier', SURVEILLANT: 'Surveillant', PARENT: 'Parent', STUDENT: 'Élève',
+const PLAN_LABELS: Record<string, string> = {
+  TRIAL: 'Essai', STARTER: 'Starter', PRO: 'Pro',
+  GROUP: 'Groupe', ENTERPRISE: 'Enterprise',
 };
 
-export default function TenantDetailPage() {
+export default function SuperAdminPage() {
   const router = useRouter();
-  const { id } = useParams();
-  const [tenant, setTenant] = useState<any>(null);
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterPlan, setFilterPlan] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<any>(null);
+
+  const saUser = JSON.parse(Cookies.get('sa_user') || '{}');
+
+  const handleLogout = () => {
+    Cookies.remove('sa_token');
+    Cookies.remove('sa_user');
+    router.push('/super-admin/login');
+  };
 
   useEffect(() => {
-    if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
-    loadTenant();
-  }, [id]);
+    const saToken = Cookies.get('sa_token');
+    if (!saToken) { router.push('/super-admin/login'); return; }
+    loadData();
+  }, [page]);
 
-  const loadTenant = async () => {
+  const loadData = async () => {
+    setLoading(true);
     try {
-      const { data } = await api.get(`/tenants/${id}`);
-      setTenant(data);
+      const saToken = Cookies.get('sa_token');
+      const headers = { Authorization: `Bearer ${saToken}` };
+      const [tenantsRes, statsRes] = await Promise.allSettled([
+        api.get(`/tenants?page=${page}&limit=15`, { headers }),
+        api.get('/tenants/stats', { headers }),
+      ]);
+      if (tenantsRes.status === 'fulfilled') {
+        setTenants(tenantsRes.value.data.data);
+        setMeta(tenantsRes.value.data.meta);
+      }
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
-  const toggleStatus = async () => {
-    setActionLoading(true);
+  const toggleStatus = async (id: string, isActive: boolean) => {
+    setActionLoading(id);
     try {
-      const action = tenant.isActive ? 'suspend' : 'activate';
-      await api.patch(`/tenants/${id}/${action}`);
-      setTenant((t: any) => ({ ...t, isActive: !t.isActive }));
+      const saToken = Cookies.get('sa_token');
+      await api.patch(`/tenants/${id}/${isActive ? 'suspend' : 'activate'}`, {}, {
+        headers: { Authorization: `Bearer ${saToken}` }
+      });
+      setTenants(t => t.map(x => x.id === id ? { ...x, isActive: !isActive } : x));
     } catch (e) { console.error(e); }
-    finally { setActionLoading(false); }
+    finally { setActionLoading(null); }
   };
 
-  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', {
-    day: '2-digit', month: 'long', year: 'numeric'
-  }) : '—';
+  const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
+  const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR');
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!tenant) {
-    return (
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center text-gray-400">
-          Établissement introuvable
-        </div>
-      </div>
-    );
-  }
+  const filtered = tenants.filter(t => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || t.name.toLowerCase().includes(q) ||
+      t.code.toLowerCase().includes(q) || t.city?.toLowerCase().includes(q);
+    const matchPlan = filterPlan === 'ALL' || t.plan === filterPlan;
+    const matchStatus = filterStatus === 'ALL' ||
+      (filterStatus === 'ACTIVE' && t.isActive) ||
+      (filterStatus === 'SUSPENDED' && !t.isActive);
+    return matchSearch && matchPlan && matchStatus;
+  });
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title={tenant.name} subtitle={`Code MENA : ${tenant.code}`} />
+        <Header title="Super Administration" subtitle="Gestion des établissements ECOLE+" />
         <main className="flex-1 p-6 space-y-6">
 
-          <button onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Retour à la liste
-          </button>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {/* Carte infos école */}
-            <div className="lg:col-span-1 space-y-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-14 h-14 bg-[#1B3A6B] rounded-xl flex items-center justify-center">
-                    <Building2 className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="font-bold text-gray-800">{tenant.name}</h2>
-                    <span className="font-mono text-sm text-[#1B3A6B] font-bold">{tenant.code}</span>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { title: 'Établissements', value: stats?.totalEtablissements ?? '—', icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { title: 'Actifs', value: stats?.etablissementsActifs ?? '—', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+              { title: 'Suspendus', value: stats?.etablissementsSuspendus ?? '—', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
+              { title: 'MRR', value: fmt(stats?.revenusRecurrentsXof ?? 0), icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
+            ].map((k) => (
+              <div key={k.title} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-gray-500">{k.title}</p>
+                  <div className={`w-9 h-9 ${k.bg} rounded-lg flex items-center justify-center`}>
+                    <k.icon className={`w-5 h-5 ${k.color}`} />
                   </div>
                 </div>
-
-                <div className="space-y-3 text-sm">
-                  {tenant.email && (
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Mail className="w-4 h-4 text-gray-400" />
-                      <span>{tenant.email}</span>
-                    </div>
-                  )}
-                  {tenant.phone && (
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Phone className="w-4 h-4 text-gray-400" />
-                      <span>{tenant.phone}</span>
-                    </div>
-                  )}
-                  {tenant.city && (
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span>{tenant.city}</span>
-                    </div>
-                  )}
-                  {tenant.address && (
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <MapPin className="w-4 h-4 text-gray-400 opacity-0" />
-                      <span className="text-gray-400">{tenant.address}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span>Créé le {fmtDate(tenant.createdAt)}</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Plan</span>
-                    <span className={`px-3 py-1 rounded-lg text-xs font-bold border ${PLAN_COLORS[tenant.plan] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                      {tenant.plan}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Statut</span>
-                    <span className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold ${tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                      {tenant.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                      {tenant.isActive ? 'Actif' : 'Suspendu'}
-                    </span>
-                  </div>
-                  {tenant.trialEndsAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Fin d'essai</span>
-                      <span className="text-sm font-medium text-yellow-600">{fmtDate(tenant.trialEndsAt)}</span>
-                    </div>
-                  )}
-                </div>
-
-                <button onClick={toggleStatus} disabled={actionLoading}
-                  className={`w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 ${
-                    tenant.isActive
-                      ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                      : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-                  }`}>
-                  {actionLoading
-                    ? <RefreshCw className="w-4 h-4 animate-spin" />
-                    : tenant.isActive ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
-                  {tenant.isActive ? 'Suspendre l\'établissement' : 'Réactiver l\'établissement'}
-                </button>
+                <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
               </div>
+            ))}
+          </div>
 
-              {/* Abonnement */}
-              {tenant.subscription && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                  <h3 className="font-semibold text-gray-800 mb-4">Abonnement</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Plan</span>
-                      <span className="font-medium">{tenant.subscription.plan}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Prix/mois</span>
-                      <span className="font-medium text-green-600">
-                        {new Intl.NumberFormat('fr-CI').format(tenant.subscription.priceXof)} FCFA
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Début</span>
-                      <span className="font-medium">{fmtDate(tenant.subscription.startDate)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Fin</span>
-                      <span className="font-medium">{fmtDate(tenant.subscription.endDate)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Statut</span>
-                      <span className={`font-medium ${tenant.subscription.isActive ? 'text-green-600' : 'text-red-500'}`}>
-                        {tenant.subscription.isActive ? 'Actif' : 'Inactif'}
-                      </span>
-                    </div>
+          {/* Répartition par plan */}
+          {stats?.repartitionParPlan && (
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-purple-500" /> Répartition par plan
+              </h3>
+              <div className="flex gap-3 flex-wrap">
+                {stats.repartitionParPlan.map((p: any) => (
+                  <div key={p.plan} className={`px-4 py-2 rounded-xl border text-sm font-medium ${PLAN_COLORS[p.plan] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                    {PLAN_LABELS[p.plan] ?? p.plan} — {p._count.id} école(s)
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Utilisateurs */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-[#1B3A6B]" />
-                  <h3 className="font-semibold text-gray-800">
-                    Comptes utilisateurs ({tenant.users?.length ?? 0})
-                  </h3>
+          {/* Filtres + Actions */}
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
+              <div className="flex gap-3 flex-wrap flex-1">
+                {/* Recherche */}
+                <div className="relative flex-1 min-w-48">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input value={search} onChange={e => setSearch(e.target.value)}
+                    placeholder="Nom, code, ville..."
+                    className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
                 </div>
-                <div className="divide-y divide-gray-50">
-                  {tenant.users?.length === 0 ? (
-                    <p className="text-center text-gray-400 py-8">Aucun utilisateur</p>
-                  ) : tenant.users?.map((u: any) => (
-                    <div key={u.id} className="px-6 py-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center">
-                          <span className="text-[#1B3A6B] font-bold text-sm">
-                            {u.firstName?.[0]}{u.lastName?.[0]}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-800 text-sm">{u.firstName} {u.lastName}</p>
-                          <p className="text-xs text-gray-400">{u.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-lg font-medium">
-                          {ROLE_LABELS[u.role] ?? u.role}
-                        </span>
-                        <span className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-green-500' : 'bg-gray-300'}`} />
-                        {u.lastLoginAt && (
-                          <span className="text-xs text-gray-400">
-                            Connecté {fmtDate(u.lastLoginAt)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {/* Filtre plan */}
+                <select value={filterPlan} onChange={e => setFilterPlan(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  <option value="ALL">Tous les plans</option>
+                  {Object.entries(PLAN_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+                {/* Filtre statut */}
+                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  <option value="ALL">Tous statuts</option>
+                  <option value="ACTIVE">Actifs</option>
+                  <option value="SUSPENDED">Suspendus</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={loadData}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
+                  <RefreshCw className="w-4 h-4" /> Actualiser
+                </button>
+                <button onClick={() => router.push('/super-admin/nouveau')}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+                  <Plus className="w-4 h-4" /> Nouvel établissement
+                </button>
               </div>
             </div>
           </div>
+
+          {/* Table des tenants */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800">
+                Établissements ({filtered.length})
+              </h3>
+              {meta && (
+                <p className="text-sm text-gray-400">
+                  Page {meta.page} / {meta.pages} — {meta.total} total
+                </p>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-16 text-gray-400">
+                <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>Aucun établissement trouvé</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      {['Établissement', 'Code MENA', 'Ville', 'Plan', 'Statut', 'Fin essai', 'Utilisateurs', 'Actions'].map(h => (
+                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {filtered.map((t) => (
+                      <tr key={t.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="font-semibold text-gray-800 text-sm">{t.name}</p>
+                            <p className="text-xs text-gray-400">{t.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-sm font-bold text-[#1B3A6B]">{t.code}</span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{t.city ?? '—'}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${PLAN_COLORS[t.plan] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                            {PLAN_LABELS[t.plan] ?? t.plan}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`flex items-center gap-1 text-xs font-medium w-fit px-2 py-1 rounded-lg ${t.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                            {t.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                            {t.isActive ? 'Actif' : 'Suspendu'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {t.trialEndsAt ? (
+                            <span className="flex items-center gap-1 text-xs text-gray-500">
+                              <Clock className="w-3 h-3" />
+                              {fmtDate(t.trialEndsAt)}
+                            </span>
+                          ) : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3 text-gray-400" />
+                            {t._count?.users ?? 0}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => router.push(`/super-admin/${t.id}`)}
+                              className="p-1.5 text-gray-400 hover:text-[#1B3A6B] hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Voir détails">
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => toggleStatus(t.id, t.isActive)}
+                              disabled={actionLoading === t.id}
+                              className={`p-1.5 rounded-lg transition-colors ${t.isActive
+                                ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                                : 'text-green-500 hover:text-green-700 hover:bg-green-50'}`}
+                              title={t.isActive ? 'Suspendre' : 'Activer'}>
+                              {actionLoading === t.id
+                                ? <RefreshCw className="w-4 h-4 animate-spin" />
+                                : t.isActive
+                                  ? <ShieldOff className="w-4 h-4" />
+                                  : <Shield className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {meta && meta.pages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                  className="px-4 py-2 border border-gray-200 rounded-xl text-sm disabled:opacity-40 hover:bg-gray-50">
+                  ← Précédent
+                </button>
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(meta.pages, 5) }, (_, i) => i + 1).map(p => (
+                    <button key={p} onClick={() => setPage(p)}
+                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-[#1B3A6B] text-white' : 'border border-gray-200 hover:bg-gray-50'}`}>
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setPage(p => Math.min(meta.pages, p + 1))} disabled={page === meta.pages}
+                  className="px-4 py-2 border border-gray-200 rounded-xl text-sm disabled:opacity-40 hover:bg-gray-50">
+                  Suivant →
+                </button>
+              </div>
+            )}
+          </div>
+
         </main>
       </div>
     </div>
