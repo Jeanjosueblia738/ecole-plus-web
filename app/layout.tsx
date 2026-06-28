@@ -8,7 +8,10 @@ export const metadata: Metadata = {
   title: 'ECOLE+ | Plateforme de gestion scolaire',
   description: "La plateforme éducative intelligente pour la Côte d'Ivoire",
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon.png' },
+    ],
     apple: '/favicon.png',
   },
 };
