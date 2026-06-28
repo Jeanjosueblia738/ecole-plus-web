@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, BookOpen, ClipboardList,
   DollarSign, Settings, LogOut, School, GraduationCap,
-  FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays,
+  FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays, CreditCard,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 
@@ -21,6 +21,7 @@ const navItems = [
   { href: '/emploi-du-temps', icon: CalendarDays,    label: 'Emploi du temps' },
   { href: '/enseignants',     icon: Users,           label: 'Enseignants' },
   { href: '/utilisateurs',    icon: UserCheck,       label: 'Utilisateurs' },
+  { href: '/abonnement',      icon: CreditCard,      label: 'Abonnement' },
   { href: '/parametres',      icon: Settings,        label: 'Paramètres' },
 ];
 
