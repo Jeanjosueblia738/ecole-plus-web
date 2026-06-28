@@ -35,23 +35,12 @@ export default function OnboardingPage() {
 
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
-  // Générer automatiquement le code à partir du nom
-  const generateCode = (name: string) => {
-    const words = name.trim().toUpperCase().split(' ').filter(Boolean);
-    if (words.length === 1) return words[0].substring(0, 8) + '-CI-001';
-    return words.map(w => w[0]).join('') + '-CI-001';
-  };
 
-  const handleNameChange = (val: string) => {
-    set('name', val);
-    if (!form.code || form.code.endsWith('-CI-001')) {
-      set('code', generateCode(val));
-    }
-  };
 
   const validateStep1 = () => {
     if (!form.name.trim()) return 'Le nom de l\'établissement est obligatoire';
-    if (!form.code.trim()) return 'Le code établissement est obligatoire';
+    if (!form.code.trim()) return 'Le code MENA est obligatoire';
+    if (!/^\d{6}$/.test(form.code)) return 'Le code MENA doit contenir exactement 6 chiffres (ex: 058049)';
     if (!form.email.trim() || !form.email.includes('@')) return 'Email de l\'établissement invalide';
     return '';
   };
@@ -165,7 +154,7 @@ export default function OnboardingPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'établissement *</label>
-                    <input value={form.name} onChange={e => handleNameChange(e.target.value)}
+                    <input value={form.name} onChange={e => set('name', e.target.value)}
                       placeholder="ex: Lycée Excellence d'Abidjan"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
                   </div>
@@ -293,7 +282,7 @@ export default function OnboardingPage() {
                     <p className="text-xs font-semibold text-blue-600 uppercase mb-2">Établissement</p>
                     <p className="font-bold text-gray-800">{form.name}</p>
                     <p className="text-sm text-gray-500">{form.type} — {form.city}</p>
-                    <p className="text-sm font-mono text-blue-600 mt-1">Code : {form.code}</p>
+                    <p className="text-sm font-mono text-blue-600 mt-1">Code MENA : {form.code}</p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                     <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Compte directeur</p>
@@ -331,7 +320,7 @@ export default function OnboardingPage() {
                   Votre école <strong>{form.name}</strong> a été créée avec succès.
                 </p>
                 <p className="text-sm text-gray-400 mb-6">
-                  Code établissement : <span className="font-mono font-bold text-[#1B3A6B]">{form.code}</span>
+                  Code MENA : <span className="font-mono font-bold text-[#1B3A6B]">{form.code}</span>
                 </p>
                 <div className="bg-blue-50 rounded-xl p-4 text-left mb-6">
                   <p className="text-sm font-semibold text-blue-800 mb-2">Prochaines étapes :</p>
