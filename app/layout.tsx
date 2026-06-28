@@ -6,7 +6,11 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'ECOLE+ | Plateforme de gestion scolaire',
-  description: 'La plateforme intelligente pour vos établissements scolaires en Côte d\'Ivoire',
+  description: "La plateforme éducative intelligente pour la Côte d'Ivoire",
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
