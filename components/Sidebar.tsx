@@ -9,19 +9,19 @@ import {
 import { authStorage } from '@/lib/auth';
 
 const navItems = [
-  { href: '/dashboard',    icon: LayoutDashboard, label: 'Tableau de bord' },
-  { href: '/eleves',       icon: Users,           label: 'Élèves' },
-  { href: '/classes',      icon: GraduationCap,   label: 'Classes' },
-  { href: '/notes',        icon: BookOpen,        label: 'Notes' },
-  { href: '/presences',    icon: ClipboardList,   label: 'Présences' },
-  { href: '/finance',      icon: DollarSign,      label: 'Finance' },
-  { href: '/bulletins',    icon: FileText,        label: 'Bulletins' },
-  { href: '/cahier',       icon: Pencil,          label: 'Cahier de texte' },
+  { href: '/dashboard',       icon: LayoutDashboard, label: 'Tableau de bord' },
+  { href: '/eleves',          icon: Users,           label: 'Élèves' },
+  { href: '/classes',         icon: GraduationCap,   label: 'Classes' },
+  { href: '/notes',           icon: BookOpen,        label: 'Notes' },
+  { href: '/presences',       icon: ClipboardList,   label: 'Présences' },
+  { href: '/finance',         icon: DollarSign,      label: 'Finance' },
+  { href: '/bulletins',       icon: FileText,        label: 'Bulletins' },
+  { href: '/cahier',          icon: Pencil,          label: 'Cahier de texte' },
   { href: '/messagerie',      icon: MessageSquare,   label: 'Messagerie' },
   { href: '/emploi-du-temps', icon: CalendarDays,    label: 'Emploi du temps' },
-  { href: '/enseignants',  icon: Users,           label: 'Enseignants' },
-  { href: '/utilisateurs', icon: UserCheck,       label: 'Utilisateurs' },
-  { href: '/parametres',   icon: Settings,        label: 'Paramètres' },
+  { href: '/enseignants',     icon: Users,           label: 'Enseignants' },
+  { href: '/utilisateurs',    icon: UserCheck,       label: 'Utilisateurs' },
+  { href: '/parametres',      icon: Settings,        label: 'Paramètres' },
 ];
 
 export default function Sidebar() {
@@ -30,9 +30,9 @@ export default function Sidebar() {
   const tenant = authStorage.getTenant();
   const user = authStorage.getUser();
 
-  // Super Admin = email se terminant par @ecoleplus.ci ET pas de tenantCode
-  const isSuperAdmin = user?.email?.endsWith('@ecoleplus.ci') &&
-    user?.role === 'SUPER_ADMIN';
+  // Super Admin UNIQUEMENT via /super-admin/login avec sa_token
+  // Jamais accessible depuis la sidebar des admins d'école
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const handleLogout = () => {
     authStorage.clear();
@@ -59,7 +59,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
 
-        {/* Super Admin — lien dédié */}
+        {/* Super Admin — lien dédié UNIQUEMENT pour les vrais super admins */}
         {isSuperAdmin && (
           <>
             <Link href="/super-admin"
@@ -90,22 +90,6 @@ export default function Sidebar() {
             </Link>
           );
         })}
-
-        {/* Lien Super Admin accessible à tous pour les admins */}
-        {!isSuperAdmin && (user?.role === 'ADMIN' || user?.role === 'DIRECTOR') && (
-          <>
-            <div className="border-t border-white/10 my-2" />
-            <Link href="/super-admin"
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                pathname.startsWith('/super-admin')
-                  ? 'bg-white/20 text-white'
-                  : 'text-blue-200 hover:bg-white/10 hover:text-white'
-              }`}>
-              <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-              Administration
-            </Link>
-          </>
-        )}
       </nav>
 
       {/* Logout */}

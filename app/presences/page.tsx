@@ -18,6 +18,8 @@ export default function PresencesPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  const user = authStorage.getUser();
+  const canDoAppel = !['ADMIN', 'FOUNDER', 'DIRECTOR', 'SECRETARY', 'ACCOUNTANT', 'CASHIER'].includes(user?.role ?? '');
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
@@ -160,7 +162,7 @@ export default function PresencesPage() {
           </div>
 
           {/* Bouton enregistrer */}
-          {students.length > 0 && (
+          {students.length > 0 && canDoAppel && (
             <div className="flex justify-end">
               <button
                 onClick={handleSave}
