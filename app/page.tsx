@@ -293,7 +293,7 @@ export default function LandingPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Phone, title: 'Téléphone', info: '+225 07 00 00 00', sub: 'Lun–Ven 8h–18h' },
+              { icon: Phone, title: 'Téléphone', info: '+225 07 58 79 74 28', sub: 'Lun–Ven 8h–18h' },
               { icon: Mail, title: 'Email', info: 'contact@ecoleplus.ci', sub: 'Réponse sous 24h' },
               { icon: MapPin, title: 'Adresse', info: 'Abidjan, Côte d\'Ivoire', sub: 'Cocody, Riviera' },
             ].map((c) => (
