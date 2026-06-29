@@ -34,6 +34,7 @@ export default function TenantDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [upgrading, setUpgrading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
+  const [saUser, setSaUser] = useState<any>({});
 
   const getHeaders = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : '';
@@ -49,7 +50,9 @@ export default function TenantDetailPage() {
   useEffect(() => {
     const saToken = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : null;
     if (!saToken) { router.push('/super-admin/login'); return; }
-    loadTenant();
+    const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('sa_user') || '{}') : {};
+    setSaUser(user);
+    if (id) { loadTenant(); }
   }, [id]);
 
   const loadTenant = async () => {
@@ -78,36 +81,37 @@ export default function TenantDetailPage() {
     try {
       await api.patch(`/subscription/${id}/upgrade`, { plan: selectedPlan }, { headers: getHeaders() });
       setTenant((t: any) => ({ ...t, plan: selectedPlan }));
-      alert(`Plan mis à jour vers ${selectedPlan}`);
     } catch (e) { console.error(e); }
     finally { setUpgrading(false); }
   };
 
   const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', {
-    day: '2-digit', month: 'long', year: 'numeric'
+    day: '2-digit', month: 'long', year: 'numeric',
   }) : '—';
   const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* Navbar Super Admin */}
       <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg">ECOLE+</span>
-          <span className="ml-3 px-3 py-1 bg-yellow-400/20 text-yellow-200 text-xs rounded-full border border-yellow-400/30">
+          <span className="font-bold text-lg tracking-wide">ECOLE+</span>
+          <span className="ml-3 px-3 py-1 bg-yellow-400/20 text-yellow-200 text-xs rounded-full border border-yellow-400/30 font-medium">
             Super Administration
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button onClick={() => router.push('/super-admin')}
-            className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl text-sm">
+            className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl text-sm transition-colors">
             <ArrowLeft className="w-4 h-4" /> Retour à la liste
           </button>
+          <span className="text-blue-200 text-sm">{saUser.firstName} {saUser.lastName}</span>
           <button onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl text-sm">
+            className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl text-sm transition-colors">
             <LogOut className="w-4 h-4" /> Déconnexion
           </button>
         </div>
@@ -123,10 +127,14 @@ export default function TenantDetailPage() {
           <div className="bg-white rounded-xl p-12 text-center text-gray-400">
             <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p>Établissement introuvable</p>
+            <button onClick={() => router.push('/super-admin')}
+              className="mt-4 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm">
+              Retour à la liste
+            </button>
           </div>
         ) : (
           <>
-            {/* En-tête tenant */}
+            {/* En-tête */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -136,7 +144,7 @@ export default function TenantDetailPage() {
                   <div>
                     <h1 className="text-xl font-bold text-gray-800">{tenant.name}</h1>
                     <p className="text-sm text-gray-500 font-mono">Code MENA : {tenant.code}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-2">
                       <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${PLAN_COLORS[tenant.plan]}`}>
                         {PLAN_LABELS[tenant.plan] ?? tenant.plan}
                       </span>
@@ -149,10 +157,10 @@ export default function TenantDetailPage() {
                   </div>
                 </div>
                 <button onClick={toggleStatus} disabled={actionLoading}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
                     tenant.isActive
-                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                      : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'
+                      : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200'
                   }`}>
                   {actionLoading
                     ? <RefreshCw className="w-4 h-4 animate-spin" />
@@ -162,9 +170,8 @@ export default function TenantDetailPage() {
               </div>
             </div>
 
-            {/* Infos */}
+            {/* Infos + Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Coordonnées */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-[#1B3A6B]" /> Coordonnées
@@ -188,37 +195,36 @@ export default function TenantDetailPage() {
                     <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     <span className="text-gray-500">Inscrit le {fmtDate(tenant.createdAt)}</span>
                   </div>
+                  {tenant.trialEndsAt && (
+                    <div className="mt-2 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
+                      <p className="text-xs text-yellow-700 font-medium flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" /> Fin essai : {fmtDate(tenant.trialEndsAt)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Stats */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#1B3A6B]" /> Statistiques
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Utilisateurs', value: tenant._count?.users ?? 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-                    { label: 'Élèves', value: tenant._count?.students ?? 0, icon: GraduationCap, color: 'text-purple-600', bg: 'bg-purple-50' },
-                  ].map(s => (
-                    <div key={s.label} className={`${s.bg} rounded-xl p-4`}>
-                      <s.icon className={`w-5 h-5 ${s.color} mb-2`} />
-                      <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-                {tenant.trialEndsAt && (
-                  <div className="mt-4 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-                    <p className="text-xs text-yellow-700 font-medium flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" /> Fin essai : {fmtDate(tenant.trialEndsAt)}
-                    </p>
+                  <div className="bg-blue-50 rounded-xl p-4">
+                    <Users className="w-5 h-5 text-blue-600 mb-2" />
+                    <p className="text-2xl font-bold text-blue-600">{tenant._count?.users ?? 0}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Utilisateurs</p>
                   </div>
-                )}
+                  <div className="bg-purple-50 rounded-xl p-4">
+                    <GraduationCap className="w-5 h-5 text-purple-600 mb-2" />
+                    <p className="text-2xl font-bold text-purple-600">{tenant._count?.students ?? 0}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Élèves</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Abonnement */}
+            {/* Abonnement actuel */}
             {tenant.subscription && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -247,14 +253,11 @@ export default function TenantDetailPage() {
               <div className="flex gap-3 items-center">
                 <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
                   className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
-                  {PLANS.map(p => (
-                    <option key={p} value={p}>{PLAN_LABELS[p] ?? p}</option>
-                  ))}
+                  {PLANS.map(p => <option key={p} value={p}>{PLAN_LABELS[p] ?? p}</option>)}
                 </select>
-                <button onClick={upgradePlan}
-                  disabled={upgrading || selectedPlan === tenant.plan}
+                <button onClick={upgradePlan} disabled={upgrading || selectedPlan === tenant.plan}
                   className="px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center gap-2">
-                  {upgrading ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                  {upgrading && <RefreshCw className="w-4 h-4 animate-spin" />}
                   Appliquer
                 </button>
               </div>
