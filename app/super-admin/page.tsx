@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Building2, Users, CheckCircle, XCircle, RefreshCw,
-  Plus, Search, Eye, ShieldOff, Shield, BarChart2,
+  Search, Eye, ShieldOff, Shield, BarChart2,
   DollarSign, Clock, LogOut, GraduationCap
 } from 'lucide-react';
 import api from '@/lib/api';
-
 
 const PLAN_COLORS: Record<string, string> = {
   TRIAL:      'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -34,8 +33,7 @@ export default function SuperAdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<any>(null);
-
-  const saUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('sa_user') || '{}') : {};
+  const [saUser, setSaUser] = useState<any>({});
 
   const getHeaders = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : '';
@@ -51,6 +49,8 @@ export default function SuperAdminPage() {
   useEffect(() => {
     const saToken = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : null;
     if (!saToken) { router.push('/super-admin/login'); return; }
+    const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('sa_user') || '{}') : {};
+    setSaUser(user);
     loadData();
   }, [page]);
 
@@ -63,7 +63,7 @@ export default function SuperAdminPage() {
         api.get('/tenants/stats', { headers }),
       ]);
       if (tenantsRes.status === 'fulfilled') {
-        setTenants(tenantsRes.value.data.data);
+        setTenants(tenantsRes.value.data.data ?? []);
         setMeta(tenantsRes.value.data.meta);
       }
       if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
@@ -109,9 +109,7 @@ export default function SuperAdminPage() {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-blue-200 text-sm">
-            {saUser.firstName} {saUser.lastName}
-          </span>
+          <span className="text-blue-200 text-sm">{saUser.firstName} {saUser.lastName}</span>
           <button onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl transition-colors text-sm">
             <LogOut className="w-4 h-4" /> Déconnexion
@@ -125,9 +123,9 @@ export default function SuperAdminPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { title: 'Établissements', value: stats?.totalEtablissements ?? '—', icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { title: 'Actifs', value: stats?.etablissementsActifs ?? '—', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-            { title: 'Suspendus', value: stats?.etablissementsSuspendus ?? '—', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
-            { title: 'MRR', value: fmt(stats?.revenusRecurrentsXof ?? 0), icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
+            { title: 'Actifs',         value: stats?.etablissementsActifs ?? '—', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+            { title: 'Suspendus',      value: stats?.etablissementsSuspendus ?? '—', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
+            { title: 'MRR',            value: fmt(stats?.revenusRecurrentsXof ?? 0), icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
           ].map((k) => (
             <div key={k.title} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-3">
@@ -179,13 +177,10 @@ export default function SuperAdminPage() {
                 <option value="SUSPENDED">Suspendus</option>
               </select>
             </div>
-            <div className="flex gap-2">
-              <button onClick={loadData}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
-                <RefreshCw className="w-4 h-4" /> Actualiser
-              </button>
-             
-            </div>
+            <button onClick={loadData}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
+              <RefreshCw className="w-4 h-4" /> Actualiser
+            </button>
           </div>
         </div>
 
@@ -219,10 +214,8 @@ export default function SuperAdminPage() {
                   {filtered.map((t) => (
                     <tr key={t.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
-                        <div>
-                          <p className="font-semibold text-gray-800 text-sm">{t.name}</p>
-                          <p className="text-xs text-gray-400">{t.email}</p>
-                        </div>
+                        <p className="font-semibold text-gray-800 text-sm">{t.name}</p>
+                        <p className="text-xs text-gray-400">{t.email}</p>
                       </td>
                       <td className="px-4 py-3">
                         <span className="font-mono text-sm font-bold text-[#1B3A6B]">{t.code}</span>
@@ -240,11 +233,9 @@ export default function SuperAdminPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        {t.trialEndsAt ? (
-                          <span className="flex items-center gap-1 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />{fmtDate(t.trialEndsAt)}
-                          </span>
-                        ) : '—'}
+                        {t.trialEndsAt
+                          ? <span className="flex items-center gap-1 text-xs text-gray-500"><Clock className="w-3 h-3" />{fmtDate(t.trialEndsAt)}</span>
+                          : '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         <span className="flex items-center gap-1">
