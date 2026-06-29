@@ -244,7 +244,7 @@ export default function SuperAdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <button onClick={() => router.push(`/super-admin/${t.id}`)}
+                          <button onClick={() => router.push(`/super-admin/detail?id=${t.id}`)}
                             className="p-1.5 text-gray-400 hover:text-[#1B3A6B] hover:bg-blue-50 rounded-lg transition-colors" title="Voir détails">
                             <Eye className="w-4 h-4" />
                           </button>
