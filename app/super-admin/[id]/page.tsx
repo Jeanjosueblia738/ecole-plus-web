@@ -1,17 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import {
-  Building2, Users, TrendingUp, CheckCircle, XCircle,
-  RefreshCw, Plus, Search, Eye, ShieldOff, Shield,
-  BarChart2, DollarSign, Clock
+  ArrowLeft, Building2, Users, CheckCircle, XCircle,
+  RefreshCw, ShieldOff, Shield, DollarSign, Clock,
+  GraduationCap, LogOut, Mail, Phone, MapPin
 } from 'lucide-react';
-import Sidebar from '@/components/Sidebar';
-import Header from '@/components/Header';
 import api from '@/lib/api';
-import Cookies from 'js-cookie';
-
 
 const PLAN_COLORS: Record<string, string> = {
   TRIAL:      'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -26,282 +22,246 @@ const PLAN_LABELS: Record<string, string> = {
   GROUP: 'Groupe', ENTERPRISE: 'Enterprise',
 };
 
-export default function SuperAdminPage() {
-  const router = useRouter();
-  const [tenants, setTenants] = useState<any[]>([]);
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterPlan, setFilterPlan] = useState('ALL');
-  const [filterStatus, setFilterStatus] = useState('ALL');
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState<any>(null);
+const PLANS = ['TRIAL', 'STARTER', 'PRO', 'GROUP', 'ENTERPRISE'];
 
-  const saUser = JSON.parse(Cookies.get('sa_user') || '{}');
+export default function TenantDetailPage() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
+
+  const [tenant, setTenant] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState('');
+
+  const getHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : '';
+    return { Authorization: `Bearer ${token}` };
+  };
 
   const handleLogout = () => {
-    Cookies.remove('sa_token');
-    Cookies.remove('sa_user');
+    localStorage.removeItem('sa_token');
+    localStorage.removeItem('sa_user');
     router.push('/super-admin/login');
   };
 
   useEffect(() => {
-    const saToken = Cookies.get('sa_token');
+    const saToken = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : null;
     if (!saToken) { router.push('/super-admin/login'); return; }
-    loadData();
-  }, [page]);
+    loadTenant();
+  }, [id]);
 
-  const loadData = async () => {
+  const loadTenant = async () => {
     setLoading(true);
     try {
-      const saToken = Cookies.get('sa_token');
-      const headers = { Authorization: `Bearer ${saToken}` };
-      const [tenantsRes, statsRes] = await Promise.allSettled([
-        api.get(`/tenants?page=${page}&limit=15`, { headers }),
-        api.get('/tenants/stats', { headers }),
-      ]);
-      if (tenantsRes.status === 'fulfilled') {
-        setTenants(tenantsRes.value.data.data);
-        setMeta(tenantsRes.value.data.meta);
-      }
-      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
+      const { data } = await api.get(`/tenants/${id}`, { headers: getHeaders() });
+      setTenant(data);
+      setSelectedPlan(data.plan);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
-  const toggleStatus = async (id: string, isActive: boolean) => {
-    setActionLoading(id);
+  const toggleStatus = async () => {
+    setActionLoading(true);
     try {
-      const saToken = Cookies.get('sa_token');
-      await api.patch(`/tenants/${id}/${isActive ? 'suspend' : 'activate'}`, {}, {
-        headers: { Authorization: `Bearer ${saToken}` }
-      });
-      setTenants(t => t.map(x => x.id === id ? { ...x, isActive: !isActive } : x));
+      const action = tenant.isActive ? 'suspend' : 'activate';
+      await api.patch(`/tenants/${id}/${action}`, {}, { headers: getHeaders() });
+      setTenant((t: any) => ({ ...t, isActive: !t.isActive }));
     } catch (e) { console.error(e); }
-    finally { setActionLoading(null); }
+    finally { setActionLoading(false); }
   };
 
-  const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
-  const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR');
+  const upgradePlan = async () => {
+    if (!selectedPlan || selectedPlan === tenant.plan) { return; }
+    setUpgrading(true);
+    try {
+      await api.patch(`/subscription/${id}/upgrade`, { plan: selectedPlan }, { headers: getHeaders() });
+      setTenant((t: any) => ({ ...t, plan: selectedPlan }));
+      alert(`Plan mis à jour vers ${selectedPlan}`);
+    } catch (e) { console.error(e); }
+    finally { setUpgrading(false); }
+  };
 
-  const filtered = tenants.filter(t => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || t.name.toLowerCase().includes(q) ||
-      t.code.toLowerCase().includes(q) || t.city?.toLowerCase().includes(q);
-    const matchPlan = filterPlan === 'ALL' || t.plan === filterPlan;
-    const matchStatus = filterStatus === 'ALL' ||
-      (filterStatus === 'ACTIVE' && t.isActive) ||
-      (filterStatus === 'SUSPENDED' && !t.isActive);
-    return matchSearch && matchPlan && matchStatus;
-  });
+  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', {
+    day: '2-digit', month: 'long', year: 'numeric'
+  }) : '—';
+  const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header title="Super Administration" subtitle="Gestion des établissements ECOLE+" />
-        <main className="flex-1 p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar Super Admin */}
+      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+            <GraduationCap className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-bold text-lg">ECOLE+</span>
+          <span className="ml-3 px-3 py-1 bg-yellow-400/20 text-yellow-200 text-xs rounded-full border border-yellow-400/30">
+            Super Administration
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/super-admin')}
+            className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl text-sm">
+            <ArrowLeft className="w-4 h-4" /> Retour à la liste
+          </button>
+          <button onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-xl text-sm">
+            <LogOut className="w-4 h-4" /> Déconnexion
+          </button>
+        </div>
+      </nav>
 
-          {/* KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { title: 'Établissements', value: stats?.totalEtablissements ?? '—', icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { title: 'Actifs', value: stats?.etablissementsActifs ?? '—', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-              { title: 'Suspendus', value: stats?.etablissementsSuspendus ?? '—', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
-              { title: 'MRR', value: fmt(stats?.revenusRecurrentsXof ?? 0), icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
-            ].map((k) => (
-              <div key={k.title} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-gray-500">{k.title}</p>
-                  <div className={`w-9 h-9 ${k.bg} rounded-lg flex items-center justify-center`}>
-                    <k.icon className={`w-5 h-5 ${k.color}`} />
+      <main className="max-w-4xl mx-auto p-6 space-y-6">
+
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+          </div>
+        ) : !tenant ? (
+          <div className="bg-white rounded-xl p-12 text-center text-gray-400">
+            <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>Établissement introuvable</p>
+          </div>
+        ) : (
+          <>
+            {/* En-tête tenant */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-[#1B3A6B]/10 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-7 h-7 text-[#1B3A6B]" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-800">{tenant.name}</h1>
+                    <p className="text-sm text-gray-500 font-mono">Code MENA : {tenant.code}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${PLAN_COLORS[tenant.plan]}`}>
+                        {PLAN_LABELS[tenant.plan] ?? tenant.plan}
+                      </span>
+                      <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-lg ${
+                        tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                        {tenant.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                        {tenant.isActive ? 'Actif' : 'Suspendu'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
+                <button onClick={toggleStatus} disabled={actionLoading}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                    tenant.isActive
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                      : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                  }`}>
+                  {actionLoading
+                    ? <RefreshCw className="w-4 h-4 animate-spin" />
+                    : tenant.isActive ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                  {tenant.isActive ? 'Suspendre' : 'Réactiver'}
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Répartition par plan */}
-          {stats?.repartitionParPlan && (
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-purple-500" /> Répartition par plan
-              </h3>
-              <div className="flex gap-3 flex-wrap">
-                {stats.repartitionParPlan.map((p: any) => (
-                  <div key={p.plan} className={`px-4 py-2 rounded-xl border text-sm font-medium ${PLAN_COLORS[p.plan] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                    {PLAN_LABELS[p.plan] ?? p.plan} — {p._count.id} école(s)
+            {/* Infos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Coordonnées */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-[#1B3A6B]" /> Coordonnées
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="text-gray-700">{tenant.email}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Filtres + Actions */}
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
-              <div className="flex gap-3 flex-wrap flex-1">
-                {/* Recherche */}
-                <div className="relative flex-1 min-w-48">
-                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input value={search} onChange={e => setSearch(e.target.value)}
-                    placeholder="Nom, code, ville..."
-                    className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  {tenant.phone && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-700">{tenant.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="text-gray-700">{tenant.city ?? '—'}, {tenant.country ?? 'CI'}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="text-gray-500">Inscrit le {fmtDate(tenant.createdAt)}</span>
+                  </div>
                 </div>
-                {/* Filtre plan */}
-                <select value={filterPlan} onChange={e => setFilterPlan(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
-                  <option value="ALL">Tous les plans</option>
-                  {Object.entries(PLAN_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-                {/* Filtre statut */}
-                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
-                  <option value="ALL">Tous statuts</option>
-                  <option value="ACTIVE">Actifs</option>
-                  <option value="SUSPENDED">Suspendus</option>
-                </select>
               </div>
-              <div className="flex gap-2">
-                <button onClick={loadData}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
-                  <RefreshCw className="w-4 h-4" /> Actualiser
-                </button>
-                <button onClick={() => router.push('/super-admin/nouveau')}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
-                  <Plus className="w-4 h-4" /> Nouvel établissement
-                </button>
-              </div>
-            </div>
-          </div>
 
-          {/* Table des tenants */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">
-                Établissements ({filtered.length})
-              </h3>
-              {meta && (
-                <p className="text-sm text-gray-400">
-                  Page {meta.page} / {meta.pages} — {meta.total} total
-                </p>
-              )}
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
-                <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>Aucun établissement trouvé</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-100">
-                    <tr>
-                      {['Établissement', 'Code MENA', 'Ville', 'Plan', 'Statut', 'Fin essai', 'Utilisateurs', 'Actions'].map(h => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {filtered.map((t) => (
-                      <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <div>
-                            <p className="font-semibold text-gray-800 text-sm">{t.name}</p>
-                            <p className="text-xs text-gray-400">{t.email}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="font-mono text-sm font-bold text-[#1B3A6B]">{t.code}</span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{t.city ?? '—'}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-lg text-xs font-medium border ${PLAN_COLORS[t.plan] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                            {PLAN_LABELS[t.plan] ?? t.plan}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`flex items-center gap-1 text-xs font-medium w-fit px-2 py-1 rounded-lg ${t.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                            {t.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                            {t.isActive ? 'Actif' : 'Suspendu'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {t.trialEndsAt ? (
-                            <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <Clock className="w-3 h-3" />
-                              {fmtDate(t.trialEndsAt)}
-                            </span>
-                          ) : '—'}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3 text-gray-400" />
-                            {t._count?.users ?? 0}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => router.push(`/super-admin/${t.id}`)}
-                              className="p-1.5 text-gray-400 hover:text-[#1B3A6B] hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Voir détails">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => toggleStatus(t.id, t.isActive)}
-                              disabled={actionLoading === t.id}
-                              className={`p-1.5 rounded-lg transition-colors ${t.isActive
-                                ? 'text-red-400 hover:text-red-600 hover:bg-red-50'
-                                : 'text-green-500 hover:text-green-700 hover:bg-green-50'}`}
-                              title={t.isActive ? 'Suspendre' : 'Activer'}>
-                              {actionLoading === t.id
-                                ? <RefreshCw className="w-4 h-4 animate-spin" />
-                                : t.isActive
-                                  ? <ShieldOff className="w-4 h-4" />
-                                  : <Shield className="w-4 h-4" />}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {meta && meta.pages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-sm disabled:opacity-40 hover:bg-gray-50">
-                  ← Précédent
-                </button>
-                <div className="flex gap-1">
-                  {Array.from({ length: Math.min(meta.pages, 5) }, (_, i) => i + 1).map(p => (
-                    <button key={p} onClick={() => setPage(p)}
-                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-[#1B3A6B] text-white' : 'border border-gray-200 hover:bg-gray-50'}`}>
-                      {p}
-                    </button>
+              {/* Stats */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#1B3A6B]" /> Statistiques
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Utilisateurs', value: tenant._count?.users ?? 0, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: 'Élèves', value: tenant._count?.students ?? 0, icon: GraduationCap, color: 'text-purple-600', bg: 'bg-purple-50' },
+                  ].map(s => (
+                    <div key={s.label} className={`${s.bg} rounded-xl p-4`}>
+                      <s.icon className={`w-5 h-5 ${s.color} mb-2`} />
+                      <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+                    </div>
                   ))}
                 </div>
-                <button onClick={() => setPage(p => Math.min(meta.pages, p + 1))} disabled={page === meta.pages}
-                  className="px-4 py-2 border border-gray-200 rounded-xl text-sm disabled:opacity-40 hover:bg-gray-50">
-                  Suivant →
-                </button>
+                {tenant.trialEndsAt && (
+                  <div className="mt-4 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
+                    <p className="text-xs text-yellow-700 font-medium flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" /> Fin essai : {fmtDate(tenant.trialEndsAt)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Abonnement */}
+            {tenant.subscription && (
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-[#1B3A6B]" /> Abonnement actuel
+                </h2>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Montant</p>
+                    <p className="font-bold text-green-600">{fmt(tenant.subscription.priceXof)}/mois</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Début</p>
+                    <p className="font-medium text-sm">{fmtDate(tenant.subscription.startDate)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Expiration</p>
+                    <p className="font-medium text-sm">{fmtDate(tenant.subscription.endDate)}</p>
+                  </div>
+                </div>
               </div>
             )}
-          </div>
 
-        </main>
-      </div>
+            {/* Changer de plan */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h2 className="font-semibold text-gray-800 mb-4">Changer de plan</h2>
+              <div className="flex gap-3 items-center">
+                <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  {PLANS.map(p => (
+                    <option key={p} value={p}>{PLAN_LABELS[p] ?? p}</option>
+                  ))}
+                </select>
+                <button onClick={upgradePlan}
+                  disabled={upgrading || selectedPlan === tenant.plan}
+                  className="px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center gap-2">
+                  {upgrading ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+                  Appliquer
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }
