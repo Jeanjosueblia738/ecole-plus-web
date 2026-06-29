@@ -17,7 +17,7 @@ export default function SuperAdminLoginPage() {
     setLoading(true);
     setError('');
     try {
-      const { data } = await api.post('/super-admin/login', { email, password });
+      const { data } = await api.post('/auth/super-admin/login', { email, password });
       localStorage.setItem('sa_token', data.access_token);
       localStorage.setItem('sa_user', JSON.stringify(data.user));
       router.push('/super-admin');
