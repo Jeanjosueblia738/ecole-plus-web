@@ -28,6 +28,7 @@ function TenantDetailContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
 
+  const [mounted, setMounted] = useState(false);
   const [tenant, setTenant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -35,24 +36,27 @@ function TenantDetailContent() {
   const [selectedPlan, setSelectedPlan] = useState('');
   const [saUser, setSaUser] = useState<any>({});
 
-  const getHeaders = () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : '';
-    return { Authorization: `Bearer ${token}` };
-  };
+  // Étape 1 — attendre que le composant soit monté côté client
+  useEffect(() => { setMounted(true); }, []);
+
+  // Étape 2 — vérifier le token SEULEMENT après montage
+  useEffect(() => {
+    if (!mounted) { return; }
+    const saToken = localStorage.getItem('sa_token');
+    if (!saToken) { router.push('/super-admin/login'); return; }
+    setSaUser(JSON.parse(localStorage.getItem('sa_user') || '{}'));
+    if (id) { loadTenant(); }
+  }, [mounted, id]);
+
+  const getHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem('sa_token') ?? ''}`,
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('sa_token');
     localStorage.removeItem('sa_user');
     router.push('/super-admin/login');
   };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') { return; }
-    const saToken = localStorage.getItem('sa_token');
-    if (!saToken) { router.push('/super-admin/login'); return; }
-    setSaUser(JSON.parse(localStorage.getItem('sa_user') || '{}'));
-    if (id) { loadTenant(); }
-  }, [id]);
 
   const loadTenant = async () => {
     setLoading(true);
@@ -84,8 +88,13 @@ function TenantDetailContent() {
     finally { setUpgrading(false); }
   };
 
-  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('fr-FR', {
+    day: '2-digit', month: 'long', year: 'numeric',
+  }) : '—';
   const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
+
+  // Ne rien afficher avant montage
+  if (!mounted) { return null; }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -95,7 +104,9 @@ function TenantDetailContent() {
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-lg">ECOLE+</span>
-          <span className="ml-3 px-3 py-1 bg-yellow-400/20 text-yellow-200 text-xs rounded-full border border-yellow-400/30">Super Administration</span>
+          <span className="ml-3 px-3 py-1 bg-yellow-400/20 text-yellow-200 text-xs rounded-full border border-yellow-400/30">
+            Super Administration
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/super-admin')}
@@ -137,7 +148,8 @@ function TenantDetailContent() {
                       <span className={`px-2 py-0.5 rounded-lg text-xs font-medium border ${PLAN_COLORS[tenant.plan]}`}>
                         {PLAN_LABELS[tenant.plan] ?? tenant.plan}
                       </span>
-                      <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-lg ${tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                      <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-lg ${
+                        tenant.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
                         {tenant.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                         {tenant.isActive ? 'Actif' : 'Suspendu'}
                       </span>
@@ -145,8 +157,13 @@ function TenantDetailContent() {
                   </div>
                 </div>
                 <button onClick={toggleStatus} disabled={actionLoading}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${tenant.isActive ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200' : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200'}`}>
-                  {actionLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : tenant.isActive ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                    tenant.isActive
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'
+                      : 'bg-green-50 text-green-700 hover:bg-green-100 border-green-200'
+                  }`}>
+                  {actionLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> :
+                    tenant.isActive ? <ShieldOff className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
                   {tenant.isActive ? 'Suspendre' : 'Réactiver'}
                 </button>
               </div>
@@ -158,10 +175,24 @@ function TenantDetailContent() {
                   <Building2 className="w-4 h-4 text-[#1B3A6B]" /> Coordonnées
                 </h2>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-sm"><Mail className="w-4 h-4 text-gray-400 flex-shrink-0" /><span>{tenant.email}</span></div>
-                  {tenant.phone && <div className="flex items-center gap-3 text-sm"><Phone className="w-4 h-4 text-gray-400 flex-shrink-0" /><span>{tenant.phone}</span></div>}
-                  <div className="flex items-center gap-3 text-sm"><MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" /><span>{tenant.city ?? '—'}, {tenant.country ?? 'CI'}</span></div>
-                  <div className="flex items-center gap-3 text-sm"><Clock className="w-4 h-4 text-gray-400 flex-shrink-0" /><span className="text-gray-500">Inscrit le {fmtDate(tenant.createdAt)}</span></div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span>{tenant.email}</span>
+                  </div>
+                  {tenant.phone && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span>{tenant.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span>{tenant.city ?? '—'}, {tenant.country ?? 'CI'}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="text-gray-500">Inscrit le {fmtDate(tenant.createdAt)}</span>
+                  </div>
                   {tenant.trialEndsAt && (
                     <div className="mt-2 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
                       <p className="text-xs text-yellow-700 font-medium flex items-center gap-1">
@@ -171,6 +202,7 @@ function TenantDetailContent() {
                   )}
                 </div>
               </div>
+
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#1B3A6B]" /> Statistiques
@@ -196,9 +228,18 @@ function TenantDetailContent() {
                   <DollarSign className="w-4 h-4 text-[#1B3A6B]" /> Abonnement
                 </h2>
                 <div className="grid grid-cols-3 gap-4">
-                  <div><p className="text-xs text-gray-500">Montant</p><p className="font-bold text-green-600">{fmt(tenant.subscription.priceXof)}/mois</p></div>
-                  <div><p className="text-xs text-gray-500">Début</p><p className="font-medium text-sm">{fmtDate(tenant.subscription.startDate)}</p></div>
-                  <div><p className="text-xs text-gray-500">Expiration</p><p className="font-medium text-sm">{fmtDate(tenant.subscription.endDate)}</p></div>
+                  <div>
+                    <p className="text-xs text-gray-500">Montant</p>
+                    <p className="font-bold text-green-600">{fmt(tenant.subscription.priceXof)}/mois</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Début</p>
+                    <p className="font-medium text-sm">{fmtDate(tenant.subscription.startDate)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Expiration</p>
+                    <p className="font-medium text-sm">{fmtDate(tenant.subscription.endDate)}</p>
+                  </div>
                 </div>
               </div>
             )}

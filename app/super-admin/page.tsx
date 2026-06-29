@@ -33,6 +33,7 @@ export default function SuperAdminPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<any>(null);
   const [saUser, setSaUser] = useState<any>({});
+  const [mounted, setMounted] = useState(false);
 
   const getHeaders = () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : '';
@@ -45,13 +46,15 @@ export default function SuperAdminPage() {
     router.push('/super-admin/login');
   };
 
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
-    if (typeof window === 'undefined') { return; }
+    if (!mounted) { return; }
     const saToken = localStorage.getItem('sa_token');
     if (!saToken) { router.push('/super-admin/login'); return; }
     setSaUser(JSON.parse(localStorage.getItem('sa_user') || '{}'));
     loadData();
-  }, [page]);
+  }, [mounted, page]);
 
   const loadData = async () => {
     setLoading(true);
@@ -92,6 +95,8 @@ export default function SuperAdminPage() {
       (filterStatus === 'SUSPENDED' && !t.isActive);
     return matchSearch && matchPlan && matchStatus;
   });
+
+  if (!mounted) { return null; }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -239,7 +244,7 @@ export default function SuperAdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <button onClick={() => router.push(`/super-admin/detail?id=${t.id}`)}
+                          <button onClick={() => router.push(`/super-admin/${t.id}`)}
                             className="p-1.5 text-gray-400 hover:text-[#1B3A6B] hover:bg-blue-50 rounded-lg transition-colors" title="Voir détails">
                             <Eye className="w-4 h-4" />
                           </button>
