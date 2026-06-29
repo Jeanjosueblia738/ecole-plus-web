@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Building2, User, CheckCircle, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
@@ -11,6 +11,11 @@ const PLANS = ['TRIAL', 'STARTER', 'PRO', 'GROUP', 'ENTERPRISE'];
 
 export default function NouvelEtablissementPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    const saToken = typeof window !== 'undefined' ? localStorage.getItem('sa_token') : null;
+    if (!saToken) { router.push('/super-admin/login'); }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
