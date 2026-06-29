@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Building2, Users, CheckCircle, XCircle, RefreshCw,
   Search, Eye, ShieldOff, Shield, BarChart2,
-  DollarSign, Clock, LogOut, GraduationCap
+  DollarSign, Clock, LogOut, GraduationCap, Activity, UserCog
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -182,6 +182,14 @@ export default function SuperAdminPage() {
               className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
               <RefreshCw className="w-4 h-4" /> Actualiser
             </button>
+            <button onClick={() => router.push('/super-admin/admins')}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700">
+              <UserCog className="w-4 h-4" /> Super Admins
+            </button>
+            <button onClick={() => router.push('/super-admin/logs')}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+              <Activity className="w-4 h-4" /> Logs
+            </button>
           </div>
         </div>
 
@@ -244,7 +252,7 @@ export default function SuperAdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <button onClick={() => router.push(`/super-admin/detail?id=${t.id}`)}
+                          <button onClick={() => router.push(`/super-admin/${t.id}`)}
                             className="p-1.5 text-gray-400 hover:text-[#1B3A6B] hover:bg-blue-50 rounded-lg transition-colors" title="Voir détails">
                             <Eye className="w-4 h-4" />
                           </button>
