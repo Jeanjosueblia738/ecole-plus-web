@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft, Building2, Users, CheckCircle, XCircle,
@@ -23,7 +23,7 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLANS = ['TRIAL', 'STARTER', 'PRO', 'GROUP', 'ENTERPRISE'];
 
-export default function TenantDetailPage() {
+function TenantDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
@@ -220,5 +220,17 @@ export default function TenantDetailPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function TenantDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+      </div>
+    }>
+      <TenantDetailContent />
+    </Suspense>
   );
 }
