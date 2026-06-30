@@ -60,7 +60,9 @@ export default function EmploiDuTempsPage() {
   const currentYear = `${year}-${year + 1}`;
 
   const user = authStorage.getUser();
-  const isAdmin = ['ADMIN', 'DIRECTOR', 'FOUNDER', 'SECRETARY'].includes(user?.role ?? '');
+  const canWrite = ['CENSOR', 'SURVEILLANT'].includes(user?.role ?? '');
+  const canDelete = ['CENSOR', 'SURVEILLANT'].includes(user?.role ?? '');
+  const canView = !['ACCOUNTANT', 'CASHIER'].includes(user?.role ?? '');
 
   const [form, setForm] = useState({
     classId: '', teacherId: '', subject: '',
@@ -186,7 +188,7 @@ export default function EmploiDuTempsPage() {
                 </button>
               </div>
 
-              {isAdmin && (
+              {canWrite && (
                 <button onClick={() => setShowForm(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
                   <Plus className="w-4 h-4" /> Ajouter un créneau
@@ -212,7 +214,7 @@ export default function EmploiDuTempsPage() {
             <div className="bg-white rounded-xl p-12 shadow-sm border border-gray-100 text-center">
               <Clock className="w-12 h-12 mx-auto mb-3 text-gray-200" />
               <p className="text-gray-400">Aucun créneau configuré</p>
-              {isAdmin && (
+              {canWrite && (
                 <button onClick={() => setShowForm(true)}
                   className="mt-4 bg-[#1B3A6B] text-white px-6 py-2 rounded-xl text-sm hover:bg-blue-800">
                   Ajouter un créneau
@@ -256,14 +258,15 @@ export default function EmploiDuTempsPage() {
                                 <p className="mt-0.5 text-xs opacity-70">Salle : {slot.room}</p>
                               )}
                             </div>
-                            {isAdmin && (
+                            {canWrite && (
                               <button onClick={() => handleDelete(slot.id)} disabled={deleting === slot.id}
                                 className="text-red-400 hover:text-red-600 flex-shrink-0 p-0.5">
                                 {deleting === slot.id
                                   ? <RefreshCw className="w-3 h-3 animate-spin" />
                                   : <Trash2 className="w-3 h-3" />}
-                              </button>
-                            )}
+</button>
+)}
+                            
                           </div>
                         </div>
                       ))
@@ -352,3 +355,4 @@ export default function EmploiDuTempsPage() {
     </div>
   );
 }
+
