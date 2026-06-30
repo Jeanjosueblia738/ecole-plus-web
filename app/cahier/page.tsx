@@ -63,6 +63,11 @@ export default function CahierPage() {
   const [saved, setSaved] = useState(false);
   const [emarging, setEmarging] = useState<string | null>(null);
 
+  // ── Contrôle d'accès ─────────────────────────────────────────
+  const user = authStorage.getUser();
+  const canWrite = ['TEACHER', 'CENSOR'].includes(user?.role ?? '');
+  const canDelete = ['TEACHER'].includes(user?.role ?? '');
+
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
     classesApi.getAll('2025-2026').then(({ data }) => {
@@ -90,6 +95,7 @@ export default function CahierPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canWrite) { return; }
     setSaving(true);
     try {
       await cahierApi.create({
@@ -113,6 +119,7 @@ export default function CahierPage() {
   };
 
   const handleEmargement = async (id: string) => {
+    if (!canWrite) { return; }
     setEmarging(id);
     try {
       await cahierApi.update(id, { isEmarge: true, emargeAt: new Date().toISOString() });
@@ -122,6 +129,7 @@ export default function CahierPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canDelete) { return; }
     if (!confirm('Supprimer cette entrée ?')) return;
     await cahierApi.delete(id);
     setEntries(e => e.filter(en => en.id !== id));
@@ -140,8 +148,18 @@ export default function CahierPage() {
         />
         <main className="flex-1 p-6">
 
+          {/* Badge lecture seule pour Admin/Director */}
+          {!canWrite && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 flex items-center gap-3">
+              <BookOpen className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <p className="text-sm text-blue-700 font-medium">
+                Mode lecture — Seuls les enseignants et le censeur peuvent saisir des entrées.
+              </p>
+            </div>
+          )}
+
           {/* Alerte émargements manquants */}
-          {nonEmarges > 0 && (
+          {nonEmarges > 0 && canWrite && (
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
               <p className="text-sm text-orange-700">
@@ -170,16 +188,18 @@ export default function CahierPage() {
             </div>
             <div className="ml-auto flex items-center gap-3">
               <span className="text-sm text-gray-500">{entries.length} séance(s)</span>
-              <button onClick={() => setShowForm(!showForm)}
-                className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
-                <Plus className="w-4 h-4" />
-                Nouvelle séance
-              </button>
+              {canWrite && (
+                <button onClick={() => setShowForm(!showForm)}
+                  className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  Nouvelle séance
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Formulaire */}
-          {showForm && (
+          {/* Formulaire — uniquement pour canWrite */}
+          {showForm && canWrite && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
               <div className="flex items-center justify-between mb-5">
                 <h2 className="font-semibold text-gray-800 flex items-center gap-2">
@@ -192,7 +212,6 @@ export default function CahierPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Ligne 1 : Matière + Date + Séquence + Trimestre */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">Matière *</label>
@@ -222,7 +241,6 @@ export default function CahierPage() {
                   </div>
                 </div>
 
-                {/* Plan du cours */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">
                     Plan du cours * <span className="text-gray-400 font-normal">(ce qui a été fait aujourd'hui)</span>
@@ -232,7 +250,6 @@ export default function CahierPage() {
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
                 </div>
 
-                {/* Prochain cours */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1">
                     Prochain cours <span className="text-gray-400 font-normal">(annonce de la prochaine séance)</span>
@@ -242,7 +259,6 @@ export default function CahierPage() {
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
                 </div>
 
-                {/* Devoir */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">
@@ -286,7 +302,7 @@ export default function CahierPage() {
               <div className="py-16 text-center text-gray-400">
                 <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p className="font-medium">Aucune séance enregistrée</p>
-                <p className="text-sm mt-1">Cliquez sur "Nouvelle séance" pour commencer</p>
+                {canWrite && <p className="text-sm mt-1">Cliquez sur "Nouvelle séance" pour commencer</p>}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -298,22 +314,19 @@ export default function CahierPage() {
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-48">Prochain cours</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-40">Devoir</th>
                       <th className="text-center px-4 py-3 text-xs font-semibold uppercase w-32">Émargement</th>
-                      <th className="text-center px-4 py-3 text-xs font-semibold uppercase w-16"></th>
+                      {canDelete && <th className="text-center px-4 py-3 text-xs font-semibold uppercase w-16"></th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {entries.map((entry, idx) => (
                       <tr key={entry.id} className={`hover:bg-gray-50 transition-colors ${idx % 2 === 0 ? '' : 'bg-gray-50/50'}`}>
-                        {/* Colonne 1 — Date */}
                         <td className="px-4 py-4 align-top">
                           <div className="flex flex-col">
                             <span className="font-semibold text-gray-800 text-sm">
                               {new Date(entry.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                             </span>
                             <span className="text-xs text-blue-600 font-medium mt-0.5">{entry.subject}</span>
-                            {entry.sequence && (
-                              <span className="text-xs text-gray-400 mt-0.5">{entry.sequence}</span>
-                            )}
+                            {entry.sequence && <span className="text-xs text-gray-400 mt-0.5">{entry.sequence}</span>}
                             {entry.teacher && (
                               <span className="text-xs text-gray-400 mt-1">
                                 {entry.teacher.firstName} {entry.teacher.lastName}
@@ -321,22 +334,14 @@ export default function CahierPage() {
                             )}
                           </div>
                         </td>
-
-                        {/* Colonne 4 — Plan du cours */}
                         <td className="px-4 py-4 align-top">
                           <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{entry.planCours}</p>
                         </td>
-
-                        {/* Colonne 2 — Prochain cours */}
                         <td className="px-4 py-4 align-top">
-                          {entry.prochainCours ? (
-                            <p className="text-sm text-gray-600 italic">{entry.prochainCours}</p>
-                          ) : (
-                            <span className="text-gray-300 text-sm">—</span>
-                          )}
+                          {entry.prochainCours
+                            ? <p className="text-sm text-gray-600 italic">{entry.prochainCours}</p>
+                            : <span className="text-gray-300 text-sm">—</span>}
                         </td>
-
-                        {/* Colonne 3 — Devoir */}
                         <td className="px-4 py-4 align-top">
                           {entry.devoirDescription ? (
                             <div>
@@ -348,12 +353,8 @@ export default function CahierPage() {
                                 </p>
                               )}
                             </div>
-                          ) : (
-                            <span className="text-gray-300 text-sm">—</span>
-                          )}
+                          ) : <span className="text-gray-300 text-sm">—</span>}
                         </td>
-
-                        {/* Colonne 5 — Émargement */}
                         <td className="px-4 py-4 align-top text-center">
                           {entry.isEmarge ? (
                             <div className="flex flex-col items-center gap-1">
@@ -367,31 +368,28 @@ export default function CahierPage() {
                                 </span>
                               )}
                             </div>
-                          ) : (
-                            <button
-                              onClick={() => handleEmargement(entry.id)}
-                              disabled={emarging === entry.id}
-                              className="flex flex-col items-center gap-1 mx-auto group"
-                            >
+                          ) : canWrite ? (
+                            <button onClick={() => handleEmargement(entry.id)} disabled={emarging === entry.id}
+                              className="flex flex-col items-center gap-1 mx-auto group">
                               <div className="w-8 h-8 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center group-hover:border-blue-400 transition-colors">
-                                {emarging === entry.id ? (
-                                  <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                                ) : (
-                                  <PenLine className="w-4 h-4 text-gray-300 group-hover:text-blue-400" />
-                                )}
+                                {emarging === entry.id
+                                  ? <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                                  : <PenLine className="w-4 h-4 text-gray-300 group-hover:text-blue-400" />}
                               </div>
                               <span className="text-xs text-gray-400 group-hover:text-blue-500">Émarger</span>
                             </button>
+                          ) : (
+                            <span className="text-xs text-gray-300">Non émargé</span>
                           )}
                         </td>
-
-                        {/* Actions */}
-                        <td className="px-4 py-4 align-top text-center">
-                          <button onClick={() => handleDelete(entry.id)}
-                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
+                        {canDelete && (
+                          <td className="px-4 py-4 align-top text-center">
+                            <button onClick={() => handleDelete(entry.id)}
+                              className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
