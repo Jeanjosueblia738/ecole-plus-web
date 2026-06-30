@@ -56,6 +56,12 @@ export default function RapportsPage() {
   const [generated, setGenerated] = useState(false);
 
   const user = authStorage.getUser();
+  const role = user?.role ?? '';
+
+  // Matrice d'accès aux rapports
+  const canSeeList = ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SECRETARY', 'SURVEILLANT', 'TEACHER'].includes(role);
+  const canSeeTrimestriel = ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'TEACHER'].includes(role);
+  const canSeeAnnuel = ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'TEACHER'].includes(role);
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -202,6 +208,20 @@ export default function RapportsPage() {
 
   const allSubjects = Array.from(new Set(reports.flatMap(r => Object.keys(r.moyennesParMatiere))));
 
+  if (!canSeeList) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-400 text-lg font-medium">Accès non autorisé</p>
+            <p className="text-gray-300 text-sm mt-1">Vous n'avez pas accès aux rapports scolaires</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -220,9 +240,9 @@ export default function RapportsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type de rapport</label>
                 <select value={reportType} onChange={e => { setReportType(e.target.value as any); setGenerated(false); }}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
-                  <option value="liste">📋 Liste nominative</option>
-                  <option value="trimestriel">📊 Rapport trimestriel</option>
-                  <option value="annuel">📈 Rapport annuel</option>
+                  {canSeeList && <option value="liste">📋 Liste nominative</option>}
+                  {canSeeTrimestriel && <option value="trimestriel">📊 Rapport trimestriel</option>}
+                  {canSeeAnnuel && <option value="annuel">📈 Rapport annuel</option>}
                 </select>
               </div>
 
