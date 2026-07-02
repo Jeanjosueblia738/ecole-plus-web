@@ -1,13 +1,12 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, User, Phone, Trash2 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { studentsApi, classesApi } from '@/lib/api';
+import { studentsApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
-
-const useIsClient = () => { const [isClient, setIsClient] = useState(false); useEffect(() => setIsClient(true), []); return isClient; };
 
 interface Student {
   id: string;
@@ -21,27 +20,26 @@ interface Student {
 }
 
 export default function ElevesPage() {
-  const isClient = useIsClient();
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [canCreate, setCanCreate] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+  const [ready, setReady] = useState(false);
 
-  // ── Contrôle d'accès ─────────────────────────────────────────
- const [canCreate, setCanCreate] = useState(false);
-const [canEdit, setCanEdit] = useState(false);
-const [canDelete, setCanDelete] = useState(false);
-
-useEffect(() => {
-  if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
-  const u = authStorage.getUser();
-  const r = u?.role ?? '';
-  setCanCreate(['ADMIN', 'SECRETARY'].includes(r));
-  setCanEdit(['ADMIN', 'SECRETARY'].includes(r));
-  setCanDelete(['ADMIN'].includes(r));
-  loadStudents();
-}, []);
+  useEffect(() => {
+    if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    const u = authStorage.getUser();
+    const r = u?.role ?? '';
+    setCanCreate(['ADMIN', 'SECRETARY'].includes(r));
+    setCanEdit(['ADMIN', 'SECRETARY'].includes(r));
+    setCanDelete(r === 'ADMIN');
+    setReady(true);
+    loadStudents();
+  }, []);
 
   const loadStudents = async (q?: string) => {
     try {
@@ -67,7 +65,8 @@ useEffect(() => {
     finally { setDeleting(null); }
   };
 
-  if (!isClient) { return null; }
+  // Ne rien afficher avant que les droits soient calculés
+  if (!ready) { return null; }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -76,7 +75,6 @@ useEffect(() => {
         <Header title="Gestion des élèves" subtitle={`${students.length} élève(s) inscrit(s)`} />
         <main className="flex-1 p-6">
 
-          {/* Barre d'outils */}
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -92,28 +90,23 @@ useEffect(() => {
             )}
           </div>
 
-          {/* Tableau */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Élève</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Matricule</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Classe</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Parent</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Élève</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Matricule</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Classe</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Parent</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   [...Array(5)].map((_, i) => (
-                    <tr key={i}>
-                      {[...Array(5)].map((_, j) => (
-                        <td key={j} className="px-6 py-4">
-                          <div className="h-4 bg-gray-100 rounded animate-pulse" />
-                        </td>
-                      ))}
-                    </tr>
+                    <tr key={i}>{[...Array(5)].map((_, j) => (
+                      <td key={j} className="px-6 py-4"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
+                    ))}</tr>
                   ))
                 ) : students.length === 0 ? (
                   <tr>
@@ -122,61 +115,54 @@ useEffect(() => {
                       <p>Aucun élève trouvé</p>
                     </td>
                   </tr>
-                ) : (
-                  students.map((s) => (
-                    <tr key={s.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
-                            {s.firstName[0]}{s.lastName[0]}
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-800 text-sm">{s.firstName} {s.lastName}</p>
-                            <p className="text-xs text-gray-400">{s.gender === 'MALE' ? 'Garçon' : 'Fille'}</p>
-                          </div>
+                ) : students.map((s) => (
+                  <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
+                          {s.firstName[0]}{s.lastName[0]}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 font-mono">{s.registrationNo}</td>
-                      <td className="px-6 py-4">
-                        <span className="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
-                          {s.class?.name ?? '—'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-700">{s.parentName ?? '—'}</p>
-                        {s.parentPhone && (
-                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                            <Phone className="w-3 h-3" />{s.parentPhone}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {/* Voir — tous les rôles */}
-                          <a href={`/eleves/${s.id}`}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                            Voir
+                        <div>
+                          <p className="font-medium text-gray-800 text-sm">{s.firstName} {s.lastName}</p>
+                          <p className="text-xs text-gray-400">{s.gender === 'MALE' ? 'Garçon' : 'Fille'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 font-mono">{s.registrationNo}</td>
+                    <td className="px-6 py-4">
+                      <span className="bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                        {s.class?.name ?? '—'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-gray-700">{s.parentName ?? '—'}</p>
+                      {s.parentPhone && (
+                        <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3" />{s.parentPhone}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <a href={`/eleves/${s.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                          Voir
+                        </a>
+                        {canEdit && (
+                          <a href={`/eleves/${s.id}/edit`} className="text-gray-500 hover:text-gray-700 text-sm font-medium">
+                            Modifier
                           </a>
-                          {/* Modifier — Admin + Secrétaire */}
-                          {canEdit && (
-                            <a href={`/eleves/${s.id}/edit`}
-                              className="text-gray-500 hover:text-gray-700 text-sm font-medium">
-                              Modifier
-                            </a>
-                          )}
-                          {/* Supprimer — Admin seulement */}
-                          {canDelete && (
-                            <button onClick={() => handleDelete(s.id, `${s.firstName} ${s.lastName}`)}
-                              disabled={deleting === s.id}
-                              className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                        )}
+                        {canDelete && (
+                          <button onClick={() => handleDelete(s.id, `${s.firstName} ${s.lastName}`)}
+                            disabled={deleting === s.id}
+                            className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
