@@ -11,6 +11,8 @@ import { authStorage } from '@/lib/auth';
 
 export default function NouvelElevePage() {
   const router = useRouter();
+  const user = authStorage.getUser();
+  const canCreate = ['ADMIN', 'SECRETARY'].includes(user?.role ?? '');
   const [classes, setClasses] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -32,6 +34,7 @@ export default function NouvelElevePage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!canCreate) { router.push('/eleves'); return; }
     classesApi.getAll('2025-2026').then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setForm(f => ({ ...f, classId: data[0].id }));
