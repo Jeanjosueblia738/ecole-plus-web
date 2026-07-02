@@ -11,7 +11,9 @@ import { authStorage } from '@/lib/auth';
 
 export default function NouvelElevePage() {
   const router = useRouter();
-  const user = authStorage.getUser();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const user = mounted ? authStorage.getUser() : null;
   const canCreate = ['ADMIN', 'SECRETARY'].includes(user?.role ?? '');
   const [classes, setClasses] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -186,3 +188,5 @@ export default function NouvelElevePage() {
     </div>
   );
 }
+
+
