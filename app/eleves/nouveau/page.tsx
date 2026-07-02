@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Upload, User } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
@@ -16,27 +16,36 @@ export default function NouvelElevePage() {
   const [classes, setClasses] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [photoPreview, setPhotoPreview] = useState('');
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', registrationNo: '',
     dateOfBirth: '', gender: 'MALE', classId: '',
     parentName: '', parentPhone: '', parentEmail: '',
-    address: '',
+    address: '', photoUrl: '',
   });
 
   useEffect(() => {
-    // Vérification stricte côté client
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
     const u = authStorage.getUser();
-    if (!ROLES_ALLOWED.includes(u?.role ?? '')) {
-      router.push('/eleves');
-      return;
-    }
+    if (!ROLES_ALLOWED.includes(u?.role ?? '')) { router.push('/eleves'); return; }
     setReady(true);
     classesApi.getAll('2025-2026').then(({ data }) => setClasses(data));
   }, []);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) { return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setPhotoPreview(base64);
+      setForm(f => ({ ...f, photoUrl: base64 }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +61,7 @@ export default function NouvelElevePage() {
         parentPhone: form.parentPhone || undefined,
         parentEmail: form.parentEmail || undefined,
         address: form.address || undefined,
+        photoUrl: form.photoUrl || undefined,
       });
       router.push('/eleves');
     } catch (e: any) {
@@ -80,6 +90,26 @@ export default function NouvelElevePage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+
+              {/* Photo ID */}
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h2 className="font-semibold text-gray-800 mb-4">Photo d'identité</h2>
+                <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0 border-2 border-dashed border-gray-200">
+                    {photoPreview
+                      ? <img src={photoPreview} alt="Photo élève" className="w-full h-full object-cover" />
+                      : <User className="w-10 h-10 text-gray-300" />}
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm cursor-pointer hover:bg-gray-50 font-medium text-gray-700">
+                      <Upload className="w-4 h-4" /> Choisir une photo
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+                    </label>
+                    <p className="text-xs text-gray-400 mt-2">JPG, PNG — Max 2MB</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Infos personnelles */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4">Informations personnelles</h2>
@@ -132,7 +162,7 @@ export default function NouvelElevePage() {
 
               {/* Infos parent */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 className="font-semibold text-gray-800 mb-4">Informations du parent</h2>
+                <h2 className="font-semibold text-gray-800 mb-4">Informations du parent / tuteur</h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nom du parent</label>
@@ -140,7 +170,7 @@ export default function NouvelElevePage() {
                       className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone parent</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
                     <input value={form.parentPhone} onChange={e => set('parentPhone', e.target.value)}
                       placeholder="+225 07 00 00 00"
                       className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
@@ -161,7 +191,9 @@ export default function NouvelElevePage() {
                 </button>
                 <button type="submit" disabled={saving}
                   className="flex items-center gap-2 px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50">
-                  {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Enregistrement...</> : <><Save className="w-4 h-4" /> Enregistrer</>}
+                  {saving
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Enregistrement...</>
+                    : <><Save className="w-4 h-4" /> Enregistrer</>}
                 </button>
               </div>
             </form>
