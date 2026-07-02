@@ -29,16 +29,19 @@ export default function ElevesPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   // ── Contrôle d'accès ─────────────────────────────────────────
-  const user = authStorage.getUser();
-  const role = user?.role ?? '';
-  const canCreate = ['ADMIN', 'SECRETARY'].includes(role);
-  const canEdit   = ['ADMIN', 'SECRETARY'].includes(role);
-  const canDelete = ['ADMIN'].includes(role);
+ const [canCreate, setCanCreate] = useState(false);
+const [canEdit, setCanEdit] = useState(false);
+const [canDelete, setCanDelete] = useState(false);
 
-  useEffect(() => {
-    if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
-    loadStudents();
-  }, []);
+useEffect(() => {
+  if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+  const u = authStorage.getUser();
+  const r = u?.role ?? '';
+  setCanCreate(['ADMIN', 'SECRETARY'].includes(r));
+  setCanEdit(['ADMIN', 'SECRETARY'].includes(r));
+  setCanDelete(['ADMIN'].includes(r));
+  loadStudents();
+}, []);
 
   const loadStudents = async (q?: string) => {
     try {
