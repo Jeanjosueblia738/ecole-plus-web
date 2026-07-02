@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Loader2, Upload, User } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import PhotoUpload from '@/components/PhotoUpload';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
@@ -16,7 +17,6 @@ export default function NouvelElevePage() {
   const [classes, setClasses] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [photoPreview, setPhotoPreview] = useState('');
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', registrationNo: '',
@@ -34,18 +34,6 @@ export default function NouvelElevePage() {
   }, []);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) { return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result as string;
-      setPhotoPreview(base64);
-      setForm(f => ({ ...f, photoUrl: base64 }));
-    };
-    reader.readAsDataURL(file);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,22 +80,15 @@ export default function NouvelElevePage() {
             <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Photo ID */}
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <h2 className="font-semibold text-gray-800 mb-4">Photo d'identité</h2>
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0 border-2 border-dashed border-gray-200">
-                    {photoPreview
-                      ? <img src={photoPreview} alt="Photo élève" className="w-full h-full object-cover" />
-                      : <User className="w-10 h-10 text-gray-300" />}
-                  </div>
-                  <div>
-                    <label className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm cursor-pointer hover:bg-gray-50 font-medium text-gray-700">
-                      <Upload className="w-4 h-4" /> Choisir une photo
-                      <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-                    </label>
-                    <p className="text-xs text-gray-400 mt-2">JPG, PNG — Max 2MB</p>
-                  </div>
-                </div>
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
+                <p className="text-sm font-semibold text-gray-700 mb-4">Photo d'identité</p>
+                <PhotoUpload
+                  name={form.firstName && form.lastName ? `${form.firstName} ${form.lastName}` : 'Élève'}
+                  folder="eleves"
+                  entityId={form.registrationNo || 'new-eleve'}
+                  onUpload={(url) => setForm(f => ({ ...f, photoUrl: url }))}
+                  size="lg"
+                />
               </div>
 
               {/* Infos personnelles */}
