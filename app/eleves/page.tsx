@@ -1,13 +1,13 @@
 'use client';
-
-import { useEffect, useState, useLayoutEffect } from 'react';
-const useIsClient = () => { const [isClient, setIsClient] = useState(false); useEffect(() => setIsClient(true), []); return isClient; };
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, User, Phone } from 'lucide-react';
+import { Search, Plus, User, Phone, Trash2 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+
+const useIsClient = () => { const [isClient, setIsClient] = useState(false); useEffect(() => setIsClient(true), []); return isClient; };
 
 interface Student {
   id: string;
@@ -26,6 +26,14 @@ export default function ElevesPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  // ── Contrôle d'accès ─────────────────────────────────────────
+  const user = authStorage.getUser();
+  const role = user?.role ?? '';
+  const canCreate = ['ADMIN', 'SECRETARY'].includes(role);
+  const canEdit   = ['ADMIN', 'SECRETARY'].includes(role);
+  const canDelete = ['ADMIN'].includes(role);
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -36,11 +44,8 @@ export default function ElevesPage() {
     try {
       const { data } = await studentsApi.getAll({ search: q });
       setStudents(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +53,18 @@ export default function ElevesPage() {
     loadStudents(e.target.value);
   };
 
-  if (!isClient) return null;
+  const handleDelete = async (id: string, name: string) => {
+    if (!canDelete) { return; }
+    if (!confirm(`Supprimer l'élève ${name} ? Cette action est irréversible.`)) { return; }
+    setDeleting(id);
+    try {
+      await studentsApi.delete(id);
+      setStudents(s => s.filter(x => x.id !== id));
+    } catch (e) { console.error(e); }
+    finally { setDeleting(null); }
+  };
+
+  if (!isClient) { return null; }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -56,25 +72,21 @@ export default function ElevesPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Gestion des élèves" subtitle={`${students.length} élève(s) inscrit(s)`} />
         <main className="flex-1 p-6">
+
           {/* Barre d'outils */}
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher par nom ou matricule..."
-                value={search}
-                onChange={handleSearch}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              />
+              <input type="text" placeholder="Rechercher par nom ou matricule..."
+                value={search} onChange={handleSearch}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
             </div>
-            <a
-              href="/eleves/nouveau"
-              className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Ajouter un élève
-            </a>
+            {canCreate && (
+              <a href="/eleves/nouveau"
+                className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+                <Plus className="w-4 h-4" /> Ajouter un élève
+              </a>
+            )}
           </div>
 
           {/* Tableau */}
@@ -136,12 +148,28 @@ export default function ElevesPage() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <a
-                          href={`/eleves/${s.id}`}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        >
-                          Voir
-                        </a>
+                        <div className="flex items-center gap-3">
+                          {/* Voir — tous les rôles */}
+                          <a href={`/eleves/${s.id}`}
+                            className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Voir
+                          </a>
+                          {/* Modifier — Admin + Secrétaire */}
+                          {canEdit && (
+                            <a href={`/eleves/${s.id}/edit`}
+                              className="text-gray-500 hover:text-gray-700 text-sm font-medium">
+                              Modifier
+                            </a>
+                          )}
+                          {/* Supprimer — Admin seulement */}
+                          {canDelete && (
+                            <button onClick={() => handleDelete(s.id, `${s.firstName} ${s.lastName}`)}
+                              disabled={deleting === s.id}
+                              className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
