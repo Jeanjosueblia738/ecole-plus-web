@@ -7,8 +7,8 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { teachersApi } from '@/lib/api';
 import PhotoUpload from '@/components/PhotoUpload';
-import { useState as usePhotoState } from 'react';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 export default function NouvelEnseignantPage() {
   const router = useRouter();
@@ -27,8 +27,11 @@ export default function NouvelEnseignantPage() {
   });
 
   useEffect(() => {
-    if (!authStorage.isLoggedIn()) router.push('/login');
-  }, []);
+    if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.manageTeachers)) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const set = (key: string, val: any) => setForm(f => ({ ...f, [key]: val }));
 
@@ -48,10 +51,12 @@ export default function NouvelEnseignantPage() {
     setError('');
     setSaving(true);
     try {
+      // photoUrl désormais accepté par l'API create
       await teachersApi.create(form);
       router.push('/enseignants');
     } catch (err: any) {
-      setError(err.response?.data?.message?.join(', ') || 'Erreur lors de la création');
+      const msg = err.response?.data?.message;
+      setError(Array.isArray(msg) ? msg.join(', ') : msg || 'Erreur lors de la création');
     } finally {
       setSaving(false);
     }
@@ -72,8 +77,7 @@ export default function NouvelEnseignantPage() {
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{error}</div>
           )}
 
-          {/* Photo */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex justify-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col items-center">
             <PhotoUpload
               name={form.firstName && form.lastName ? `${form.firstName} ${form.lastName}` : 'Enseignant'}
               folder="enseignants"
@@ -81,6 +85,9 @@ export default function NouvelEnseignantPage() {
               onUpload={(url) => set('photoUrl', url)}
               size="lg"
             />
+            {form.photoUrl && (
+              <p className="text-xs text-green-600 mt-3 text-center">Photo prête à être enregistrée avec le compte.</p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

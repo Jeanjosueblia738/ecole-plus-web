@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
 interface Student {
   id: string;
@@ -18,11 +19,6 @@ interface Student {
   parentPhone: string;
   class: { name: string; level: string };
 }
-
-// Rôles autorisés
-const ROLES_CREATE = ['ADMIN', 'SECRETARY'];
-const ROLES_EDIT   = ['ADMIN', 'SECRETARY'];
-const ROLES_DELETE = ['ADMIN'];
 
 export default function ElevesPage() {
   const router = useRouter();
@@ -36,16 +32,15 @@ export default function ElevesPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    // Vérification auth + rôles dans le useEffect (côté client uniquement)
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
     const u = authStorage.getUser();
-    const r = u?.role ?? '';
-    setCanCreate(ROLES_CREATE.includes(r));
-    setCanEdit(ROLES_EDIT.includes(r));
-    setCanDelete(ROLES_DELETE.includes(r));
+    if (!canAccessPath(u?.role, '/eleves')) { router.push('/dashboard'); return; }
+    setCanCreate(hasRole(u?.role, can.createStudent));
+    setCanEdit(hasRole(u?.role, can.editStudent));
+    setCanDelete(hasRole(u?.role, can.deleteStudent));
     setReady(true);
     loadStudents();
-  }, []);
+  }, [router]);
 
   const loadStudents = async (q?: string) => {
     setLoading(true);

@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, studentsApi, attendanceApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
 export default function PresencesPage() {
   const router = useRouter();
@@ -19,16 +20,20 @@ export default function PresencesPage() {
   const [saved, setSaved] = useState(false);
 
   const user = authStorage.getUser();
-  const canDoAppel = !['ADMIN', 'FOUNDER', 'DIRECTOR', 'SECRETARY', 'ACCOUNTANT', 'CASHIER'].includes(user?.role ?? '');
+  const canDoAppel = hasRole(user?.role, can.doAppel);
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!canAccessPath(authStorage.getUser()?.role, '/presences')) {
+      router.push('/dashboard');
+      return;
+    }
     classesApi.getAll('2025-2026').then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
     });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!selectedClass) return;

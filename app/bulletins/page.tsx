@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import { classesApi, studentsApi, gradesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { generateBulletin } from '@/lib/pdf';
+import { can, hasRole } from '@/lib/rbac';
 
 export default function BulletinsPage() {
   const router = useRouter();
@@ -24,11 +25,15 @@ export default function BulletinsPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.generateBulletin)) {
+      router.push('/dashboard');
+      return;
+    }
     classesApi.getAll('2025-2026').then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
     });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!selectedClass) return;

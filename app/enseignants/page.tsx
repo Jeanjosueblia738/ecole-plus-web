@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { teachersApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 export default function EnseignantsPage() {
   const router = useRouter();
@@ -15,11 +16,15 @@ export default function EnseignantsPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.manageTeachers)) {
+      router.push('/dashboard');
+      return;
+    }
     teachersApi.getAll()
       .then(({ data }) => setTeachers(data))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   return (
     <div className="flex min-h-screen bg-gray-50">

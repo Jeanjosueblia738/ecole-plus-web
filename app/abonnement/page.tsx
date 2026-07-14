@@ -10,6 +10,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 const PLANS = [
   {
@@ -53,8 +54,12 @@ export default function AbonnementPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.manageSubscription)) {
+      router.push('/dashboard');
+      return;
+    }
     loadSubscription();
-  }, []);
+  }, [router]);
 
   const loadSubscription = async () => {
     setLoading(true);

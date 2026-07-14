@@ -8,7 +8,9 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
+/** TEACHER retiré : créer via /enseignants (profil + matières). */
 const ROLES = [
   { value: 'DIRECTOR', label: 'Directeur / Proviseur' },
   { value: 'CENSOR', label: 'Censeur / Directeur des études' },
@@ -16,7 +18,6 @@ const ROLES = [
   { value: 'SECRETARY', label: 'Secrétaire Scolarité' },
   { value: 'ACCOUNTANT', label: 'Comptable' },
   { value: 'CASHIER', label: 'Caissier' },
-  { value: 'TEACHER', label: 'Enseignant' },
   { value: 'EDUCATOR', label: 'Éducateur' },
 ];
 
@@ -30,14 +31,17 @@ export default function NouvelUtilisateurPage() {
     lastName: '',
     email: '',
     password: '',
-    role: 'TEACHER',
+    role: 'SECRETARY',
     phone: '',
     photoUrl: '',
   });
 
   useEffect(() => {
-    if (!authStorage.isLoggedIn()) router.push('/login');
-  }, []);
+    if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.manageUsers)) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 

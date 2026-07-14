@@ -102,6 +102,11 @@ export const financeApi = {
   getFees: (year?: string) => api.get('/finance/fees', { params: { year } }),
   getStudentFinance: (studentId: string) => api.get(`/finance/student/${studentId}`),
   recordPayment: (data: object) => api.post('/finance/payments', data),
+  createFee: (data: object) => api.post('/finance/fees', data),
+  assignFee: (data: { feeId: string; classId: string }) => api.post('/finance/fees/assign', data),
+  listAlerts: (limit?: number) => api.get('/finance/alerts', { params: { limit } }),
+  previewAlerts: () => api.get('/finance/alerts/preview'),
+  processAlerts: () => api.post('/finance/alerts/process'),
 };
 
 // ── Teachers ─────────────────────────────────────────────────────────────

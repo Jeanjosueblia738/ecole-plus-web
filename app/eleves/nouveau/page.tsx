@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Key, Copy, Check } from 'lucide-react';
 import PhotoUpload from '@/components/PhotoUpload';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
-
-const ROLES_ALLOWED = ['ADMIN', 'SECRETARY'];
+import { can, hasRole } from '@/lib/rbac';
 
 export default function NouvelElevePage() {
   const router = useRouter();
@@ -17,33 +16,47 @@ export default function NouvelElevePage() {
   const [classes, setClasses] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [created, setCreated] = useState<any>(null);
+  const [copied, setCopied] = useState('');
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', registrationNo: '',
     dateOfBirth: '', gender: 'MALE', classId: '',
+    niveauPrecedent: '', statut: 'AFFECTE',
     parentName: '', parentPhone: '', parentEmail: '',
     address: '', photoUrl: '',
   });
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
-    const u = authStorage.getUser();
-    if (!ROLES_ALLOWED.includes(u?.role ?? '')) { router.push('/eleves'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.createStudent)) {
+      router.push('/eleves');
+      return;
+    }
     setReady(true);
     classesApi.getAll('2025-2026').then(({ data }) => setClasses(data));
-  }, []);
+  }, [router]);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.firstName || !form.lastName || !form.registrationNo || !form.classId) {
-      setError('Veuillez remplir tous les champs obligatoires'); return;
+    if (!form.firstName || !form.lastName || !form.registrationNo) {
+      setError('Veuillez remplir les champs obligatoires'); return;
+    }
+    if (form.statut === 'AFFECTE' && !form.classId) {
+      setError('Choisissez une classe pour un élève affecté'); return;
     }
     setSaving(true); setError('');
     try {
-      await studentsApi.create({
-        ...form,
+      const { data } = await studentsApi.create({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        registrationNo: form.registrationNo,
+        gender: form.gender,
+        statut: form.statut,
+        classId: form.classId || undefined,
+        niveauPrecedent: form.niveauPrecedent || undefined,
         dateOfBirth: form.dateOfBirth || undefined,
         parentName: form.parentName || undefined,
         parentPhone: form.parentPhone || undefined,
@@ -51,19 +64,82 @@ export default function NouvelElevePage() {
         address: form.address || undefined,
         photoUrl: form.photoUrl || undefined,
       });
-      router.push('/eleves');
+      setCreated(data);
     } catch (e: any) {
-      setError(e.response?.data?.message || 'Erreur lors de la création');
+      const msg = e.response?.data?.message;
+      setError(Array.isArray(msg) ? msg.join(', ') : msg || 'Erreur lors de la création');
     } finally { setSaving(false); }
   };
 
+  const copyCode = async (value: string, key: string) => {
+    await navigator.clipboard.writeText(value);
+    setCopied(key);
+    setTimeout(() => setCopied(''), 1500);
+  };
+
   if (!ready) { return null; }
+
+  if (created) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Header title="Élève inscrit" subtitle={`${created.firstName} ${created.lastName}`} />
+          <main className="flex-1 p-6">
+            <div className="max-w-xl mx-auto space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800 text-sm">
+                Inscription réussie. Communiquez ces codes pour l&apos;application mobile.
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
+                <div className="flex items-center gap-2 text-[#1B3A6B] font-semibold">
+                  <Key className="w-5 h-5" /> Codes d&apos;accès mobile
+                </div>
+                {[
+                  { key: 'eleve', label: 'Code élève', value: created.accessCode },
+                  { key: 'parent', label: 'Code parent', value: created.parentAccessCode },
+                ].map((c) => (
+                  <div key={c.key} className="flex items-center justify-between gap-3 bg-gray-50 rounded-xl px-4 py-3">
+                    <div>
+                      <p className="text-xs text-gray-500">{c.label}</p>
+                      <p className="font-mono text-lg font-bold text-gray-800 tracking-wider">{c.value || '—'}</p>
+                    </div>
+                    {c.value && (
+                      <button type="button" onClick={() => copyCode(c.value, c.key)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                        {copied === c.key ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        {copied === c.key ? 'Copié' : 'Copier'}
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <p className="text-xs text-gray-500">
+                  Le parent a besoin d&apos;un email enregistré pour finaliser son compte mobile.
+                </p>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button onClick={() => router.push(`/eleves/${created.id}`)}
+                  className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  Voir le dossier
+                </button>
+                <button onClick={() => router.push('/eleves')}
+                  className="px-5 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
+                  Retour à la liste
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Nouvel élève" subtitle="Créer un nouveau dossier scolaire" />
+        <Header title="Nouvel élève" subtitle="Inscription / création du dossier scolaire" />
         <main className="flex-1 p-6">
           <div className="max-w-2xl mx-auto">
             <button onClick={() => router.push('/eleves')}
@@ -78,10 +154,8 @@ export default function NouvelElevePage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* Photo ID */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
-                <p className="text-sm font-semibold text-gray-700 mb-4">Photo d'identité</p>
+                <p className="text-sm font-semibold text-gray-700 mb-4">Photo d&apos;identité</p>
                 <PhotoUpload
                   name={form.firstName && form.lastName ? `${form.firstName} ${form.lastName}` : 'Élève'}
                   folder="eleves"
@@ -91,7 +165,6 @@ export default function NouvelElevePage() {
                 />
               </div>
 
-              {/* Infos personnelles */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4">Informations personnelles</h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -125,9 +198,30 @@ export default function NouvelElevePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Classe *</label>
-                    <select value={form.classId} onChange={e => set('classId', e.target.value)}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Niveau précédent</label>
+                    <input value={form.niveauPrecedent} onChange={e => set('niveauPrecedent', e.target.value)}
+                      placeholder="ex: 5ème"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Statut *</label>
+                    <select value={form.statut} onChange={e => {
+                      const v = e.target.value;
+                      set('statut', v);
+                      if (v === 'NON_AFFECTE') set('classId', '');
+                    }}
                       className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                      <option value="AFFECTE">Affecté</option>
+                      <option value="NON_AFFECTE">Non affecté</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Classe {form.statut === 'AFFECTE' ? '*' : '(optionnel)'}
+                    </label>
+                    <select value={form.classId} onChange={e => set('classId', e.target.value)}
+                      disabled={form.statut === 'NON_AFFECTE'}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] disabled:bg-gray-100">
                       <option value="">Choisir une classe</option>
                       {classes.map(c => <option key={c.id} value={c.id}>{c.name} — {c.level}</option>)}
                     </select>
@@ -141,7 +235,6 @@ export default function NouvelElevePage() {
                 </div>
               </div>
 
-              {/* Infos parent */}
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4">Informations du parent / tuteur</h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -157,7 +250,7 @@ export default function NouvelElevePage() {
                       className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email parent</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email parent (requis pour le compte mobile parent)</label>
                     <input type="email" value={form.parentEmail} onChange={e => set('parentEmail', e.target.value)}
                       placeholder="parent@email.com"
                       className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
@@ -174,7 +267,7 @@ export default function NouvelElevePage() {
                   className="flex items-center gap-2 px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50">
                   {saving
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Enregistrement...</>
-                    : <><Save className="w-4 h-4" /> Enregistrer</>}
+                    : <><Save className="w-4 h-4" /> Inscrire</>}
                 </button>
               </div>
             </form>

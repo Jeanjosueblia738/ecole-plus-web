@@ -11,6 +11,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, studentsApi, gradesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { canAccessPath } from '@/lib/rbac';
 import * as XLSX from 'xlsx';
 
 interface Student {
@@ -65,11 +66,15 @@ export default function RapportsPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!canAccessPath(authStorage.getUser()?.role, '/rapports')) {
+      router.push('/dashboard');
+      return;
+    }
     classesApi.getAll('2025-2026').then(({ data }) => {
       setClasses(data);
       if (data.length > 0) { setSelectedClass(data[0].id); }
     });
-  }, []);
+  }, [router]);
 
   const generateReport = async () => {
     if (!selectedClass) { return; }

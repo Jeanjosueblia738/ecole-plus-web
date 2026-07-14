@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 const DAYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
 const DAY_LABELS: Record<string, string> = {
@@ -60,9 +61,8 @@ export default function EmploiDuTempsPage() {
   const currentYear = `${year}-${year + 1}`;
 
   const user = authStorage.getUser();
-  const canWrite = ['CENSOR', 'SURVEILLANT'].includes(user?.role ?? '');
-  const canDelete = ['CENSOR', 'SURVEILLANT'].includes(user?.role ?? '');
-  const canView = !['ACCOUNTANT', 'CASHIER'].includes(user?.role ?? '');
+  const canWrite = hasRole(user?.role, can.writeTimetable);
+  const canDelete = hasRole(user?.role, can.writeTimetable);
 
   const [form, setForm] = useState({
     classId: '', teacherId: '', subject: '',
@@ -72,9 +72,13 @@ export default function EmploiDuTempsPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.viewTimetable)) {
+      router.push('/dashboard');
+      return;
+    }
     loadClasses();
     loadTeachers();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (viewMode === 'class' && selectedClass) loadTimetable();

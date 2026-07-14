@@ -7,8 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
-
-const ROLES_EDIT = ['ADMIN', 'SECRETARY'];
+import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
 export default function EleveDetailPage() {
   const router = useRouter();
@@ -27,11 +26,12 @@ export default function EleveDetailPage() {
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
     const u = authStorage.getUser();
-    setCanEdit(ROLES_EDIT.includes(u?.role ?? ''));
+    if (!canAccessPath(u?.role, '/eleves')) { router.push('/dashboard'); return; }
+    setCanEdit(hasRole(u?.role, can.editStudent));
     setReady(true);
     loadStudent();
     classesApi.getAll('2025-2026').then(({ data }) => setClasses(data));
-  }, [id]);
+  }, [id, router]);
 
   const loadStudent = async () => {
     setLoading(true);
@@ -41,9 +41,11 @@ export default function EleveDetailPage() {
       setForm({
         firstName: data.firstName, lastName: data.lastName,
         registrationNo: data.registrationNo, gender: data.gender,
-        classId: data.classId, parentName: data.parentName ?? '',
+        classId: data.classId ?? '', parentName: data.parentName ?? '',
         parentPhone: data.parentPhone ?? '', parentEmail: data.parentEmail ?? '',
         address: data.address ?? '',
+        niveauPrecedent: data.niveauPrecedent ?? '',
+        statut: data.statut ?? (data.classId ? 'AFFECTE' : 'NON_AFFECTE'),
       });
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -94,11 +96,38 @@ export default function EleveDetailPage() {
                     <div>
                       <h2 className="text-xl font-bold text-gray-800">{student.firstName} {student.lastName}</h2>
                       <p className="text-sm text-gray-500 font-mono">Matricule : {student.registrationNo}</p>
-                      <span className="inline-block mt-1 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
-                        {student.class?.name ?? '—'} — {student.class?.level ?? '—'}
-                      </span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        <span className="inline-block bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                          {student.class?.name ?? 'Sans classe'} — {student.class?.level ?? '—'}
+                        </span>
+                        <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full ${
+                          student.statut === 'NON_AFFECTE'
+                            ? 'bg-amber-50 text-amber-700'
+                            : 'bg-green-50 text-green-700'
+                        }`}>
+                          {student.statut === 'NON_AFFECTE' ? 'Non affecté' : 'Affecté'}
+                        </span>
+                        {student.niveauPrecedent && (
+                          <span className="inline-block bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
+                            Précédent : {student.niveauPrecedent}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
+
+                  {(student.accessCode || student.parentAccessCode) && (
+                    <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="bg-gray-50 rounded-xl px-4 py-3">
+                        <p className="text-xs text-gray-500">Code élève (mobile)</p>
+                        <p className="font-mono font-bold text-gray-800 tracking-wider">{student.accessCode || '—'}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl px-4 py-3">
+                        <p className="text-xs text-gray-500">Code parent (mobile)</p>
+                        <p className="font-mono font-bold text-gray-800 tracking-wider">{student.parentAccessCode || '—'}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {editing ? (
                     <div className="grid grid-cols-2 gap-4">

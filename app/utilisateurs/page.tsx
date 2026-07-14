@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 interface TenantUser {
   id: string;
@@ -58,8 +59,12 @@ export default function UtilisateursPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.manageUsers)) {
+      router.push('/dashboard');
+      return;
+    }
     loadUsers();
-  }, []);
+  }, [router]);
 
   const loadUsers = async () => {
     try {
@@ -120,8 +125,8 @@ export default function UtilisateursPage() {
             <div>
               <p className="text-sm font-semibold text-blue-800">Gestion des accès</p>
               <p className="text-sm text-blue-600 mt-0.5">
-                Seul le Directeur/Admin peut créer et gérer les comptes. 
-                Chaque membre peut modifier son propre mot de passe depuis son profil.
+                Seul l&apos;Admin (ou Fondateur) crée et gère les comptes staff.
+                Les enseignants se créent via le module Enseignants (profil + matières).
               </p>
             </div>
           </div>

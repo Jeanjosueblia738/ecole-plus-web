@@ -7,6 +7,7 @@ import {
   FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays, CreditCard, FileSpreadsheet,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
+import { canAccessPath } from '@/lib/rbac';
 
 const navItems = [
   { href: '/dashboard',       icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -31,10 +32,10 @@ export default function Sidebar() {
   const router = useRouter();
   const tenant = authStorage.getTenant();
   const user = authStorage.getUser();
+  const role = user?.role;
 
-  // Super Admin UNIQUEMENT via /super-admin/login avec sa_token
-  // Jamais accessible depuis la sidebar des admins d'école
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = role === 'SUPER_ADMIN';
+  const visibleItems = navItems.filter((item) => canAccessPath(role, item.href));
 
   const handleLogout = () => {
     authStorage.clear();
@@ -43,7 +44,6 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 min-h-screen bg-[#1B3A6B] text-white flex flex-col">
-      {/* Logo */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
@@ -58,10 +58,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-
-        {/* Super Admin — lien dédié UNIQUEMENT pour les vrais super admins */}
         {isSuperAdmin && (
           <>
             <Link href="/super-admin"
@@ -77,7 +74,7 @@ export default function Sidebar() {
           </>
         )}
 
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
@@ -94,7 +91,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
       <div className="p-4 border-t border-white/10">
         <button onClick={handleLogout}
           className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all">

@@ -11,6 +11,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, cahierApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 interface Entry {
   id: string;
@@ -63,18 +64,22 @@ export default function CahierPage() {
   const [saved, setSaved] = useState(false);
   const [emarging, setEmarging] = useState<string | null>(null);
 
-  // ── Contrôle d'accès ─────────────────────────────────────────
   const user = authStorage.getUser();
-  const canWrite = ['TEACHER', 'CENSOR'].includes(user?.role ?? '');
-  const canDelete = ['TEACHER'].includes(user?.role ?? '');
+  const canWrite = hasRole(user?.role, can.writeCahier);
+  const canValidate = hasRole(user?.role, can.validateCahier);
+  const canDelete = hasRole(user?.role, can.writeCahier);
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.viewCahier)) {
+      router.push('/dashboard');
+      return;
+    }
     classesApi.getAll('2025-2026').then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
     });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!selectedClass) return;
@@ -119,10 +124,10 @@ export default function CahierPage() {
   };
 
   const handleEmargement = async (id: string) => {
-    if (!canWrite) { return; }
+    if (!canValidate) { return; }
     setEmarging(id);
     try {
-      await cahierApi.update(id, { isEmarge: true, emargeAt: new Date().toISOString() });
+      await cahierApi.emargement(id);
       setEntries(e => e.map(en => en.id === id ? { ...en, isEmarge: true, emargeAt: new Date().toISOString() } : en));
     } catch (e) { console.error(e); }
     finally { setEmarging(null); }
@@ -148,22 +153,22 @@ export default function CahierPage() {
         />
         <main className="flex-1 p-6">
 
-          {/* Badge lecture seule pour Admin/Director */}
           {!canWrite && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 flex items-center gap-3">
               <BookOpen className="w-4 h-4 text-blue-500 flex-shrink-0" />
               <p className="text-sm text-blue-700 font-medium">
-                Mode lecture — Seuls les enseignants et le censeur peuvent saisir des entrées.
+                {canValidate
+                  ? 'Mode validation — Vous pouvez valider les séances. Seuls les enseignants saisissent le contenu.'
+                  : 'Mode lecture — Seuls les enseignants saisissent le cahier de texte.'}
               </p>
             </div>
           )}
 
-          {/* Alerte émargements manquants */}
-          {nonEmarges > 0 && canWrite && (
+          {nonEmarges > 0 && canValidate && (
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
               <p className="text-sm text-orange-700">
-                <span className="font-bold">{nonEmarges} entrée(s)</span> non émargée(s) — Les enseignants doivent signer leur cahier.
+                <span className="font-bold">{nonEmarges} entrée(s)</span> en attente de validation.
               </p>
             </div>
           )}
@@ -368,7 +373,7 @@ export default function CahierPage() {
                                 </span>
                               )}
                             </div>
-                          ) : canWrite ? (
+                          ) : canValidate ? (
                             <button onClick={() => handleEmargement(entry.id)} disabled={emarging === entry.id}
                               className="flex flex-col items-center gap-1 mx-auto group">
                               <div className="w-8 h-8 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center group-hover:border-blue-400 transition-colors">
@@ -376,7 +381,7 @@ export default function CahierPage() {
                                   ? <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
                                   : <PenLine className="w-4 h-4 text-gray-300 group-hover:text-blue-400" />}
                               </div>
-                              <span className="text-xs text-gray-400 group-hover:text-blue-500">Émarger</span>
+                              <span className="text-xs text-gray-400 group-hover:text-blue-500">Valider</span>
                             </button>
                           ) : (
                             <span className="text-xs text-gray-300">Non émargé</span>

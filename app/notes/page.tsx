@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, gradesApi, studentsApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 interface StudentGrade {
   studentId: string;
@@ -32,11 +33,15 @@ export default function NotesPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!hasRole(authStorage.getUser()?.role, can.enterGrades)) {
+      router.push('/dashboard');
+      return;
+    }
     classesApi.getAll('2025-2026').then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
     });
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!selectedClass) return;

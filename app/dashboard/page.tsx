@@ -13,6 +13,7 @@ import Header from '@/components/Header';
 import KpiCard from '@/components/KpiCard';
 import { studentsApi, attendanceApi, financeApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { can, hasRole } from '@/lib/rbac';
 
 interface Stats {
   totalStudents: number;
@@ -180,7 +181,9 @@ export default function DashboardPage() {
               <QuickActions actions={[
                 { label: 'Liste des élèves',        href: '/eleves',              variant: 'secondary', icon: List },
                 { label: 'Présences & absences',    href: '/presences',           variant: 'secondary', icon: UserCheck },
-                { label: 'Gestion utilisateurs',    href: '/utilisateurs',        variant: 'secondary', icon: UserCog },
+                ...(hasRole(role, can.manageUsers)
+                  ? [{ label: 'Gestion utilisateurs', href: '/utilisateurs', variant: 'secondary' as const, icon: UserCog }]
+                  : []),
                 { label: 'Messagerie',               href: '/messagerie',          variant: 'secondary', icon: MessageSquare },
                 { label: 'Emploi du temps',          href: '/emploi-du-temps',    variant: 'secondary', icon: CalendarDays },
               ]} />
@@ -200,11 +203,11 @@ export default function DashboardPage() {
               </div>
 
               <QuickActions actions={[
-                { label: 'Cahier de texte',    href: '/cahier',          variant: 'primary',    icon: Pencil },
-                { label: 'Notes & Bulletins',  href: '/notes',           variant: 'secondary',  icon: FileText },
-                { label: 'Absences',           href: '/presences',       variant: 'secondary',  icon: AlertCircle },
-                { label: 'Valider justif.',    href: '/presences',       variant: 'secondary',  icon: CheckCircle },
-                { label: 'Messagerie',         href: '/messagerie',      variant: 'secondary',  icon: MessageSquare },
+                { label: 'Cahier de texte',    href: '/cahier',            variant: 'primary',    icon: Pencil },
+                { label: 'Bulletins',          href: '/bulletins',         variant: 'secondary',  icon: FileText },
+                { label: 'Emploi du temps',    href: '/emploi-du-temps',   variant: 'secondary',  icon: CalendarDays },
+                { label: 'Absences',           href: '/presences',         variant: 'secondary',  icon: AlertCircle },
+                { label: 'Messagerie',         href: '/messagerie',        variant: 'secondary',  icon: MessageSquare },
               ]} />
             </>
           )}
@@ -219,7 +222,6 @@ export default function DashboardPage() {
                 <Kpi title="Justifications en attente" value={stats.pendingJustifications?.toString() ?? '—'} icon={Clock}        colorKey="yellow" loading={loading} />
               </div>
 
-              {/* Alerte justifications */}
               {(stats.pendingJustifications ?? 0) > 0 && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
@@ -228,16 +230,16 @@ export default function DashboardPage() {
                   </p>
                   <button onClick={() => router.push('/presences')}
                     className="ml-auto px-4 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-medium hover:bg-yellow-700">
-                    Traiter
+                    Voir
                   </button>
                 </div>
               )}
 
               <QuickActions actions={[
-                { label: 'Faire l\'appel',       href: '/presences',   variant: 'primary',   icon: UserCheck },
-                { label: 'Valider justifications', href: '/presences', variant: 'secondary', icon: CheckCircle },
+                { label: 'Liste des classes',    href: '/classes',     variant: 'primary',   icon: BookOpen },
                 { label: 'Liste des élèves',     href: '/eleves',      variant: 'secondary', icon: List },
-                { label: 'Messagerie',            href: '/messagerie', variant: 'secondary', icon: MessageSquare },
+                { label: 'Présences / absences', href: '/presences',   variant: 'secondary', icon: UserCheck },
+                { label: 'Messagerie',           href: '/messagerie',  variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
           )}
