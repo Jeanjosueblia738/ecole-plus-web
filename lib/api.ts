@@ -109,6 +109,13 @@ export const financeApi = {
   processAlerts: () => api.post('/finance/alerts/process'),
 };
 
+export const analyticsApi = {
+  dropoutRisk: (params?: { classId?: string; minLevel?: string }) =>
+    api.get('/analytics/dropout-risk', { params }),
+  studentDropoutRisk: (studentId: string) =>
+    api.get(`/analytics/dropout-risk/${studentId}`),
+};
+
 // ── Teachers ─────────────────────────────────────────────────────────────
 export const teachersApi = {
   getAll: () => api.get('/teachers'),

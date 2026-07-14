@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, ClipboardList,
   DollarSign, Settings, LogOut, School, GraduationCap,
   FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays, CreditCard, FileSpreadsheet,
+  AlertTriangle,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
@@ -18,6 +19,7 @@ const navItems = [
   { href: '/finance',         icon: DollarSign,      label: 'Finance' },
   { href: '/bulletins',       icon: FileText,        label: 'Bulletins' },
   { href: '/rapports',        icon: FileSpreadsheet, label: 'Rapports' },
+  { href: '/risques',         icon: AlertTriangle,   label: 'Risque décrochage' },
   { href: '/cahier',          icon: Pencil,          label: 'Cahier de texte' },
   { href: '/messagerie',      icon: MessageSquare,   label: 'Messagerie' },
   { href: '/emploi-du-temps', icon: CalendarDays,    label: 'Emploi du temps' },
