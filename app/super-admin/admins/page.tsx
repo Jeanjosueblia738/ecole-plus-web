@@ -7,6 +7,7 @@ import {
   RefreshCw, CheckCircle, XCircle, Upload, Lock, User
 } from 'lucide-react';
 import api from '@/lib/api';
+import { saAuth } from '@/lib/sa-auth';
 
 const ROLE_COLORS: Record<string, string> = {
   OWNER: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -34,13 +35,10 @@ export default function SuperAdminsPage() {
     role: 'VIEWER', photoUrl: '',
   });
 
-  const getHeaders = () => ({
-    Authorization: `Bearer ${localStorage.getItem('sa_token') ?? ''}`,
-  });
+  const getHeaders = () => saAuth.authHeader();
 
   const handleLogout = () => {
-    localStorage.removeItem('sa_token');
-    localStorage.removeItem('sa_user');
+    saAuth.clear();
     router.push('/super-admin/login');
   };
 
@@ -48,9 +46,8 @@ export default function SuperAdminsPage() {
 
   useEffect(() => {
     if (!mounted) { return; }
-    const saToken = localStorage.getItem('sa_token');
-    if (!saToken) { router.push('/super-admin/login'); return; }
-    setSaUser(JSON.parse(localStorage.getItem('sa_user') || '{}'));
+    if (!saAuth.isLoggedIn()) { router.push('/super-admin/login'); return; }
+    setSaUser(saAuth.getUser() || {});
     loadAdmins();
   }, [mounted]);
 

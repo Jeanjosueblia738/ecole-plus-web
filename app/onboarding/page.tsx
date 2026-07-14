@@ -8,7 +8,7 @@ import {
   DollarSign, Clock, LogOut, GraduationCap
 } from 'lucide-react';
 import api from '@/lib/api';
-import Cookies from 'js-cookie';
+import { saAuth } from '@/lib/sa-auth';
 
 const PLAN_COLORS: Record<string, string> = {
   TRIAL:      'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -35,22 +35,17 @@ export default function SuperAdminPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<any>(null);
 
-  const saUser = JSON.parse(Cookies.get('sa_user') || '{}');
+  const saUser = saAuth.getUser() || {};
 
-  const getHeaders = () => {
-    const token = Cookies.get('sa_token');
-    return { Authorization: `Bearer ${token}` };
-  };
+  const getHeaders = () => saAuth.authHeader();
 
   const handleLogout = () => {
-    Cookies.remove('sa_token');
-    Cookies.remove('sa_user');
+    saAuth.clear();
     router.push('/super-admin/login');
   };
 
   useEffect(() => {
-    const saToken = Cookies.get('sa_token');
-    if (!saToken) { router.push('/super-admin/login'); return; }
+    if (!saAuth.isLoggedIn()) { router.push('/super-admin/login'); return; }
     loadData();
   }, [page]);
 

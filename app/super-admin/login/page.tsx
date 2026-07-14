@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GraduationCap, Loader2, Lock, Mail } from 'lucide-react';
 import api from '@/lib/api';
+import { saAuth } from '@/lib/sa-auth';
 
 export default function SuperAdminLoginPage() {
   const router = useRouter();
@@ -18,8 +19,7 @@ export default function SuperAdminLoginPage() {
     setError('');
     try {
       const { data } = await api.post('/auth/super-admin/login', { email, password });
-      localStorage.setItem('sa_token', data.access_token);
-      localStorage.setItem('sa_user', JSON.stringify(data.user));
+      saAuth.save(data.access_token, data.user);
       router.push('/super-admin');
     } catch (e: any) {
       setError(e.response?.data?.message || 'Identifiants incorrects');

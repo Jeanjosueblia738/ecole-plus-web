@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import Cookies from 'js-cookie';
 
 const supabaseUrl = 'https://lkllqejigjzjpwkmdmte.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -6,7 +7,24 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function uploadAvatar(file: File, folder: string, id: string): Promise<string | null> {
-  const ext = file.name.split('.').pop();
+  // Exige une session école (évite upload anonyme depuis une page publique)
+  if (!Cookies.get('ecole_token') && !Cookies.get('sa_token')) {
+    console.error('Upload refusé : utilisateur non authentifié');
+    return null;
+  }
+
+  if (!id || id.includes('..') || id.includes('/')) {
+    console.error('Upload refusé : id invalide');
+    return null;
+  }
+
+  const allowedFolders = new Set(['eleves', 'enseignants', 'admins']);
+  if (!allowedFolders.has(folder)) {
+    console.error('Upload refusé : dossier invalide');
+    return null;
+  }
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
   const path = `${folder}/${id}.${ext}`;
 
   const { error } = await supabase.storage

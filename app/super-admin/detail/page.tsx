@@ -8,6 +8,7 @@ import {
   GraduationCap, LogOut, Mail, Phone, MapPin
 } from 'lucide-react';
 import api from '@/lib/api';
+import { saAuth } from '@/lib/sa-auth';
 
 const PLAN_COLORS: Record<string, string> = {
   TRIAL: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -42,19 +43,15 @@ function TenantDetailContent() {
   // Étape 2 — vérifier le token SEULEMENT après montage
   useEffect(() => {
     if (!mounted) { return; }
-    const saToken = localStorage.getItem('sa_token');
-    if (!saToken) { router.push('/super-admin/login'); return; }
-    setSaUser(JSON.parse(localStorage.getItem('sa_user') || '{}'));
+    if (!saAuth.isLoggedIn()) { router.push('/super-admin/login'); return; }
+    setSaUser(saAuth.getUser() || {});
     if (id) { loadTenant(); }
   }, [mounted, id]);
 
-  const getHeaders = () => ({
-    Authorization: `Bearer ${localStorage.getItem('sa_token') ?? ''}`,
-  });
+  const getHeaders = () => saAuth.authHeader();
 
   const handleLogout = () => {
-    localStorage.removeItem('sa_token');
-    localStorage.removeItem('sa_user');
+    saAuth.clear();
     router.push('/super-admin/login');
   };
 
