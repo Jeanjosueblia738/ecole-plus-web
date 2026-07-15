@@ -18,6 +18,12 @@ export default function BulletinsPage() {
   const [trimestre, setTrimestre] = useState('T1');
   const [students, setStudents] = useState<any[]>([]);
   const [gradesMap, setGradesMap] = useState<Record<string, any>>({});
+  const [classStats, setClassStats] = useState<{
+    averages: Record<string, number>;
+    classAverage?: number;
+    classMin?: number;
+    classMax?: number;
+  }>({ averages: {} });
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
   const [generatingAll, setGeneratingAll] = useState(false);
@@ -40,40 +46,94 @@ export default function BulletinsPage() {
     if (!selectedClass) return;
     setLoading(true);
     setDone([]);
+    setClassStats({ averages: {} });
     studentsApi.getAll({ classId: selectedClass })
       .then(({ data }) => setStudents(data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [selectedClass]);
 
+  const loadClassStats = async () => {
+    if (!selectedClass) return classStats;
+    try {
+      const { data } = await gradesApi.getByClass(selectedClass, trimestre);
+      const averages: Record<string, number> = {};
+      const list: number[] = [];
+      for (const row of data as any[]) {
+        const sid = row.student?.id;
+        if (!sid || row.moyenne == null) continue;
+        averages[sid] = Number(row.moyenne);
+        list.push(Number(row.moyenne));
+      }
+      const stats = {
+        averages,
+        classAverage: list.length
+          ? list.reduce((a, b) => a + b, 0) / list.length
+          : undefined,
+        classMin: list.length ? Math.min(...list) : undefined,
+        classMax: list.length ? Math.max(...list) : undefined,
+      };
+      setClassStats(stats);
+      return stats;
+    } catch (e) {
+      console.error(e);
+      return classStats;
+    }
+  };
+
   const loadGrades = async (studentId: string) => {
-    if (gradesMap[`${studentId}_${trimestre}`]) return gradesMap[`${studentId}_${trimestre}`];
+    const key = `${studentId}_${trimestre}`;
+    if (gradesMap[key]) return gradesMap[key];
     const { data } = await gradesApi.getByStudent(studentId, trimestre);
-    setGradesMap(m => ({ ...m, [`${studentId}_${trimestre}`]: data }));
+    setGradesMap((m) => ({ ...m, [key]: data }));
     return data;
   };
 
-  const selectedClassName = classes.find(c => c.id === selectedClass)?.name || '';
-  const selectedClassLevel = classes.find(c => c.id === selectedClass)?.level || '';
+  const selectedClassName = classes.find((c) => c.id === selectedClass)?.name || '';
+  const selectedClassLevel = classes.find((c) => c.id === selectedClass)?.level || '';
+
+  const buildPayload = (student: any, data: any, stats: typeof classStats) => {
+    const moy = Number(data.moyenneGenerale || 0);
+    const avgs = Object.entries(stats.averages);
+    let rang: number | undefined;
+    if (avgs.length) {
+      const sorted = [...avgs].sort((a, b) => b[1] - a[1]);
+      const idx = sorted.findIndex(([id]) => id === student.id);
+      rang = idx >= 0 ? idx + 1 : undefined;
+    }
+    return {
+      schoolName: tenant?.name || 'Etablissement',
+      schoolCity: tenant?.city || 'Abidjan',
+      schoolCode: tenant?.code || '',
+      schoolStatus: '—',
+      studentName: `${student.lastName} ${student.firstName}`.trim(),
+      studentRegistration: student.registrationNo,
+      className: selectedClassName,
+      level: selectedClassLevel,
+      trimestre,
+      year: currentSchoolYear(),
+      grades: data.grades || [],
+      moyenneGenerale: moy,
+      rang,
+      effectif: students.length,
+      classAverage: stats.classAverage,
+      classMin: stats.classMin,
+      classMax: stats.classMax,
+      gender: student.gender,
+      dateOfBirth: student.dateOfBirth,
+      photoUrl: student.photoUrl,
+      nationality: 'Ivoirienne',
+      isRepeater: false,
+    };
+  };
 
   const generateOne = async (student: any) => {
     setGenerating(student.id);
     try {
+      const stats = await loadClassStats();
       const data = await loadGrades(student.id);
-      generateBulletin({
-        schoolName: tenant?.name || 'Etablissement',
-        schoolCity: tenant?.city || 'Abidjan',
-        schoolCode: tenant?.code || '',
-        studentName: `${student.firstName} ${student.lastName}`,
-        studentRegistration: student.registrationNo,
-        className: selectedClassName,
-        level: selectedClassLevel,
-        trimestre,
-        year: currentSchoolYear(),
-        grades: data.grades || [],
-        moyenneGenerale: data.moyenneGenerale || 0,
-      });
-      setDone(d => [...d, student.id]);
+      generateBulletin(buildPayload(student, data, stats));
+      setDone((d) => [...d, student.id]);
     } catch (e) {
       console.error(e);
       alert('Erreur lors de la génération du bulletin');
@@ -84,48 +144,50 @@ export default function BulletinsPage() {
 
   const generateAll = async () => {
     setGeneratingAll(true);
-    for (const student of students) {
-      try {
-        const data = await loadGrades(student.id);
-        generateBulletin({
-          schoolName: tenant?.name || 'Etablissement',
-          schoolCity: tenant?.city || 'Abidjan',
-          schoolCode: tenant?.code || '',
-          studentName: `${student.firstName} ${student.lastName}`,
-          studentRegistration: student.registrationNo,
-          className: selectedClassName,
-          level: selectedClassLevel,
-          trimestre,
-          year: currentSchoolYear(),
-          grades: data.grades || [],
-          moyenneGenerale: data.moyenneGenerale || 0,
-        });
-        setDone(d => [...d, student.id]);
-        // Petit délai entre chaque PDF
-        await new Promise(r => setTimeout(r, 500));
-      } catch (e) {
-        console.error(`Erreur bulletin ${student.firstName}:`, e);
+    try {
+      const stats = await loadClassStats();
+      for (const student of students) {
+        try {
+          const data = await loadGrades(student.id);
+          generateBulletin(buildPayload(student, data, stats));
+          setDone((d) => [...d, student.id]);
+          await new Promise((r) => setTimeout(r, 400));
+        } catch (e) {
+          console.error(`Erreur bulletin ${student.firstName}:`, e);
+        }
       }
+    } finally {
+      setGeneratingAll(false);
     }
-    setGeneratingAll(false);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Bulletins de notes" subtitle="Génération et téléchargement des bulletins PDF" />
+        <Header
+          title="Bulletins de notes"
+          subtitle="Format MEN ivoirien — génération PDF trimestrielle"
+        />
         <main className="flex-1 p-6">
-
-          {/* Filtres */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
             <div className="flex gap-4 items-end flex-wrap">
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Classe</label>
                 <div className="relative">
-                  <select value={selectedClass} onChange={e => { setSelectedClass(e.target.value); setDone([]); }}
-                    className="appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <select
+                    value={selectedClass}
+                    onChange={(e) => {
+                      setSelectedClass(e.target.value);
+                      setDone([]);
+                    }}
+                    className="appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {classes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
@@ -133,8 +195,14 @@ export default function BulletinsPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Trimestre</label>
                 <div className="relative">
-                  <select value={trimestre} onChange={e => { setTrimestre(e.target.value); setDone([]); }}
-                    className="appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select
+                    value={trimestre}
+                    onChange={(e) => {
+                      setTrimestre(e.target.value);
+                      setDone([]);
+                    }}
+                    className="appearance-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     <option value="T1">1er Trimestre</option>
                     <option value="T2">2ème Trimestre</option>
                     <option value="T3">3ème Trimestre</option>
@@ -148,15 +216,20 @@ export default function BulletinsPage() {
                 className="flex items-center gap-2 bg-[#1B3A6B] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-50"
               >
                 {generatingAll ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" />Génération en cours...</>
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Génération en cours...
+                  </>
                 ) : (
-                  <><FileText className="w-4 h-4" />Générer tous les bulletins ({students.length})</>
+                  <>
+                    <FileText className="w-4 h-4" />
+                    Générer tous les bulletins ({students.length})
+                  </>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Liste élèves */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
               <span className="font-semibold text-gray-800">
@@ -182,28 +255,46 @@ export default function BulletinsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Élève</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Matricule</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Statut</th>
-                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Action</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Élève
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Matricule
+                    </th>
+                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Statut
+                    </th>
+                    <th className="text-center px-6 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {students.map((s: any) => (
-                    <tr key={s.id} className={`hover:bg-gray-50 transition-colors ${done.includes(s.id) ? 'bg-green-50/40' : ''}`}>
+                    <tr
+                      key={s.id}
+                      className={`hover:bg-gray-50 transition-colors ${done.includes(s.id) ? 'bg-green-50/40' : ''}`}
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full overflow-hidden bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
                             {s.photoUrl ? (
                               <img src={s.photoUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-white text-xs font-bold">{s.firstName[0]}{s.lastName[0]}</span>
+                              <span className="text-white text-xs font-bold">
+                                {s.firstName[0]}
+                                {s.lastName[0]}
+                              </span>
                             )}
                           </div>
-                          <p className="font-medium text-gray-800 text-sm">{s.firstName} {s.lastName}</p>
+                          <p className="font-medium text-gray-800 text-sm">
+                            {s.lastName} {s.firstName}
+                          </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 font-mono">{s.registrationNo}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 font-mono">
+                        {s.registrationNo}
+                      </td>
                       <td className="px-6 py-4 text-center">
                         {done.includes(s.id) ? (
                           <span className="flex items-center justify-center gap-1 text-green-600 text-xs font-medium">

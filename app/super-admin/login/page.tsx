@@ -24,7 +24,17 @@ export default function SuperAdminLoginPage() {
       await saAuth.save(data.access_token, data.user);
       router.push('/super-admin');
     } catch (e: any) {
-      setError(e.response?.data?.message || 'Identifiants incorrects');
+      const status = e.response?.status;
+      const apiMsg = e.response?.data?.message;
+      if (status === 503 || status >= 500) {
+        setError(
+          typeof apiMsg === 'string'
+            ? apiMsg
+            : 'Serveur ou base indisponible — réessayez dans un instant.',
+        );
+      } else {
+        setError(apiMsg || 'Identifiants incorrects');
+      }
     } finally {
       setLoading(false);
     }

@@ -1,198 +1,81 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-interface Grade {
+export interface BulletinGrade {
   subject: string;
   value: number;
   coefficient: number;
-  evalType: string;
+  evalType?: string;
 }
 
-interface BulletinData {
+export interface BulletinData {
   schoolName: string;
   schoolCity: string;
   schoolCode: string;
+  schoolPhone?: string;
+  schoolAddress?: string;
+  schoolStatus?: string; // Public / Privé
+  drena?: string;
   studentName: string;
   studentRegistration: string;
   className: string;
   level: string;
   trimestre: string;
   year: string;
-  grades: Grade[];
+  grades: BulletinGrade[];
   moyenneGenerale: number;
+  /** Rang dans la classe (1 = premier) */
+  rang?: number;
+  effectif?: number;
+  classAverage?: number;
+  classMin?: number;
+  classMax?: number;
+  gender?: 'MALE' | 'FEMALE' | string;
+  dateOfBirth?: string;
+  placeOfBirth?: string;
+  nationality?: string;
+  isRepeater?: boolean;
+  photoUrl?: string;
+  absencesHours?: number;
+  absencesJustified?: number;
+  absencesUnjustified?: number;
   appreciation?: string;
+  directorName?: string;
+  motto?: string;
 }
 
-export function generateBulletin(data: BulletinData): void {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = 210;
-  const margin = 15;
-  let y = margin;
+type SubjectLine = {
+  subject: string;
+  moyenne: number;
+  coefficient: number;
+  total: number;
+  rang?: number;
+  appreciation: string;
+};
 
-  // ── Couleurs ──
-  const bleu: [number, number, number] = [27, 58, 107];
-  const orange: [number, number, number] = [230, 126, 34];
-  const gris: [number, number, number] = [245, 245, 245];
-  const blanc: [number, number, number] = [255, 255, 255];
+const LETTERS = [
+  'français', 'francais', 'anglais', 'allemand', 'espagnol',
+  'histoire', 'géographie', 'geographie', 'histoire-géographie',
+  'histoire-geographie', 'philosophie', 'littérature', 'litterature',
+];
+const SCIENCES = [
+  'mathématiques', 'mathematiques', 'maths', 'physique', 'chimie',
+  'physique-chimie', 'svt', 'sciences', 'sciences de la vie',
+];
 
-  // ── En-tête bandeau bleu ──
-  doc.setFillColor(...bleu);
-  doc.rect(0, 0, pageW, 38, 'F');
+function normalizeSubject(s: string) {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
 
-  // Bande orange gauche
-  doc.setFillColor(...orange);
-  doc.rect(0, 0, 6, 38, 'F');
-
-  // Nom école
-  doc.setTextColor(...blanc);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.text('ECOLE+', margin + 4, 14);
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(data.schoolName, margin + 4, 22);
-  doc.text(`${data.schoolCity} — Code: ${data.schoolCode}`, margin + 4, 29);
-
-  // Titre bulletin (droite)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('BULLETIN DE NOTES', pageW - margin, 16, { align: 'right' });
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Année scolaire : ${data.year}`, pageW - margin, 24, { align: 'right' });
-  doc.text(trimestreLabel(data.trimestre), pageW - margin, 31, { align: 'right' });
-
-  y = 46;
-
-  // ── Infos élève ──
-  doc.setFillColor(...gris);
-  doc.roundedRect(margin, y, pageW - margin * 2, 28, 3, 3, 'F');
-
-  doc.setTextColor(50, 50, 50);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text(data.studentName, margin + 6, y + 10);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Matricule : ${data.studentRegistration}`, margin + 6, y + 18);
-  doc.text(`Classe : ${data.className} — Niveau : ${data.level}`, margin + 6, y + 24);
-
-  y += 36;
-
-  // ── Tableau des notes ──
-  doc.setTextColor(...bleu);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('Résultats par matière', margin, y);
-  y += 6;
-
-  const tableData = data.grades.map((g, i) => [
-    i + 1,
-    g.subject,
-    g.evalType,
-    g.coefficient,
-    `${g.value}/20`,
-    appreciation(g.value),
-  ]);
-
-  autoTable(doc, {
-    startY: y,
-    margin: { left: margin, right: margin },
-    head: [['#', 'Matière', 'Type', 'Coef.', 'Note', 'Appréciation']],
-    body: tableData,
-    styles: {
-      fontSize: 9,
-      cellPadding: 3,
-      textColor: [50, 50, 50],
-    },
-    headStyles: {
-      fillColor: bleu,
-      textColor: blanc,
-      fontStyle: 'bold',
-      fontSize: 9,
-    },
-    alternateRowStyles: {
-      fillColor: [248, 250, 255],
-    },
-    columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
-      2: { cellWidth: 28 },
-      3: { cellWidth: 14, halign: 'center' },
-      4: { cellWidth: 20, halign: 'center', fontStyle: 'bold' },
-      5: { cellWidth: 35 },
-    },
-  });
-
-  y = (doc as any).lastAutoTable.finalY + 10;
-
-  // ── Moyenne générale ──
-  const moyColor: [number, number, number] = data.moyenneGenerale >= 10
-    ? [39, 174, 96] : [231, 76, 60];
-
-  doc.setFillColor(...bleu);
-  doc.roundedRect(margin, y, 85, 22, 3, 3, 'F');
-  doc.setTextColor(...blanc);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text('Moyenne générale', margin + 6, y + 8);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.text(`${data.moyenneGenerale.toFixed(2)}/20`, margin + 6, y + 18);
-
-  // Badge appréciation générale
-  doc.setFillColor(...moyColor);
-  doc.roundedRect(margin + 92, y, 60, 22, 3, 3, 'F');
-  doc.setTextColor(...blanc);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text(appreciation(data.moyenneGenerale), margin + 122, y + 13, { align: 'center' });
-
-  y += 32;
-
-  // ── Appréciation du conseil ──
-  if (data.appreciation) {
-    doc.setFillColor(255, 248, 220);
-    doc.roundedRect(margin, y, pageW - margin * 2, 20, 3, 3, 'F');
-    doc.setTextColor(100, 80, 0);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text('Appréciation du conseil de classe :', margin + 4, y + 7);
-    doc.setFont('helvetica', 'italic');
-    doc.text(data.appreciation, margin + 4, y + 14);
-    y += 28;
-  }
-
-  // ── Signatures ──
-  y = Math.max(y, 230);
-  doc.setDrawColor(200, 200, 200);
-  doc.setTextColor(100, 100, 100);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-
-  // Signature directeur
-  doc.line(margin, y + 18, margin + 60, y + 18);
-  doc.text('Signature du Directeur', margin + 30, y + 24, { align: 'center' });
-
-  // Signature parent
-  doc.line(pageW - margin - 60, y + 18, pageW - margin, y + 18);
-  doc.text('Signature du Parent', pageW - margin - 30, y + 24, { align: 'center' });
-
-  // ── Pied de page ──
-  doc.setFillColor(...bleu);
-  doc.rect(0, 285, pageW, 12, 'F');
-  doc.setFillColor(...orange);
-  doc.rect(0, 285, 6, 12, 'F');
-  doc.setTextColor(...blanc);
-  doc.setFontSize(7);
-  doc.text(`ECOLE+ — ${data.schoolName} — Bulletin généré le ${new Date().toLocaleDateString('fr-FR')}`,
-    pageW / 2, 292, { align: 'center' });
-
-  // Télécharger
-  const filename = `bulletin_${data.studentRegistration}_${data.trimestre}.pdf`;
-  doc.save(filename);
+function subjectGroup(subject: string): 'LETTRES' | 'SCIENCES' | 'AUTRES' {
+  const n = normalizeSubject(subject);
+  if (LETTERS.some((k) => n.includes(normalizeSubject(k)))) return 'LETTRES';
+  if (SCIENCES.some((k) => n.includes(normalizeSubject(k)))) return 'SCIENCES';
+  return 'AUTRES';
 }
 
 function trimestreLabel(t: string): string {
@@ -200,6 +83,9 @@ function trimestreLabel(t: string): string {
     T1: '1er Trimestre',
     T2: '2ème Trimestre',
     T3: '3ème Trimestre',
+    '1er': '1er Trimestre',
+    '2ème': '2ème Trimestre',
+    '3ème': '3ème Trimestre',
   };
   return map[t] || t;
 }
@@ -209,5 +95,516 @@ function appreciation(note: number): string {
   if (note >= 14) return 'Bien';
   if (note >= 12) return 'Assez bien';
   if (note >= 10) return 'Passable';
-  return 'Insuffisant';
+  if (note >= 8) return 'Insuffisant';
+  return 'Médiocre';
+}
+
+function mentionConseil(moy: number): string {
+  if (moy >= 16) return 'Félicitations';
+  if (moy >= 14) return 'Tableau d\'Honneur';
+  if (moy >= 12) return 'Encouragements';
+  if (moy >= 10) return 'À encourager';
+  return 'Avertissement travail';
+}
+
+/** Agrège les notes brutes en une ligne par matière */
+export function aggregateSubjects(grades: BulletinGrade[]): SubjectLine[] {
+  const bySubject = new Map<string, { sum: number; n: number; coef: number }>();
+  for (const g of grades) {
+    const key = g.subject.trim();
+    if (!key) continue;
+    const cur = bySubject.get(key) || { sum: 0, n: 0, coef: g.coefficient || 1 };
+    cur.sum += g.value;
+    cur.n += 1;
+    cur.coef = g.coefficient || cur.coef;
+    bySubject.set(key, cur);
+  }
+  return [...bySubject.entries()].map(([subject, v]) => {
+    const moyenne = v.n ? v.sum / v.n : 0;
+    return {
+      subject,
+      moyenne,
+      coefficient: v.coef,
+      total: moyenne * v.coef,
+      appreciation: appreciation(moyenne),
+    };
+  });
+}
+
+function groupLines(lines: SubjectLine[]) {
+  const lettres: SubjectLine[] = [];
+  const sciences: SubjectLine[] = [];
+  const autres: SubjectLine[] = [];
+  for (const l of lines) {
+    const g = subjectGroup(l.subject);
+    if (g === 'LETTRES') lettres.push(l);
+    else if (g === 'SCIENCES') sciences.push(l);
+    else autres.push(l);
+  }
+  const sortFr = (a: SubjectLine, b: SubjectLine) =>
+    a.subject.localeCompare(b.subject, 'fr');
+  lettres.sort(sortFr);
+  sciences.sort(sortFr);
+  autres.sort(sortFr);
+  return { lettres, sciences, autres };
+}
+
+function bilan(lines: SubjectLine[]) {
+  const coef = lines.reduce((s, l) => s + l.coefficient, 0);
+  const points = lines.reduce((s, l) => s + l.total, 0);
+  const moyenne = coef > 0 ? points / coef : 0;
+  return { coef, points, moyenne };
+}
+
+function fmtDate(iso?: string) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('fr-FR');
+}
+
+function genderLabel(g?: string) {
+  if (!g) return '—';
+  const u = g.toUpperCase();
+  if (u === 'FEMALE' || u === 'F') return 'F';
+  if (u === 'MALE' || u === 'M') return 'M';
+  return g;
+}
+
+/**
+ * Bulletin trimestriel style MEN / lycée ivoirien (specimen type Bangolo).
+ */
+export function generateBulletin(data: BulletinData): void {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageW = 210;
+  const pageH = 297;
+  const margin = 10;
+  const contentW = pageW - margin * 2;
+  let y = 8;
+
+  const black: [number, number, number] = [20, 20, 20];
+  const gray: [number, number, number] = [80, 80, 80];
+
+  // ── En-tête MEN ──────────────────────────────────────────
+  doc.setTextColor(...black);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.text(
+    'MINISTÈRE DE L\'ÉDUCATION NATIONALE ET DE L\'ALPHABÉTISATION',
+    pageW / 2,
+    y,
+    { align: 'center' },
+  );
+  y += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text(
+    data.drena || `DRENA DE ${(data.schoolCity || '').toUpperCase() || '—'}`,
+    pageW / 2,
+    y,
+    { align: 'center' },
+  );
+  y += 6;
+
+  // Ligne école / code
+  const leftX = margin;
+  const rightX = pageW - margin;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text((data.schoolName || 'ÉTABLISSEMENT').toUpperCase(), leftX, y);
+
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Code : ${data.schoolCode || '—'}`, rightX - 42, y);
+  doc.rect(rightX - 18, y - 10, 16, 16);
+  doc.setFontSize(5.5);
+  doc.text('QR', rightX - 10, y - 1, { align: 'center' });
+  doc.text('CODE', rightX - 10, y + 2, { align: 'center' });
+
+  y += 4;
+  doc.setFontSize(7.5);
+  doc.setTextColor(...gray);
+  if (data.schoolAddress) doc.text(data.schoolAddress, leftX, y);
+  y += 3.5;
+  const contact = [
+    data.schoolCity,
+    data.schoolPhone ? `Tél. ${data.schoolPhone}` : null,
+  ]
+    .filter(Boolean)
+    .join(' — ');
+  if (contact) doc.text(contact, leftX, y);
+  doc.text(`Statut : ${data.schoolStatus || '—'}`, rightX - 42, y);
+
+  y += 6;
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, pageW - margin, y);
+  y += 5;
+
+  // Titre
+  doc.setTextColor(...black);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text(
+    `BULLETIN TRIMESTRIEL DE NOTES — ${trimestreLabel(data.trimestre)}`,
+    pageW / 2,
+    y,
+    { align: 'center' },
+  );
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Année scolaire ${data.year}`, pageW / 2, y, { align: 'center' });
+  y += 5;
+
+  // ── Cadre identité élève ─────────────────────────────────
+  const idH = 28;
+  doc.setLineWidth(0.3);
+  doc.rect(margin, y, contentW, idH);
+
+  const photoW = 22;
+  const photoH = 24;
+  const photoX = pageW - margin - photoW - 2;
+  const photoY = y + 2;
+  doc.rect(photoX, photoY, photoW, photoH);
+  doc.setFontSize(6);
+  doc.setTextColor(...gray);
+  doc.text('Photo', photoX + photoW / 2, photoY + photoH / 2, {
+    align: 'center',
+  });
+
+  doc.setTextColor(...black);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text((data.studentName || '').toUpperCase(), margin + 3, y + 6);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  const col1 = margin + 3;
+  const col2 = margin + 72;
+  let iy = y + 11;
+  doc.text(`Matricule : ${data.studentRegistration || '—'}`, col1, iy);
+  doc.text(`Sexe : ${genderLabel(data.gender)}`, col2, iy);
+  iy += 4;
+  doc.text(`Né(e) le : ${fmtDate(data.dateOfBirth)}`, col1, iy);
+  doc.text(`Lieu : ${data.placeOfBirth || '—'}`, col2, iy);
+  iy += 4;
+  doc.text(`Nationalité : ${data.nationality || 'Ivoirienne'}`, col1, iy);
+  doc.text(`Classe : ${data.className}`, col2, iy);
+  iy += 4;
+  doc.text(`Effectif : ${data.effectif ?? '—'}`, col1, iy);
+  doc.text(
+    `Redoublant : ${data.isRepeater ? 'Oui' : 'Non'}`,
+    col2,
+    iy,
+  );
+
+  y += idH + 4;
+
+  // ── Tableau disciplines ──────────────────────────────────
+  const lines = aggregateSubjects(data.grades || []);
+  const { lettres, sciences, autres } = groupLines(lines);
+  const bilLettres = bilan(lettres);
+  const bilSciences = bilan(sciences);
+  const totCoef = lines.reduce((s, l) => s + l.coefficient, 0);
+  const totPoints = lines.reduce((s, l) => s + l.total, 0);
+
+  const body: any[][] = [];
+
+  const pushHeader = (title: string) => {
+    body.push([
+      {
+        content: title,
+        colSpan: 8,
+        styles: {
+          fillColor: [230, 230, 230],
+          fontStyle: 'bold',
+          fontSize: 7.5,
+          textColor: [0, 0, 0],
+          halign: 'left',
+        },
+      },
+    ]);
+  };
+
+  const pushLine = (l: SubjectLine) => {
+    body.push([
+      l.subject,
+      l.moyenne.toFixed(2),
+      String(l.coefficient),
+      l.total.toFixed(2),
+      l.rang != null ? `${l.rang}e` : '—',
+      l.appreciation,
+      '',
+      '',
+    ]);
+  };
+
+  const pushBilan = (label: string, b: ReturnType<typeof bilan>) => {
+    body.push([
+      {
+        content: label,
+        styles: { fontStyle: 'bold', fillColor: [245, 245, 245] },
+      },
+      {
+        content: b.moyenne ? b.moyenne.toFixed(2) : '—',
+        styles: { fontStyle: 'bold', fillColor: [245, 245, 245], halign: 'center' },
+      },
+      {
+        content: String(b.coef || '—'),
+        styles: { fontStyle: 'bold', fillColor: [245, 245, 245], halign: 'center' },
+      },
+      {
+        content: b.points ? b.points.toFixed(2) : '—',
+        styles: { fontStyle: 'bold', fillColor: [245, 245, 245], halign: 'center' },
+      },
+      { content: '', styles: { fillColor: [245, 245, 245] } },
+      { content: '', styles: { fillColor: [245, 245, 245] } },
+      { content: '', styles: { fillColor: [245, 245, 245] } },
+      { content: '', styles: { fillColor: [245, 245, 245] } },
+    ]);
+  };
+
+  if (lettres.length) {
+    pushHeader('BILAN LETTRES');
+    lettres.forEach(pushLine);
+    pushBilan('Sous-total Lettres', bilLettres);
+  }
+  if (sciences.length) {
+    pushHeader('BILAN SCIENCES');
+    sciences.forEach(pushLine);
+    pushBilan('Sous-total Sciences', bilSciences);
+  }
+  if (autres.length) {
+    pushHeader('AUTRES DISCIPLINES');
+    autres.forEach(pushLine);
+  }
+
+  body.push([
+    { content: 'TOTAUX', styles: { fontStyle: 'bold', fillColor: [210, 210, 210] } },
+    {
+      content: data.moyenneGenerale.toFixed(2),
+      styles: { fontStyle: 'bold', fillColor: [210, 210, 210], halign: 'center' },
+    },
+    {
+      content: String(totCoef),
+      styles: { fontStyle: 'bold', fillColor: [210, 210, 210], halign: 'center' },
+    },
+    {
+      content: totPoints.toFixed(2),
+      styles: { fontStyle: 'bold', fillColor: [210, 210, 210], halign: 'center' },
+    },
+    { content: '', styles: { fillColor: [210, 210, 210] } },
+    { content: '', styles: { fillColor: [210, 210, 210] } },
+    { content: '', styles: { fillColor: [210, 210, 210] } },
+    { content: '', styles: { fillColor: [210, 210, 210] } },
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    margin: { left: margin, right: margin },
+    head: [[
+      'Disciplines',
+      'Moy.',
+      'Coef.',
+      'Total',
+      'Rang',
+      'Appréciations',
+      'Professeurs',
+      'Signature',
+    ]],
+    body,
+    styles: {
+      fontSize: 7,
+      cellPadding: 1.2,
+      textColor: [20, 20, 20],
+      lineColor: [60, 60, 60],
+      lineWidth: 0.2,
+      valign: 'middle',
+    },
+    headStyles: {
+      fillColor: [40, 40, 40],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      fontSize: 7,
+      halign: 'center',
+    },
+    columnStyles: {
+      0: { cellWidth: 48 },
+      1: { cellWidth: 14, halign: 'center' },
+      2: { cellWidth: 12, halign: 'center' },
+      3: { cellWidth: 16, halign: 'center' },
+      4: { cellWidth: 12, halign: 'center' },
+      5: { cellWidth: 28 },
+      6: { cellWidth: 30 },
+      7: { cellWidth: 20 },
+    },
+    theme: 'grid',
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 4;
+
+  // ── Blocs résumé ─────────────────────────────────────────
+  const boxH = 22;
+  const gap = 3;
+  const boxW = (contentW - gap * 2) / 3;
+
+  // Assiduité
+  doc.rect(margin, y, boxW, boxH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('ASSIDUITÉ', margin + boxW / 2, y + 4.5, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.text(
+    `Absences : ${data.absencesHours ?? 0} h`,
+    margin + 2,
+    y + 10,
+  );
+  doc.text(
+    `Justifiées : ${data.absencesJustified ?? 0} h`,
+    margin + 2,
+    y + 14,
+  );
+  doc.text(
+    `Non justifiées : ${data.absencesUnjustified ?? 0} h`,
+    margin + 2,
+    y + 18,
+  );
+
+  // Moyenne trimestrielle
+  const mx = margin + boxW + gap;
+  doc.rect(mx, y, boxW, boxH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('MOYENNE TRIMESTRIELLE', mx + boxW / 2, y + 4.5, {
+    align: 'center',
+  });
+  doc.setFontSize(14);
+  doc.text(
+    `${data.moyenneGenerale.toFixed(2)} / 20`,
+    mx + boxW / 2,
+    y + 12,
+    { align: 'center' },
+  );
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  const rangTxt =
+    data.rang != null && data.effectif
+      ? `Rang : ${data.rang}e / ${data.effectif}`
+      : data.rang != null
+        ? `Rang : ${data.rang}e`
+        : 'Rang : —';
+  doc.text(rangTxt, mx + boxW / 2, y + 18, { align: 'center' });
+
+  // Résultats de classe
+  const rx = mx + boxW + gap;
+  doc.rect(rx, y, boxW, boxH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('RÉSULTATS DE CLASSE', rx + boxW / 2, y + 4.5, {
+    align: 'center',
+  });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.text(
+    `Moy. classe : ${data.classAverage != null ? data.classAverage.toFixed(2) : '—'}`,
+    rx + 2,
+    y + 10,
+  );
+  doc.text(
+    `Moy. min : ${data.classMin != null ? data.classMin.toFixed(2) : '—'}`,
+    rx + 2,
+    y + 14,
+  );
+  doc.text(
+    `Moy. max : ${data.classMax != null ? data.classMax.toFixed(2) : '—'}`,
+    rx + 2,
+    y + 18,
+  );
+
+  y += boxH + 4;
+
+  // ── Mentions / Appréciations / Chef ──────────────────────
+  const footH = 38;
+  const fW = (contentW - gap * 2) / 3;
+
+  doc.rect(margin, y, fW, footH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.text('MENTIONS DU CONSEIL', margin + fW / 2, y + 4, {
+    align: 'center',
+  });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  const ment = mentionConseil(data.moyenneGenerale);
+  const checks = [
+    'Tableau d\'Honneur',
+    'Encouragements',
+    'Félicitations',
+    'Avertissement travail',
+    'Blâme',
+  ];
+  let cy = y + 9;
+  for (const c of checks) {
+    const marked = c === ment || (ment === 'À encourager' && c === 'Encouragements');
+    doc.rect(margin + 2, cy - 2.2, 2.5, 2.5);
+    if (marked) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('X', margin + 3.2, cy);
+      doc.setFont('helvetica', 'normal');
+    }
+    doc.text(c, margin + 6, cy);
+    cy += 4.5;
+  }
+
+  const ax = margin + fW + gap;
+  doc.rect(ax, y, fW, footH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.text('APPRÉCIATIONS DU CONSEIL', ax + fW / 2, y + 4, {
+    align: 'center',
+  });
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  const apprec =
+    data.appreciation || appreciation(data.moyenneGenerale);
+  doc.text(apprec, ax + fW / 2, y + 14, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.text('Le professeur principal', ax + 2, y + 28);
+  doc.line(ax + 2, y + 34, ax + fW - 2, y + 34);
+
+  const dx = ax + fW + gap;
+  doc.rect(dx, y, fW, footH);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.text('LE CHEF D\'ÉTABLISSEMENT', dx + fW / 2, y + 4, {
+    align: 'center',
+  });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  const city = data.schoolCity || '—';
+  const today = new Date().toLocaleDateString('fr-FR');
+  doc.text(`Fait à ${city}, le ${today}`, dx + 2, y + 12);
+  if (data.directorName) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(data.directorName, dx + fW / 2, y + 22, { align: 'center' });
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.text('Signature et cachet', dx + fW / 2, y + 34, { align: 'center' });
+
+  // Pied de page
+  doc.setFontSize(6);
+  doc.setTextColor(...gray);
+  doc.text(
+    data.motto || 'L\'excellence, notre ambition — Document généré par ECOLE+',
+    pageW / 2,
+    pageH - 6,
+    { align: 'center' },
+  );
+
+  const filename = `bulletin_${data.studentRegistration || 'eleve'}_${data.trimestre}.pdf`;
+  doc.save(filename);
 }

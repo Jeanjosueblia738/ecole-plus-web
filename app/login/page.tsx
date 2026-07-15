@@ -25,8 +25,22 @@ export default function LoginPage() {
       );
       await authStorage.save(data.access_token, data.user, data.tenant);
       router.push('/dashboard');
-    } catch {
-      setError('Code établissement, email ou mot de passe incorrect.');
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const apiMsg = err?.response?.data?.message;
+      if (status === 503 || status >= 500) {
+        setError(
+          typeof apiMsg === 'string'
+            ? apiMsg
+            : 'Serveur ou base indisponible — réessayez dans un instant.',
+        );
+      } else {
+        setError(
+          typeof apiMsg === 'string'
+            ? apiMsg
+            : 'Code établissement, email ou mot de passe incorrect.',
+        );
+      }
     } finally {
       setLoading(false);
     }
