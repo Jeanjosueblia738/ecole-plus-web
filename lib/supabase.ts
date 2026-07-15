@@ -8,7 +8,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function uploadAvatar(file: File, folder: string, id: string): Promise<string | null> {
   // Exige une session école (évite upload anonyme depuis une page publique)
-  if (!Cookies.get('ecole_token') && !Cookies.get('sa_token')) {
+  // Tokens JWT sont httpOnly — on vérifie la présence du profil session
+  if (!Cookies.get('ecole_user') && !Cookies.get('sa_user')) {
     console.error('Upload refusé : utilisateur non authentifié');
     return null;
   }

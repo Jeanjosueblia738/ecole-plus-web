@@ -50,8 +50,8 @@ function TenantDetailContent() {
 
   const getHeaders = () => saAuth.authHeader();
 
-  const handleLogout = () => {
-    saAuth.clear();
+  const handleLogout = async () => {
+    await saAuth.clear();
     router.push('/super-admin/login');
   };
 

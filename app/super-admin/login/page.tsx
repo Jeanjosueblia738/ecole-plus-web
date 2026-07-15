@@ -18,8 +18,10 @@ export default function SuperAdminLoginPage() {
     setLoading(true);
     setError('');
     try {
-      const { data } = await api.post('/auth/super-admin/login', { email, password });
-      saAuth.save(data.access_token, data.user);
+      const { data } = await api.post('/auth/super-admin/login', { email, password }, {
+        headers: { 'X-Auth-Scope': 'sa' },
+      });
+      await saAuth.save(data.access_token, data.user);
       router.push('/super-admin');
     } catch (e: any) {
       setError(e.response?.data?.message || 'Identifiants incorrects');

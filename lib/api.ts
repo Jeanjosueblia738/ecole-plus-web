@@ -1,36 +1,26 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://ecole-plus-api-production.up.railway.app/api/v1';
-
+/** Appels API via proxy Next.js — JWT httpOnly injecté côté serveur */
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: '/api/proxy',
   headers: { 'Content-Type': 'application/json' },
-});
-
-api.interceptors.request.use((config) => {
-  const token = Cookies.get('ecole_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
 });
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       const path = window.location.pathname;
       if (path.startsWith('/super-admin')) {
-        Cookies.remove('sa_token', { path: '/' });
-        Cookies.remove('sa_user', { path: '/' });
+        await fetch('/api/auth/session?kind=sa', { method: 'DELETE' });
+        document.cookie = 'sa_user=; Max-Age=0; path=/';
         if (!path.startsWith('/super-admin/login')) {
           window.location.href = '/super-admin/login';
         }
       } else {
-        Cookies.remove('ecole_token', { path: '/' });
-        Cookies.remove('ecole_user', { path: '/' });
-        Cookies.remove('ecole_tenant', { path: '/' });
+        await fetch('/api/auth/session?kind=ecole', { method: 'DELETE' });
+        document.cookie = 'ecole_user=; Max-Age=0; path=/';
+        document.cookie = 'ecole_tenant=; Max-Age=0; path=/';
         if (!path.startsWith('/login')) {
           window.location.href = '/login';
         }

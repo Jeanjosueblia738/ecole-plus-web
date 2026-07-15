@@ -20,11 +20,18 @@ const STAFF_PREFIXES = [
   '/utilisateurs',
   '/abonnement',
   '/parametres',
-  '/onboarding',
 ];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
+  if (pathname === '/onboarding') {
+    return NextResponse.redirect(new URL('/super-admin', request.url));
+  }
 
   if (PUBLIC_PATHS.some((p) => pathname === p)) {
     return NextResponse.next();

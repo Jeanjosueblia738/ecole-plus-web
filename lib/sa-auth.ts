@@ -1,6 +1,5 @@
 import Cookies from 'js-cookie';
 
-const TOKEN_KEY = 'sa_token';
 const USER_KEY = 'sa_user';
 
 const cookieOpts: Cookies.CookieAttributes = {
@@ -19,22 +18,29 @@ export type SaUser = {
   photoUrl?: string;
 };
 
+async function setHttpOnlySession(token: string, user: SaUser) {
+  await fetch('/api/auth/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ kind: 'sa', token, user }),
+  });
+}
+
 export const saAuth = {
-  save: (token: string, user: SaUser) => {
-    Cookies.set(TOKEN_KEY, token, cookieOpts);
+  save: async (token: string, user: SaUser) => {
+    await setHttpOnlySession(token, user);
     Cookies.set(USER_KEY, JSON.stringify(user), cookieOpts);
   },
-  getToken: () => Cookies.get(TOKEN_KEY) ?? '',
+  getToken: () => '',
   getUser: (): SaUser | null => {
     const u = Cookies.get(USER_KEY);
     return u ? JSON.parse(u) : null;
   },
-  isLoggedIn: () => !!Cookies.get(TOKEN_KEY),
-  clear: () => {
-    Cookies.remove(TOKEN_KEY, { path: '/' });
+  isLoggedIn: () => !!Cookies.get(USER_KEY),
+  clear: async () => {
+    await fetch('/api/auth/session?kind=sa', { method: 'DELETE' });
     Cookies.remove(USER_KEY, { path: '/' });
   },
-  authHeader: () => ({
-    Authorization: `Bearer ${Cookies.get(TOKEN_KEY) ?? ''}`,
-  }),
+  /** Le proxy injecte le JWT httpOnly — header inutile côté client */
+  authHeader: () => ({ 'X-Auth-Scope': 'sa' }),
 };

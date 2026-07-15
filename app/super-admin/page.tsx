@@ -38,8 +38,8 @@ export default function SuperAdminPage() {
 
   const getHeaders = () => saAuth.authHeader();
 
-  const handleLogout = () => {
-    saAuth.clear();
+  const handleLogout = async () => {
+    await saAuth.clear();
     router.push('/super-admin/login');
   };
 
@@ -174,6 +174,10 @@ export default function SuperAdminPage() {
                 <option value="SUSPENDED">Suspendus</option>
               </select>
             </div>
+            <button onClick={() => router.push('/super-admin/nouveau')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl text-sm hover:bg-green-700">
+              <Building2 className="w-4 h-4" /> Nouvel établissement
+            </button>
             <button onClick={loadData}
               className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
               <RefreshCw className="w-4 h-4" /> Actualiser

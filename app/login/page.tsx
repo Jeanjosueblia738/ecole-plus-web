@@ -23,7 +23,7 @@ export default function LoginPage() {
         form.email,
         form.password
       );
-      authStorage.save(data.access_token, data.user, data.tenant);
+      await authStorage.save(data.access_token, data.user, data.tenant);
       router.push('/dashboard');
     } catch {
       setError('Code établissement, email ou mot de passe incorrect.');
