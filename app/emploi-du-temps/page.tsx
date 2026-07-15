@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
+import { currentSchoolYear } from '@/lib/school-year';
 
 const DAYS = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI'];
 const DAY_LABELS: Record<string, string> = {
@@ -57,8 +58,7 @@ export default function EmploiDuTempsPage() {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const year = new Date().getFullYear();
-  const currentYear = `${year}-${year + 1}`;
+  const currentYear = currentSchoolYear();
 
   const user = authStorage.getUser();
   const canWrite = hasRole(user?.role, can.writeTimetable);
@@ -66,7 +66,7 @@ export default function EmploiDuTempsPage() {
 
   const [form, setForm] = useState({
     classId: '', teacherId: '', subject: '',
-    day: 'LUNDI', startTime: '08:00', endTime: '09:00', room: '', year: currentYear,
+    day: 'LUNDI', startTime: '08:00', endTime: '09:00', room: '', year: currentSchoolYear(),
   });
   const [saving, setSaving] = useState(false);
 

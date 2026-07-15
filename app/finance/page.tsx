@@ -12,6 +12,7 @@ import KpiCard from '@/components/KpiCard';
 import { financeApi, classesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
+import { currentSchoolYear } from '@/lib/school-year';
 
 export default function FinancePage() {
   const router = useRouter();
@@ -22,17 +23,22 @@ export default function FinancePage() {
   const [preview, setPreview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showFeeForm, setShowFeeForm] = useState(false);
+  const [showPayForm, setShowPayForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [assigning, setAssigning] = useState<string | null>(null);
   const [processingAlerts, setProcessingAlerts] = useState(false);
   const [error, setError] = useState('');
+  const [payError, setPayError] = useState('');
+  const [payMsg, setPayMsg] = useState('');
   const [assignMsg, setAssignMsg] = useState('');
   const [alertMsg, setAlertMsg] = useState('');
   const [assignClassId, setAssignClassId] = useState<Record<string, string>>({});
 
-  const year = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+  const year = currentSchoolYear();
   const role = authStorage.getUser()?.role;
   const canCreateFee = hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR']);
+  const canPay = hasRole(role, can.viewFinance);
 
   const [feeForm, setFeeForm] = useState({
     label: '',
@@ -41,6 +47,13 @@ export default function FinancePage() {
     dueDate: '',
     year,
     level: '',
+  });
+
+  const [payForm, setPayForm] = useState({
+    studentId: '',
+    feeId: '',
+    amountPaid: '',
+    paymentMode: 'especes',
   });
 
   const load = async () => {
@@ -133,6 +146,31 @@ export default function FinancePage() {
     }
   };
 
+  const handleRecordPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canPay) return;
+    setPaying(true);
+    setPayError('');
+    setPayMsg('');
+    try {
+      const { data } = await financeApi.recordPayment({
+        studentId: payForm.studentId.trim(),
+        feeId: payForm.feeId,
+        amountPaid: Number(payForm.amountPaid),
+        paymentMode: payForm.paymentMode,
+      });
+      setPayMsg(data.message || 'Paiement enregistré');
+      setPayForm({ studentId: '', feeId: '', amountPaid: '', paymentMode: 'especes' });
+      setShowPayForm(false);
+      await load();
+    } catch (err: any) {
+      const msg = err.response?.data?.message;
+      setPayError(Array.isArray(msg) ? msg.join(', ') : msg || 'Erreur paiement');
+    } finally {
+      setPaying(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -154,13 +192,60 @@ export default function FinancePage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-800">Frais — {year}</h2>
-              {canCreateFee && (
-                <button onClick={() => setShowFeeForm(!showFeeForm)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
-                  <Plus className="w-4 h-4" /> Nouveau frais
-                </button>
-              )}
+              <div className="flex gap-2">
+                {canPay && (
+                  <button onClick={() => { setShowPayForm(!showPayForm); setShowFeeForm(false); }}
+                    className="flex items-center gap-2 px-4 py-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl text-sm font-medium hover:bg-blue-50">
+                    <DollarSign className="w-4 h-4" /> Enregistrer un paiement
+                  </button>
+                )}
+                {canCreateFee && (
+                  <button onClick={() => { setShowFeeForm(!showFeeForm); setShowPayForm(false); }}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
+                    <Plus className="w-4 h-4" /> Nouveau frais
+                  </button>
+                )}
+              </div>
             </div>
+
+            {showPayForm && canPay && (
+              <form onSubmit={handleRecordPayment} className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                {payError && <p className="md:col-span-2 text-sm text-red-600">{payError}</p>}
+                {payMsg && <p className="md:col-span-2 text-sm text-green-700">{payMsg}</p>}
+                <input required placeholder="ID élève *" value={payForm.studentId}
+                  onChange={e => setPayForm(f => ({ ...f, studentId: e.target.value }))}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white" />
+                <select required value={payForm.feeId}
+                  onChange={e => setPayForm(f => ({ ...f, feeId: e.target.value }))}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
+                  <option value="">Frais *</option>
+                  {fees.map((fee: any) => (
+                    <option key={fee.id} value={fee.id}>{fee.label} — {fmt(fee.amountXof)}</option>
+                  ))}
+                </select>
+                <input required type="number" min={1} placeholder="Montant payé FCFA *" value={payForm.amountPaid}
+                  onChange={e => setPayForm(f => ({ ...f, amountPaid: e.target.value }))}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white" />
+                <select value={payForm.paymentMode}
+                  onChange={e => setPayForm(f => ({ ...f, paymentMode: e.target.value }))}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
+                  <option value="especes">Espèces</option>
+                  <option value="orange_money">Orange Money</option>
+                  <option value="wave">Wave</option>
+                  <option value="mtn_money">MTN MoMo</option>
+                  <option value="moov_money">Moov Money</option>
+                </select>
+                <div className="md:col-span-2 flex justify-end gap-2">
+                  <button type="button" onClick={() => setShowPayForm(false)}
+                    className="px-4 py-2 text-sm border border-gray-200 rounded-xl bg-white">Annuler</button>
+                  <button type="submit" disabled={paying}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-xl text-sm disabled:opacity-50">
+                    {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    Valider le paiement
+                  </button>
+                </div>
+              </form>
+            )}
 
             {showFeeForm && canCreateFee && (
               <form onSubmit={handleCreateFee} className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl">

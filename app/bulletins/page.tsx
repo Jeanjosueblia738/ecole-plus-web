@@ -6,6 +6,7 @@ import { FileText, Download, Loader2, ChevronDown, CheckCircle } from 'lucide-re
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, studentsApi, gradesApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { generateBulletin } from '@/lib/pdf';
 import { can, hasRole } from '@/lib/rbac';
@@ -29,7 +30,7 @@ export default function BulletinsPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll('2025-2026').then(({ data }) => {
+    classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
     });
@@ -68,7 +69,7 @@ export default function BulletinsPage() {
         className: selectedClassName,
         level: selectedClassLevel,
         trimestre,
-        year: '2025-2026',
+        year: currentSchoolYear(),
         grades: data.grades || [],
         moyenneGenerale: data.moyenneGenerale || 0,
       });
@@ -95,7 +96,7 @@ export default function BulletinsPage() {
           className: selectedClassName,
           level: selectedClassLevel,
           trimestre,
-          year: '2025-2026',
+          year: currentSchoolYear(),
           grades: data.grades || [],
           moyenneGenerale: data.moyenneGenerale || 0,
         });

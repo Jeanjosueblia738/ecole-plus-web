@@ -9,6 +9,7 @@ import {
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { analyticsApi, classesApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
 
@@ -61,7 +62,7 @@ export default function RisquesPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll('2025-2026').then(({ data }) => setClasses(data)).catch(() => {});
+    classesApi.getAll(currentSchoolYear()).then(({ data }) => setClasses(data)).catch(() => {});
     load();
   }, [router]);
 

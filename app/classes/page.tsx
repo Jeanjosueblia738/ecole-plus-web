@@ -6,6 +6,7 @@ import { Plus, Users, GraduationCap } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
@@ -31,7 +32,7 @@ export default function ClassesPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll('2025-2026')
+    classesApi.getAll(currentSchoolYear())
       .then(({ data }) => setClasses(data))
       .catch(console.error)
       .finally(() => setLoading(false));

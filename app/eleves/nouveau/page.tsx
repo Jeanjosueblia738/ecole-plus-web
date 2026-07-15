@@ -7,6 +7,7 @@ import PhotoUpload from '@/components/PhotoUpload';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 
@@ -34,7 +35,7 @@ export default function NouvelElevePage() {
       return;
     }
     setReady(true);
-    classesApi.getAll('2025-2026').then(({ data }) => setClasses(data));
+    classesApi.getAll(currentSchoolYear()).then(({ data }) => setClasses(data));
   }, [router]);
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));

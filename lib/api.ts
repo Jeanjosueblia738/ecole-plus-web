@@ -3,16 +3,10 @@ import Cookies from 'js-cookie';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'production'
-    ? ''
-    : 'http://localhost:3000/api/v1');
-
-if (!API_URL && typeof window !== 'undefined') {
-  console.error('NEXT_PUBLIC_API_URL manquant — configurez l\'URL de l\'API.');
-}
+  'https://ecole-plus-api-production.up.railway.app/api/v1';
 
 const api = axios.create({
-  baseURL: API_URL || undefined,
+  baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -26,12 +20,20 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      Cookies.remove('ecole_token', { path: '/' });
-      Cookies.remove('ecole_user', { path: '/' });
-      Cookies.remove('ecole_tenant', { path: '/' });
       const path = window.location.pathname;
-      if (!path.startsWith('/login') && !path.startsWith('/super-admin')) {
-        window.location.href = '/login';
+      if (path.startsWith('/super-admin')) {
+        Cookies.remove('sa_token', { path: '/' });
+        Cookies.remove('sa_user', { path: '/' });
+        if (!path.startsWith('/super-admin/login')) {
+          window.location.href = '/super-admin/login';
+        }
+      } else {
+        Cookies.remove('ecole_token', { path: '/' });
+        Cookies.remove('ecole_user', { path: '/' });
+        Cookies.remove('ecole_tenant', { path: '/' });
+        if (!path.startsWith('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

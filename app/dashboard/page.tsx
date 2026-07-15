@@ -140,8 +140,9 @@ export default function DashboardPage() {
         s.pendingJustifications = attRes.value.data.unJustified ?? 0;
       }
       if (finRes.status === 'fulfilled') {
-        s.totalDu = finRes.value.data.totalDu ?? 0;
-        s.totalPaye = finRes.value.data.totalPaye ?? 0;
+        const f = finRes.value.data;
+        s.totalDu = f.totalDu ?? f.totalAttenduXof ?? 0;
+        s.totalPaye = f.totalPaye ?? f.totalRecouvertXof ?? 0;
       }
       setStats(s);
     } catch (e) { console.error(e); }

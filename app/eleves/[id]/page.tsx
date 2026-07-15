@@ -6,6 +6,7 @@ import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, BookOpen, Save, Loader2
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi, classesApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
@@ -30,7 +31,7 @@ export default function EleveDetailPage() {
     setCanEdit(hasRole(u?.role, can.editStudent));
     setReady(true);
     loadStudent();
-    classesApi.getAll('2025-2026').then(({ data }) => setClasses(data));
+    classesApi.getAll(currentSchoolYear()).then(({ data }) => setClasses(data));
   }, [id, router]);
 
   const loadStudent = async () => {

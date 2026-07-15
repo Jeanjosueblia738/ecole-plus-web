@@ -10,6 +10,7 @@ import {
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, studentsApi, gradesApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
 import * as XLSX from 'xlsx';
@@ -70,7 +71,7 @@ export default function RapportsPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll('2025-2026').then(({ data }) => {
+    classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) { setSelectedClass(data[0].id); }
     });

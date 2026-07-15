@@ -8,16 +8,16 @@ import Header from '@/components/Header';
 import { classesApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
+import { currentSchoolYear } from '@/lib/school-year';
 
 export default function NouvelleClassePage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const year = new Date().getFullYear();
   const [form, setForm] = useState({
     name: '',
     level: '',
-    year: `${year}-${year + 1}`,
+    year: currentSchoolYear(),
     capacity: '40',
   });
 
@@ -81,7 +81,7 @@ export default function NouvelleClassePage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Année scolaire *</label>
                 <input required value={form.year} onChange={(e) => set('year', e.target.value)}
-                  placeholder="2025-2026"
+                  placeholder={currentSchoolYear()}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
