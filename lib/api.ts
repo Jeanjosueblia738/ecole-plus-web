@@ -92,6 +92,7 @@ export const gradesApi = {
 // ── Attendance ───────────────────────────────────────────────────────────
 export const attendanceApi = {
   bulkCreate: (data: object) => api.post('/attendance/bulk', data),
+  notifyAbsents: (data: object) => api.post('/attendance/notify-absents', data),
   getByStudent: (studentId: string) => api.get(`/attendance/student/${studentId}`),
   getByClass: (classId: string, date: string) =>
     api.get(`/attendance/class/${classId}`, { params: { date } }),

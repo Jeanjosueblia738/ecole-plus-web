@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ClipboardList, ChevronDown, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ClipboardList, ChevronDown, CheckCircle, XCircle, Clock, MessageSquare } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { classesApi, studentsApi, attendanceApi } from '@/lib/api';
@@ -17,12 +17,20 @@ export default function PresencesPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [records, setRecords] = useState<Record<string, string>>({});
   const [subject, setSubject] = useState('');
+  const [startTime, setStartTime] = useState('08:00');
+  const [endTime, setEndTime] = useState('09:00');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [smsLoading, setSmsLoading] = useState(false);
+  const [smsResult, setSmsResult] = useState<string | null>(null);
 
   const user = authStorage.getUser();
   const canDoAppel = hasRole(user?.role, can.doAppel);
   const today = new Date().toISOString().split('T')[0];
+
+  const absentIds = students
+    .filter((s) => records[s.id] === 'ABSENT')
+    .map((s) => s.id);
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -33,11 +41,18 @@ export default function PresencesPage() {
     classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
+    }).catch(() => {
+      classesApi.getAll().then(({ data }) => {
+        setClasses(data);
+        if (data.length > 0) setSelectedClass(data[0].id);
+      });
     });
   }, [router]);
 
   useEffect(() => {
     if (!selectedClass) return;
+    setSaved(false);
+    setSmsResult(null);
     studentsApi.getAll({ classId: selectedClass }).then(({ data }) => {
       setStudents(data);
       const init: Record<string, string> = {};
@@ -51,16 +66,22 @@ export default function PresencesPage() {
       ...prev,
       [id]: prev[id] === 'PRESENT' ? 'ABSENT' : prev[id] === 'ABSENT' ? 'LATE' : 'PRESENT',
     }));
+    setSaved(false);
+    setSmsResult(null);
   };
 
   const handleSave = async () => {
-    if (!subject) { alert('Veuillez saisir la matière'); return; }
+    if (!subject.trim()) { alert('Veuillez saisir la matière'); return; }
+    if (!startTime || !endTime) { alert('Indiquez l\'heure de début et de fin du cours'); return; }
     setSaving(true);
+    setSmsResult(null);
     try {
       await attendanceApi.bulkCreate({
         classId: selectedClass,
-        subject,
+        subject: subject.trim(),
         date: today,
+        startTime,
+        endTime,
         records: students.map((s) => ({
           studentId: s.id,
           status: records[s.id] || 'PRESENT',
@@ -68,9 +89,42 @@ export default function PresencesPage() {
         })),
       });
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (e) { console.error(e); }
-    finally { setSaving(false); }
+    } catch (e) {
+      console.error(e);
+      alert('Erreur lors de l\'enregistrement de l\'appel');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSmsParents = async () => {
+    if (!saved) {
+      alert('Enregistrez d\'abord l\'appel');
+      return;
+    }
+    if (absentIds.length === 0) {
+      alert('Aucun élève absent coché');
+      return;
+    }
+    setSmsLoading(true);
+    setSmsResult(null);
+    try {
+      const { data } = await attendanceApi.notifyAbsents({
+        classId: selectedClass,
+        subject: subject.trim(),
+        date: today,
+        startTime,
+        endTime,
+        studentIds: absentIds,
+      });
+      const sim = data.simulated ? ' (mode simulation — configurez SMS_WEBHOOK_URL)' : '';
+      setSmsResult(`${data.message}${sim}`);
+    } catch (e: any) {
+      console.error(e);
+      setSmsResult(e?.response?.data?.message || 'Erreur envoi SMS');
+    } finally {
+      setSmsLoading(false);
+    }
   };
 
   const statusIcon = (status: string) => {
@@ -91,28 +145,54 @@ export default function PresencesPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Présences" subtitle={`Appel du ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`} />
         <main className="flex-1 p-6">
-          {/* Filtres */}
-          <div className="flex gap-4 mb-6 flex-wrap">
-            <div className="relative">
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <div className="flex gap-4 mb-6 flex-wrap items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Classe</label>
+              <div className="relative">
+                <select
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Matière (ex: Mathématiques)"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[240px]"
-            />
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Matière</label>
+              <input
+                type="text"
+                placeholder="ex: Mathématiques"
+                value={subject}
+                onChange={(e) => { setSubject(e.target.value); setSaved(false); setSmsResult(null); }}
+                className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Début cours</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => { setStartTime(e.target.value); setSaved(false); }}
+                className="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Fin cours</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => { setEndTime(e.target.value); setSaved(false); }}
+                className="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
-          {/* Stats rapides */}
+          <p className="text-xs text-gray-500 mb-4">
+            Cochez les absents (clic sur la ligne : Présent → Absent → Retard). Après enregistrement, envoyez un SMS aux parents.
+          </p>
+
           <div className="grid grid-cols-3 gap-4 mb-6">
             {[
               { label: 'Présents', count: Object.values(records).filter(s => s === 'PRESENT').length, color: 'text-green-600', bg: 'bg-green-50' },
@@ -126,12 +206,11 @@ export default function PresencesPage() {
             ))}
           </div>
 
-          {/* Liste élèves */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
             {students.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <ClipboardList className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                <p>Sélectionnez une classe pour faire l'appel</p>
+                <p>Sélectionnez une classe pour faire l&apos;appel</p>
               </div>
             ) : (
               <table className="w-full">
@@ -144,7 +223,11 @@ export default function PresencesPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {students.map((s: any) => (
-                    <tr key={s.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => toggle(s.id)}>
+                    <tr
+                      key={s.id}
+                      className={`hover:bg-gray-50 cursor-pointer ${records[s.id] === 'ABSENT' ? 'bg-red-50/50' : ''}`}
+                      onClick={() => canDoAppel && toggle(s.id)}
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-bold">
@@ -167,15 +250,31 @@ export default function PresencesPage() {
             )}
           </div>
 
-          {/* Bouton enregistrer */}
+          {smsResult && (
+            <div className="mb-4 p-3 rounded-xl bg-blue-50 text-blue-800 text-sm border border-blue-100">
+              {smsResult}
+            </div>
+          )}
+
           {students.length > 0 && canDoAppel && (
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-3">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className={`px-6 py-3 rounded-xl font-medium text-white transition-colors ${saved ? 'bg-green-600' : 'bg-[#1B3A6B] hover:bg-blue-800'}`}
+                className={`px-6 py-3 rounded-xl font-medium text-white transition-colors ${saved ? 'bg-green-600' : 'bg-[#1B3A6B] hover:bg-blue-800'} disabled:opacity-50`}
               >
-                {saving ? 'Enregistrement...' : saved ? '✓ Appel enregistré !' : 'Enregistrer l\'appel'}
+                {saving ? 'Enregistrement...' : saved ? '✓ Appel enregistré' : 'Enregistrer l\'appel'}
+              </button>
+              <button
+                onClick={handleSmsParents}
+                disabled={!saved || smsLoading || absentIds.length === 0}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-40 transition-colors"
+                title={!saved ? 'Enregistrez d\'abord l\'appel' : `${absentIds.length} absent(s)`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                {smsLoading
+                  ? 'Envoi SMS...'
+                  : `SMS parents (${absentIds.length} absent${absentIds.length > 1 ? 's' : ''})`}
               </button>
             </div>
           )}
