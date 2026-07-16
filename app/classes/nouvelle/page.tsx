@@ -37,7 +37,7 @@ export default function NouvelleClassePage() {
       await classesApi.create({
         name: form.name.trim(),
         level: form.level.trim(),
-        year: form.year,
+        year: form.year.trim().replace(/\s+/g, ''),
         capacity: Number(form.capacity) || 40,
       });
       router.push('/classes');
@@ -83,6 +83,9 @@ export default function NouvelleClassePage() {
                 <input required value={form.year} onChange={(e) => set('year', e.target.value)}
                   placeholder={currentSchoolYear()}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p className="text-xs text-gray-400 mt-1">
+                  Format CIV : {currentSchoolYear()} (sept→août). Une année différente n&apos;apparaîtra pas dans le filtre « année en cours ».
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Capacité *</label>

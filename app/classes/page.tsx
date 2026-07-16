@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Users, GraduationCap } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
@@ -23,8 +23,10 @@ export default function ClassesPage() {
   const router = useRouter();
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [loading, setLoading] = useState(true);
+  const [yearFilter, setYearFilter] = useState<string>('all');
   const role = authStorage.getUser()?.role;
   const canCreate = hasRole(role, can.createClass);
+  const activeYear = currentSchoolYear();
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -32,20 +34,73 @@ export default function ClassesPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll(currentSchoolYear())
-      .then(({ data }) => setClasses(data))
+    // Sans filtre année : cohérent avec le KPI dashboard (toutes classes actives)
+    classesApi.getAll()
+      .then(({ data }) => {
+        const list = (data || []) as SchoolClass[];
+        setClasses(list);
+        const years = [...new Set(list.map((c) => c.year).filter(Boolean))];
+        // Si l'année en cours a des classes, on la sélectionne ; sinon "toutes"
+        if (years.includes(activeYear)) {
+          setYearFilter(activeYear);
+        } else {
+          setYearFilter('all');
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [router]);
+  }, [router, activeYear]);
+
+  const yearOptions = useMemo(() => {
+    const years = [...new Set(classes.map((c) => c.year).filter(Boolean))].sort().reverse();
+    if (activeYear && !years.includes(activeYear)) years.unshift(activeYear);
+    return years;
+  }, [classes, activeYear]);
+
+  const filtered = useMemo(() => {
+    if (yearFilter === 'all') return classes;
+    return classes.filter((c) => c.year === yearFilter);
+  }, [classes, yearFilter]);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Gestion des classes" subtitle={`${classes.length} classe(s)`} />
+        <Header
+          title="Gestion des classes"
+          subtitle={`${filtered.length} classe(s)${yearFilter !== 'all' ? ` — ${yearFilter}` : ''}${classes.length !== filtered.length ? ` / ${classes.length} au total` : ''}`}
+        />
         <main className="flex-1 p-6">
-          {canCreate && (
-            <div className="flex justify-end mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-gray-500">Année :</span>
+              <button
+                type="button"
+                onClick={() => setYearFilter('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  yearFilter === 'all'
+                    ? 'bg-[#1B3A6B] text-white'
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Toutes
+              </button>
+              {yearOptions.map((y) => (
+                <button
+                  key={y}
+                  type="button"
+                  onClick={() => setYearFilter(y)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    yearFilter === y
+                      ? 'bg-[#1B3A6B] text-white'
+                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+            {canCreate && (
               <a
                 href="/classes/nouvelle"
                 className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors"
@@ -53,8 +108,8 @@ export default function ClassesPage() {
                 <Plus className="w-4 h-4" />
                 Nouvelle classe
               </a>
-            </div>
-          )}
+            )}
+          </div>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -65,17 +120,30 @@ export default function ClassesPage() {
                 </div>
               ))}
             </div>
-          ) : classes.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
               <GraduationCap className="w-16 h-16 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">Aucune classe créée</p>
+              <p className="font-medium">Aucune classe pour ce filtre</p>
               <p className="text-sm mt-1">
-                {canCreate ? 'Ajoutez votre première classe pour commencer' : 'Aucune classe disponible pour le moment'}
+                {classes.length > 0
+                  ? `Vous avez ${classes.length} classe(s) sur d'autres années — choisissez « Toutes ».`
+                  : canCreate
+                    ? 'Ajoutez votre première classe pour commencer'
+                    : 'Aucune classe disponible pour le moment'}
               </p>
+              {classes.length > 0 && yearFilter !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setYearFilter('all')}
+                  className="mt-4 text-sm text-blue-700 font-medium hover:underline"
+                >
+                  Afficher toutes les classes
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {classes.map((cls) => (
+              {filtered.map((cls) => (
                 <div
                   key={cls.id}
                   className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
