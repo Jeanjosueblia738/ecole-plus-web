@@ -115,7 +115,9 @@ export default function NouvelElevePage() {
                   </div>
                 ))}
                 <p className="text-xs text-gray-500">
-                  Le parent a besoin d&apos;un email enregistré pour finaliser son compte mobile.
+                  Élève : connexion mobile avec le <strong>matricule</strong> + mot de passe
+                  (après activation du code). Parent : email enregistré + mot de passe.
+                  Un même email parent peut rattacher plusieurs enfants (même mot de passe sur chaque code).
                 </p>
               </div>
 

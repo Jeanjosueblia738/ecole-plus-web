@@ -127,6 +127,12 @@ export default function EleveDetailPage() {
                         <p className="text-xs text-gray-500">Code parent (mobile)</p>
                         <p className="font-mono font-bold text-gray-800 tracking-wider">{student.parentAccessCode || '—'}</p>
                       </div>
+                      <div className="bg-blue-50 rounded-xl px-4 py-3 sm:col-span-2">
+                        <p className="text-xs text-blue-800">
+                          Connexion élève : matricule <span className="font-mono font-semibold">{student.registrationNo}</span> + mot de passe.
+                          Parent : email de la fiche — un même email peut suivre plusieurs enfants.
+                        </p>
+                      </div>
                     </div>
                   )}
 
