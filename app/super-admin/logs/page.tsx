@@ -38,6 +38,7 @@ export default function LogsPage() {
   const [saUser, setSaUser] = useState<any>({});
   const [filterAction, setFilterAction] = useState('');
   const [filterDays, setFilterDays] = useState('90');
+  const [loadError, setLoadError] = useState('');
 
   const getHeaders = () => saAuth.authHeader();
 
@@ -57,13 +58,18 @@ export default function LogsPage() {
 
   const loadLogs = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const params = new URLSearchParams();
       if (filterAction) { params.append('action', filterAction); }
       if (filterDays) { params.append('days', filterDays); }
       const { data } = await api.get(`/auth/super-admin/logs?${params}`, { headers: getHeaders() });
       setLogs(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLogs([]);
+      setLoadError('Impossible de charger le journal d\'activité.');
+    }
     finally { setLoading(false); }
   };
 
@@ -132,6 +138,13 @@ export default function LogsPage() {
           {loading ? (
             <div className="flex justify-center py-16">
               <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-16 text-red-600">
+              <Activity className="w-12 h-12 mx-auto mb-3 opacity-40" />
+              <p className="font-medium">{loadError}</p>
+              <button type="button" onClick={loadLogs}
+                className="mt-3 text-sm text-red-700 underline">Réessayer</button>
             </div>
           ) : logs.length === 0 ? (
             <div className="text-center py-16 text-gray-400">

@@ -107,6 +107,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [stats, setStats] = useState<Partial<Stats>>({});
   const [loading, setLoading] = useState(true);
+  const [statsError, setStatsError] = useState('');
   const user = authStorage.getUser();
   const tenant = authStorage.getTenant();
   const role = user?.role ?? '';
@@ -123,6 +124,7 @@ export default function DashboardPage() {
 
   const loadStats = async () => {
     setLoading(true);
+    setStatsError('');
     try {
       const canViewFinance = hasRole(role, can.viewFinance);
       const fetches: Promise<any>[] = [
@@ -142,27 +144,44 @@ export default function DashboardPage() {
       const cahierRes = group === 'teacher' ? results[canViewFinance ? 3 : 2] : null;
 
       const s: Partial<Stats> = {};
+      let failed = 0;
       if (studRes?.status === 'fulfilled') {
         s.totalStudents = studRes.value.data.total ?? 0;
         s.totalTeachers = studRes.value.data.totalTeachers ?? 0;
         s.totalClasses = studRes.value.data.totalClasses ?? 0;
         s.unpaidCount = studRes.value.data.unpaidCount ?? 0;
+      } else {
+        failed += 1;
       }
       if (attRes?.status === 'fulfilled') {
         s.totalAbsences = attRes.value.data.totalAbsences ?? 0;
         s.pendingJustifications = attRes.value.data.unJustified ?? 0;
+      } else {
+        failed += 1;
       }
       if (finRes?.status === 'fulfilled' && finRes.value) {
         const f = finRes.value.data;
         s.totalDu = f.totalDu ?? f.totalAttenduXof ?? 0;
         s.totalPaye = f.totalPaye ?? f.totalRecouvertXof ?? 0;
+      } else if (canViewFinance) {
+        failed += 1;
       }
       if (cahierRes?.status === 'fulfilled' && cahierRes.value?.data) {
         const c = cahierRes.value.data;
         s.totalGrades = c.totalEntries ?? c.total ?? undefined;
       }
       setStats(s);
-    } catch (e) { console.error(e); }
+      if (failed > 0) {
+        setStatsError(
+          failed >= 2
+            ? 'Certaines statistiques n\'ont pas pu être chargées.'
+            : 'Une partie des indicateurs est indisponible.',
+        );
+      }
+    } catch (e) {
+      console.error(e);
+      setStatsError('Impossible de charger le tableau de bord.');
+    }
     finally { setLoading(false); }
   };
 
@@ -175,6 +194,15 @@ export default function DashboardPage() {
           subtitle={`${roleLabels[role] ?? role} — ${tenant?.name ?? ''}`}
         />
         <main className="flex-1 p-6 space-y-6">
+
+          {statsError && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800 flex items-center justify-between gap-3">
+              <span>{statsError}</span>
+              <button type="button" onClick={loadStats} className="text-amber-900 font-medium text-xs hover:underline">
+                Réessayer
+              </button>
+            </div>
+          )}
 
           {/* ── 1. DIRECTION (Admin / Founder / Director) ── */}
           {group === 'direction' && (

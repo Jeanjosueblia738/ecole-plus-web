@@ -29,6 +29,7 @@ export default function SuperAdminsPage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '',
@@ -53,10 +54,15 @@ export default function SuperAdminsPage() {
 
   const loadAdmins = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const { data } = await api.get('/auth/super-admin/list', { headers: getHeaders() });
       setAdmins(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setAdmins([]);
+      setLoadError('Impossible de charger les super-admins.');
+    }
     finally { setLoading(false); }
   };
 
@@ -187,6 +193,17 @@ export default function SuperAdminsPage() {
           {loading ? (
             <div className="col-span-2 flex justify-center py-12">
               <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+            </div>
+          ) : loadError ? (
+            <div className="col-span-2 bg-red-50 border border-red-200 rounded-xl p-8 text-center text-red-700">
+              <p className="font-medium">{loadError}</p>
+              <button type="button" onClick={loadAdmins}
+                className="mt-3 text-sm underline">Réessayer</button>
+            </div>
+          ) : admins.length === 0 ? (
+            <div className="col-span-2 bg-white rounded-xl p-12 text-center text-gray-400 border border-gray-100">
+              <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p>Aucun super-admin trouvé</p>
             </div>
           ) : admins.map(admin => (
             <div key={admin.id} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">

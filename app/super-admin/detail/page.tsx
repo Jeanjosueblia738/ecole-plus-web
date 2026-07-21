@@ -36,6 +36,8 @@ function TenantDetailContent() {
   const [upgrading, setUpgrading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
   const [saUser, setSaUser] = useState<any>({});
+  const [error, setError] = useState('');
+  const [loadFailed, setLoadFailed] = useState(false);
 
   // Étape 1 — attendre que le composant soit monté côté client
   useEffect(() => { setMounted(true); }, []);
@@ -57,31 +59,53 @@ function TenantDetailContent() {
 
   const loadTenant = async () => {
     setLoading(true);
+    setError('');
+    setLoadFailed(false);
     try {
       const { data } = await api.get(`/tenants/${id}`, { headers: getHeaders() });
       setTenant(data);
       setSelectedPlan(data.plan);
-    } catch (e) { console.error(e); }
+    } catch (e: any) {
+      console.error(e);
+      setTenant(null);
+      setLoadFailed(true);
+      const status = e.response?.status;
+      setError(
+        status === 404
+          ? 'Établissement introuvable'
+          : 'Impossible de charger l\'établissement. Vérifiez la connexion.',
+      );
+    }
     finally { setLoading(false); }
   };
 
   const toggleStatus = async () => {
     setActionLoading(true);
+    setError('');
     try {
       const action = tenant.isActive ? 'suspend' : 'activate';
       await api.patch(`/tenants/${id}/${action}`, {}, { headers: getHeaders() });
       setTenant((t: any) => ({ ...t, isActive: !t.isActive }));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError(tenant.isActive
+        ? 'Suspension impossible. Réessayez.'
+        : 'Réactivation impossible. Réessayez.');
+    }
     finally { setActionLoading(false); }
   };
 
   const upgradePlan = async () => {
     if (!selectedPlan || selectedPlan === tenant.plan) { return; }
     setUpgrading(true);
+    setError('');
     try {
       await api.patch(`/subscription/${id}/upgrade`, { plan: selectedPlan }, { headers: getHeaders() });
       setTenant((t: any) => ({ ...t, plan: selectedPlan }));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError('Changement de plan impossible. Réessayez.');
+    }
     finally { setUpgrading(false); }
   };
 
@@ -119,6 +143,16 @@ function TenantDetailContent() {
       </nav>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700 flex items-center justify-between gap-3">
+            <span>{error}</span>
+            {loadFailed && (
+              <button type="button" onClick={loadTenant} className="text-red-600 font-medium text-xs hover:underline">
+                Réessayer
+              </button>
+            )}
+          </div>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
@@ -126,7 +160,7 @@ function TenantDetailContent() {
         ) : !tenant ? (
           <div className="bg-white rounded-xl p-12 text-center text-gray-400">
             <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>Établissement introuvable</p>
+            <p>{loadFailed ? (error || 'Erreur de chargement') : 'Établissement introuvable'}</p>
             <button onClick={() => router.push('/super-admin')}
               className="mt-4 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm">Retour</button>
           </div>
