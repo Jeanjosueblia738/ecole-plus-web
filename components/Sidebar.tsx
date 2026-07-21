@@ -6,42 +6,91 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Users, BookOpen, ClipboardList,
   DollarSign, Settings, LogOut, School, GraduationCap,
-  FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays, CreditCard, FileSpreadsheet,
-  AlertTriangle, Menu, X, NotebookPen, Gavel, ClipboardCheck, UserPlus,
+  FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays,
+  CreditCard, FileSpreadsheet, AlertTriangle, Menu, X, NotebookPen,
+  Gavel, ClipboardCheck, UserPlus, Wallet, Landmark, Receipt,
+  Building2, PiggyBank, Banknote,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
 
-const navItems = [
-  { href: '/dashboard',       icon: LayoutDashboard, label: 'Tableau de bord' },
-  { href: '/eleves',          icon: Users,           label: 'Élèves' },
-  { href: '/classes',         icon: GraduationCap,   label: 'Classes' },
-  { href: '/notes',           icon: BookOpen,        label: 'Notes' },
-  { href: '/presences',       icon: ClipboardList,   label: 'Présences' },
-  { href: '/finance',         icon: DollarSign,      label: 'Finance' },
-  { href: '/finance/frais',   icon: CreditCard,      label: 'Configurer frais' },
-  { href: '/finance/paiement', icon: CreditCard,     label: 'Encaisser' },
-  { href: '/finance/historique', icon: FileText,     label: 'Historique paiements' },
-  { href: '/finance/caisse',  icon: DollarSign,      label: 'Caisse' },
-  { href: '/finance/depenses', icon: FileSpreadsheet, label: 'Dépenses' },
-  { href: '/finance/fournisseurs', icon: Users,      label: 'Fournisseurs' },
-  { href: '/finance/paie',    icon: UserCheck,       label: 'Paie' },
-  { href: '/finance/budget',  icon: FileSpreadsheet, label: 'Budget' },
-  { href: '/finance/banque',  icon: CreditCard,      label: 'Banque' },
-  { href: '/bulletins',       icon: FileText,        label: 'Bulletins' },
-  { href: '/rapports',        icon: FileSpreadsheet, label: 'Rapports' },
-  { href: '/risques',         icon: AlertTriangle,   label: 'Risque décrochage' },
-  { href: '/cahier',          icon: Pencil,          label: 'Cahier de texte' },
-  { href: '/devoirs',         icon: NotebookPen,     label: 'Devoirs' },
-  { href: '/conseil',         icon: Gavel,           label: 'Conseil de classe' },
-  { href: '/examens',         icon: ClipboardCheck,  label: 'Examens' },
-  { href: '/inscriptions',    icon: UserPlus,        label: 'Pré-inscriptions' },
-  { href: '/messagerie',      icon: MessageSquare,   label: 'Messagerie' },
-  { href: '/emploi-du-temps', icon: CalendarDays,    label: 'Emploi du temps' },
-  { href: '/enseignants',     icon: Users,           label: 'Enseignants' },
-  { href: '/utilisateurs',    icon: UserCheck,       label: 'Utilisateurs' },
-  { href: '/abonnement',      icon: CreditCard,      label: 'Abonnement' },
-  { href: '/parametres',      icon: Settings,        label: 'Paramètres' },
+type NavItem = {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+};
+
+type NavSection = {
+  id: string;
+  label?: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
+  {
+    id: 'main',
+    items: [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
+    ],
+  },
+  {
+    id: 'caisse',
+    label: 'Caisse',
+    items: [
+      { href: '/finance', icon: Wallet, label: 'Espace finance' },
+      { href: '/finance/paiement', icon: Banknote, label: 'Encaisser' },
+      { href: '/finance/caisse', icon: Receipt, label: 'Session de caisse' },
+      { href: '/finance/historique', icon: FileText, label: 'Historique' },
+    ],
+  },
+  {
+    id: 'pilotage',
+    label: 'Pilotage financier',
+    items: [
+      { href: '/finance/frais', icon: CreditCard, label: 'Frais scolaires' },
+      { href: '/finance/depenses', icon: FileSpreadsheet, label: 'Dépenses' },
+      { href: '/finance/fournisseurs', icon: Building2, label: 'Fournisseurs' },
+      { href: '/finance/paie', icon: UserCheck, label: 'Paie' },
+      { href: '/finance/budget', icon: PiggyBank, label: 'Budget' },
+      { href: '/finance/banque', icon: Landmark, label: 'Banque' },
+    ],
+  },
+  {
+    id: 'scolarite',
+    label: 'Scolarité',
+    items: [
+      { href: '/eleves', icon: Users, label: 'Élèves' },
+      { href: '/classes', icon: GraduationCap, label: 'Classes' },
+      { href: '/inscriptions', icon: UserPlus, label: 'Pré-inscriptions' },
+      { href: '/notes', icon: BookOpen, label: 'Notes' },
+      { href: '/presences', icon: ClipboardList, label: 'Présences' },
+      { href: '/bulletins', icon: FileText, label: 'Bulletins' },
+      { href: '/devoirs', icon: NotebookPen, label: 'Devoirs' },
+      { href: '/conseil', icon: Gavel, label: 'Conseil de classe' },
+      { href: '/examens', icon: ClipboardCheck, label: 'Examens' },
+      { href: '/cahier', icon: Pencil, label: 'Cahier de texte' },
+      { href: '/emploi-du-temps', icon: CalendarDays, label: 'Emploi du temps' },
+      { href: '/risques', icon: AlertTriangle, label: 'Risque décrochage' },
+      { href: '/rapports', icon: FileSpreadsheet, label: 'Rapports' },
+    ],
+  },
+  {
+    id: 'comms',
+    label: 'Communication',
+    items: [
+      { href: '/messagerie', icon: MessageSquare, label: 'Messagerie' },
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Administration',
+    items: [
+      { href: '/enseignants', icon: Users, label: 'Enseignants' },
+      { href: '/utilisateurs', icon: UserCheck, label: 'Utilisateurs' },
+      { href: '/abonnement', icon: CreditCard, label: 'Abonnement' },
+      { href: '/parametres', icon: Settings, label: 'Paramètres' },
+    ],
+  },
 ];
 
 function NavContent({
@@ -54,77 +103,123 @@ function NavContent({
   const tenant = authStorage.getTenant();
   const user = authStorage.getUser();
   const role = user?.role;
-
   const isSuperAdmin = role === 'SUPER_ADMIN';
-  const visibleItems = navItems.filter((item) => canAccessPath(role, item.href));
+
+  const roleBadge =
+    role === 'CASHIER'
+      ? 'Caissier'
+      : role === 'ACCOUNTANT'
+        ? 'Comptable'
+        : role === 'ADMIN' || role === 'FOUNDER'
+          ? 'Admin'
+          : role === 'DIRECTOR'
+            ? 'Direction'
+            : null;
+
+  const sections = navSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => canAccessPath(role, item.href)),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  const flatVisible = sections.flatMap((s) => s.items);
 
   const handleLogout = async () => {
     await authStorage.clear();
     router.push('/login');
   };
 
+  const isItemActive = (href: string) => {
+    const moreSpecific = flatVisible.some(
+      (other) =>
+        other.href !== href &&
+        other.href.startsWith(`${href}/`) &&
+        (pathname === other.href || pathname.startsWith(`${other.href}/`)),
+    );
+    return (
+      !moreSpecific &&
+      (pathname === href || pathname.startsWith(`${href}/`))
+    );
+  };
+
   return (
     <>
-      <div className="p-6 border-b border-white/10">
+      <div className="p-5 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-            <School className="w-6 h-6 text-white" />
+            <School className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <p className="font-bold text-lg tracking-wider">ECOLE+</p>
-            <p className="text-xs text-blue-200 truncate max-w-[140px]">
+          <div className="min-w-0">
+            <p className="font-bold text-base tracking-wide">ECOLE+</p>
+            <p className="text-[11px] text-blue-200 truncate max-w-[150px]">
               {tenant?.name || 'Établissement'}
             </p>
           </div>
         </div>
+        {roleBadge && (
+          <div className="mt-3 inline-flex items-center px-2.5 py-1 rounded-lg bg-white/10 text-[11px] font-medium text-blue-100 tracking-wide uppercase">
+            {roleBadge}
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
         {isSuperAdmin && (
-          <>
-            <Link href="/super-admin" onClick={onNavigate}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all mb-2 ${
+          <div>
+            <Link
+              href="/super-admin"
+              onClick={onNavigate}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 pathname.startsWith('/super-admin')
                   ? 'bg-yellow-400/20 text-yellow-200'
-                  : 'text-yellow-300 hover:bg-yellow-400/10 hover:text-yellow-100'
-              }`}>
-              <ShieldCheck className="w-5 h-5 flex-shrink-0" />
+                  : 'text-yellow-300 hover:bg-yellow-400/10'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4 flex-shrink-0" />
               Super Admin
             </Link>
-            <div className="border-t border-white/10 my-2" />
-          </>
+          </div>
         )}
 
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          // Préférer le lien le plus spécifique (ex. /finance/frais vs /finance)
-          const moreSpecific = visibleItems.some(
-            (other) =>
-              other.href !== item.href &&
-              other.href.startsWith(`${item.href}/`) &&
-              (pathname === other.href || pathname.startsWith(`${other.href}/`)),
-          );
-          const isActive =
-            !moreSpecific &&
-            (pathname === item.href || pathname.startsWith(`${item.href}/`));
-          return (
-            <Link key={item.href} href={item.href} onClick={onNavigate}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-white/20 text-white'
-                  : 'text-blue-200 hover:bg-white/10 hover:text-white'
-              }`}>
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {item.label}
-            </Link>
-          );
-        })}
+        {sections.map((section) => (
+          <div key={section.id}>
+            {section.label && (
+              <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-blue-300/70">
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = isItemActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onNavigate}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
+                      active
+                        ? 'bg-white/15 text-white shadow-sm'
+                        : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 flex-shrink-0 opacity-90" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
-        <button onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all">
-          <LogOut className="w-5 h-5" />
+      <div className="p-3 border-t border-white/10">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-[13px] font-medium text-blue-200 hover:bg-white/10 hover:text-white transition-all"
+        >
+          <LogOut className="w-4 h-4" />
           Déconnexion
         </button>
       </div>

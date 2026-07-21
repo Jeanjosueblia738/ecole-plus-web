@@ -197,10 +197,10 @@ export default function DashboardPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Header
-          title={`Bonjour, ${user?.firstName ?? ''} 👋`}
-          subtitle={`${roleLabels[role] ?? role} — ${tenant?.name ?? ''}`}
+          title={`${user?.firstName ? `Bonjour, ${user.firstName}` : 'Tableau de bord'}`}
+          subtitle={`${roleLabels[role] ?? role}${tenant?.name ? ` · ${tenant.name}` : ''}`}
         />
-        <main className="flex-1 p-6 space-y-6">
+        <main className="flex-1 p-6 space-y-6 max-w-6xl">
 
           {statsError && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800 flex items-center justify-between gap-3">
@@ -214,31 +214,48 @@ export default function DashboardPage() {
           {/* ── 1. DIRECTION (Admin / Founder / Director) ── */}
           {group === 'direction' && (
             <>
-              <SectionTitle icon={<Shield className="w-5 h-5" />} title="Vue d'ensemble de l'établissement" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Kpi title="Élèves inscrits"          value={stats.totalStudents?.toString() ?? '—'}       icon={Users}        colorKey="blue"   loading={loading} />
-                <Kpi title="Enseignants"               value={stats.totalTeachers?.toString() ?? '—'}       icon={GraduationCap} colorKey="purple" loading={loading} />
-                <Kpi title="Classes"                   value={stats.totalClasses?.toString() ?? '—'}        icon={BookOpen}     colorKey="teal"   loading={loading} />
-                <Kpi title="Absences"                  value={stats.totalAbsences?.toString() ?? '—'}       icon={AlertCircle}  colorKey="red"    loading={loading} />
-                <Kpi title="Justifications en attente" value={stats.pendingJustifications?.toString() ?? '—'} icon={Clock}      colorKey="yellow" loading={loading} />
-                <Kpi title="Élèves non à jour"         value={stats.unpaidCount?.toString() ?? '—'}         icon={DollarSign}   colorKey="orange" loading={loading} />
+              <div className="rounded-2xl bg-[#1B3A6B] text-white p-6 shadow-sm">
+                <p className="text-xs font-medium text-blue-200 uppercase tracking-wide">Direction</p>
+                <h2 className="text-xl font-semibold mt-1">Vue d&apos;ensemble</h2>
+                <p className="text-sm text-blue-100/80 mt-1">
+                  Effectifs, scolarité et situation financière
+                </p>
+                <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Élèves', value: stats.totalStudents },
+                    { label: 'Enseignants', value: stats.totalTeachers },
+                    { label: 'Classes', value: stats.totalClasses },
+                    { label: 'Impayés', value: stats.unpaidCount },
+                  ].map((k) => (
+                    <div key={k.label} className="rounded-lg bg-white/10 px-3 py-2.5">
+                      <p className="text-[11px] text-blue-200">{k.label}</p>
+                      <p className="text-xl font-bold">{loading ? '…' : (k.value?.toString() ?? '—')}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Situation financière résumée */}
+              <SectionTitle icon={<DollarSign className="w-5 h-5" />} title="Situation financière" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Kpi title="Total dû"   value={fmt(stats.totalDu ?? 0)}                           icon={DollarSign}  colorKey="blue"  loading={loading} />
-                <Kpi title="Encaissé"   value={fmt(stats.totalPaye ?? 0)}                         icon={TrendingUp}  colorKey="green" loading={loading} />
-                <Kpi title="Taux recouvrement" value={`${taux}%`}                                 icon={BarChart2}   colorKey="purple" loading={loading} />
+                <Kpi title="Total dû" value={fmt(stats.totalDu ?? 0)} icon={DollarSign} colorKey="blue" loading={loading} />
+                <Kpi title="Encaissé" value={fmt(stats.totalPaye ?? 0)} icon={TrendingUp} colorKey="green" loading={loading} />
+                <Kpi title="Taux de recouvrement" value={`${taux}%`} icon={BarChart2} colorKey="teal" loading={loading} />
+              </div>
+
+              <SectionTitle icon={<AlertCircle className="w-5 h-5" />} title="Vie scolaire" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Kpi title="Absences" value={stats.totalAbsences?.toString() ?? '—'} icon={AlertCircle} colorKey="red" loading={loading} />
+                <Kpi title="Justifications en attente" value={stats.pendingJustifications?.toString() ?? '—'} icon={Clock} colorKey="yellow" loading={loading} />
               </div>
 
               <QuickActions actions={[
-                { label: 'Liste des élèves',        href: '/eleves',              variant: 'secondary', icon: List },
-                { label: 'Présences & absences',    href: '/presences',           variant: 'secondary', icon: UserCheck },
+                { label: 'Espace finance', href: '/finance', variant: 'primary', icon: DollarSign },
+                { label: 'Élèves', href: '/eleves', variant: 'secondary', icon: List },
+                { label: 'Présences', href: '/presences', variant: 'secondary', icon: UserCheck },
                 ...(hasRole(role, can.manageUsers)
-                  ? [{ label: 'Gestion utilisateurs', href: '/utilisateurs', variant: 'secondary' as const, icon: UserCog }]
+                  ? [{ label: 'Utilisateurs', href: '/utilisateurs', variant: 'secondary' as const, icon: UserCog }]
                   : []),
-                { label: 'Messagerie',               href: '/messagerie',          variant: 'secondary', icon: MessageSquare },
-                { label: 'Emploi du temps',          href: '/emploi-du-temps',    variant: 'secondary', icon: CalendarDays },
+                { label: 'Messagerie', href: '/messagerie', variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
           )}
@@ -300,49 +317,81 @@ export default function DashboardPage() {
           {/* ── 4. FINANCE (Comptable / Caissier) ── */}
           {group === 'finance' && (
             <>
-              <SectionTitle
-                icon={<DollarSign className="w-5 h-5" />}
-                title={isCashierOnly ? 'Caisse du jour' : 'Tableau de bord financier'}
-              />
-
-              {canViewFull ? (
-                <>
-                  <div className={`rounded-xl p-5 border ${taux >= 80 ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <p className={`text-4xl font-bold ${taux >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>{taux}%</p>
-                        <p className="text-sm text-gray-500">Taux de recouvrement</p>
+              <div className={`rounded-2xl text-white p-6 shadow-sm ${isCashierOnly ? 'bg-emerald-800' : 'bg-[#1B3A6B]'}`}>
+                <p className="text-xs font-medium uppercase tracking-wide opacity-80">
+                  {isCashierOnly ? 'Poste de caisse' : 'Comptabilité'}
+                </p>
+                <h2 className="text-xl font-semibold mt-1">
+                  {isCashierOnly ? 'Caisse du jour' : 'Pilotage financier'}
+                </h2>
+                <p className="text-sm opacity-80 mt-1">
+                  {isCashierOnly
+                    ? 'Encaissements, session de caisse et suivi des opérations'
+                    : 'Recouvrement, trésorerie et contrôle des opérations'}
+                </p>
+                <div className="mt-5 grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {isCashierOnly ? (
+                    <>
+                      <div className="rounded-lg bg-white/10 px-3 py-2.5 col-span-2 md:col-span-1">
+                        <p className="text-[11px] opacity-80">Encaissé aujourd&apos;hui</p>
+                        <p className="text-xl font-bold">
+                          {loading ? '…' : fmt(financeExtra.today ?? stats.totalPaye ?? 0)}
+                        </p>
                       </div>
-                      <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all ${taux >= 80 ? 'bg-green-500' : 'bg-yellow-500'}`}
-                          style={{ width: `${taux}%` }} />
+                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
+                        <p className="text-[11px] opacity-80">Opérations</p>
+                        <p className="text-xl font-bold">{loading ? '…' : String(financeExtra.ops ?? 0)}</p>
                       </div>
-                    </div>
-                  </div>
+                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
+                        <p className="text-[11px] opacity-80">Élèves non à jour</p>
+                        <p className="text-xl font-bold">{loading ? '…' : (stats.unpaidCount?.toString() ?? '—')}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
+                        <p className="text-[11px] opacity-80">Taux</p>
+                        <p className="text-xl font-bold">{loading ? '…' : `${taux}%`}</p>
+                      </div>
+                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
+                        <p className="text-[11px] opacity-80">Encaissé</p>
+                        <p className="text-xl font-bold">{loading ? '…' : fmt(stats.totalPaye ?? 0)}</p>
+                      </div>
+                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
+                        <p className="text-[11px] opacity-80">Reste</p>
+                        <p className="text-xl font-bold">
+                          {loading ? '…' : fmt(Math.max(0, (stats.totalDu ?? 0) - (stats.totalPaye ?? 0)))}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Kpi title="Total dû"          value={fmt(stats.totalDu ?? 0)}                                   icon={DollarSign}  colorKey="blue"   loading={loading} />
-                    <Kpi title="Encaissé"          value={fmt(stats.totalPaye ?? 0)}                                 icon={TrendingUp}  colorKey="green"  loading={loading} />
-                    <Kpi title="Reste à recouvrer" value={fmt((stats.totalDu ?? 0) - (stats.totalPaye ?? 0))}       icon={AlertCircle} colorKey="red"    loading={loading} />
-                    <Kpi title="Élèves non à jour" value={stats.unpaidCount?.toString() ?? '—'}                     icon={Users}       colorKey="yellow" loading={loading} />
-                  </div>
-                </>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Kpi title="Encaissé aujourd'hui" value={fmt(financeExtra.today ?? stats.totalPaye ?? 0)} icon={TrendingUp} colorKey="green" loading={loading} />
-                  <Kpi title="Opérations du jour" value={String(financeExtra.ops ?? 0)} icon={List} colorKey="blue" loading={loading} />
+              {canViewFull && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Kpi title="Total dû" value={fmt(stats.totalDu ?? 0)} icon={DollarSign} colorKey="blue" loading={loading} />
+                  <Kpi title="Encaissé" value={fmt(stats.totalPaye ?? 0)} icon={TrendingUp} colorKey="green" loading={loading} />
+                  <Kpi title="Reste à recouvrer" value={fmt(Math.max(0, (stats.totalDu ?? 0) - (stats.totalPaye ?? 0)))} icon={AlertCircle} colorKey="red" loading={loading} />
                   <Kpi title="Élèves non à jour" value={stats.unpaidCount?.toString() ?? '—'} icon={Users} colorKey="yellow" loading={loading} />
                 </div>
               )}
 
-              <QuickActions actions={[
-                { label: 'Enregistrer un paiement', href: '/finance/paiement', variant: 'primary', icon: Receipt },
-                { label: 'Historique', href: '/finance/historique', variant: 'secondary', icon: List },
-                { label: 'Caisse', href: '/finance/caisse', variant: 'secondary', icon: DollarSign },
-                ...(canViewFull
-                  ? [{ label: 'Pilotage', href: '/finance', variant: 'secondary' as const, icon: BarChart2 }]
-                  : [{ label: 'Espace caisse', href: '/finance', variant: 'secondary' as const, icon: DollarSign }]),
-              ]} />
+              <QuickActions actions={
+                isCashierOnly
+                  ? [
+                      { label: 'Encaisser un paiement', href: '/finance/paiement', variant: 'primary', icon: Receipt },
+                      { label: 'Ouvrir / clôturer caisse', href: '/finance/caisse', variant: 'secondary', icon: DollarSign },
+                      { label: 'Historique', href: '/finance/historique', variant: 'secondary', icon: List },
+                      { label: 'Espace caisse', href: '/finance', variant: 'secondary', icon: BarChart2 },
+                    ]
+                  : [
+                      { label: 'Espace finance', href: '/finance', variant: 'primary', icon: BarChart2 },
+                      { label: 'Encaisser', href: '/finance/paiement', variant: 'secondary', icon: Receipt },
+                      { label: 'Configurer frais', href: '/finance/frais', variant: 'secondary', icon: DollarSign },
+                      { label: 'Caisse', href: '/finance/caisse', variant: 'secondary', icon: List },
+                    ]
+              } />
             </>
           )}
 
