@@ -44,7 +44,7 @@ export default function FinanceHistoriquePage() {
       router.push('/login');
       return;
     }
-    if (!hasRole(authStorage.getUser()?.role, can.recordPayment)) {
+    if (!hasRole(authStorage.getUser()?.role, can.viewFinance)) {
       router.push('/dashboard');
       return;
     }

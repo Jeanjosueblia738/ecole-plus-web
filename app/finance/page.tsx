@@ -58,7 +58,9 @@ export default function FinancePage() {
   const canConfigure = hasRole(role, can.configureFees);
   const canViewFull = hasRole(role, can.viewFinanceFull);
   const canOps = hasRole(role, can.manageFinanceOps);
+  const canCash = hasRole(role, can.recordPayment);
   const isCashierOnly = hasRole(role, ['CASHIER']) && !canViewFull;
+  const isViewOnly = canViewFull && !canOps && !canCash;
 
   const [stats, setStats] = useState<any>(null);
   const [fees, setFees] = useState<any[]>([]);
@@ -145,21 +147,25 @@ export default function FinancePage() {
   );
 
   const opsModules: Mod[] = [
-    {
-      href: '/finance/paiement',
-      title: 'Encaisser',
-      desc: 'Espèces, Mobile Money ou chèque',
-      icon: Banknote,
-      accent: 'bg-emerald-50 text-emerald-700',
-      primary: true,
-    },
-    {
-      href: '/finance/caisse',
-      title: 'Session de caisse',
-      desc: 'Ouverture, clôture, versement banque',
-      icon: Receipt,
-      accent: 'bg-amber-50 text-amber-700',
-    },
+    ...(canCash
+      ? [
+          {
+            href: '/finance/paiement',
+            title: 'Encaisser',
+            desc: 'Espèces, Mobile Money ou chèque',
+            icon: Banknote,
+            accent: 'bg-emerald-50 text-emerald-700',
+            primary: true,
+          } as Mod,
+          {
+            href: '/finance/caisse',
+            title: 'Session de caisse',
+            desc: 'Ouverture, clôture, versement banque',
+            icon: Receipt,
+            accent: 'bg-amber-50 text-amber-700',
+          } as Mod,
+        ]
+      : []),
     {
       href: '/finance/historique',
       title: 'Historique',
@@ -343,7 +349,7 @@ export default function FinancePage() {
           <section>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">
-                Opérations de caisse
+                {isViewOnly ? 'Consultation' : 'Opérations de caisse'}
               </h2>
               {!loading && (
                 <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -372,10 +378,17 @@ export default function FinancePage() {
             </section>
           )}
 
+          {isViewOnly && (
+            <p className="text-xs text-gray-500 border-t border-gray-100 pt-4">
+              Vue globale en lecture seule — le pilotage financier (frais, dépenses, banque)
+              et les encaissements sont réservés au comptable et au caissier.
+            </p>
+          )}
+
           {isCashierOnly && (
             <p className="text-xs text-gray-500 border-t border-gray-100 pt-4">
               Profil caissier — le pilotage (frais, dépenses, banque) est réservé
-              au comptable et à la direction.
+              au comptable.
             </p>
           )}
         </main>
