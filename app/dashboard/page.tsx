@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, AlertCircle, Clock, BookOpen, DollarSign, TrendingUp,
-  GraduationCap, UserCheck, FileText, BarChart2, Shield, Briefcase,
+  GraduationCap, UserCheck, FileText, BarChart2, Shield,
   CheckCircle, MessageSquare, CalendarDays, Pencil, Plus, List,
   Receipt, UserCog
 } from 'lucide-react';
@@ -98,6 +98,46 @@ function QuickActions({ actions }: { actions: { label: string; href: string; var
             </button>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function RoleHero({
+  eyebrow,
+  title,
+  subtitle,
+  tone = 'navy',
+  metrics,
+  loading,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  tone?: 'navy' | 'indigo' | 'slate' | 'teal' | 'violet' | 'emerald';
+  metrics: { label: string; value: string | number | undefined }[];
+  loading: boolean;
+}) {
+  const tones: Record<string, string> = {
+    navy: 'bg-[#1B3A6B]',
+    indigo: 'bg-indigo-800',
+    slate: 'bg-slate-800',
+    teal: 'bg-teal-800',
+    violet: 'bg-violet-900',
+    emerald: 'bg-emerald-800',
+  };
+  return (
+    <div className={`rounded-2xl text-white p-6 shadow-sm ${tones[tone]}`}>
+      <p className="text-xs font-medium uppercase tracking-wide opacity-80">{eyebrow}</p>
+      <h2 className="text-xl font-semibold mt-1">{title}</h2>
+      <p className="text-sm opacity-80 mt-1">{subtitle}</p>
+      <div className={`mt-5 grid gap-3 ${metrics.length >= 4 ? 'grid-cols-2 md:grid-cols-4' : metrics.length === 3 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2'}`}>
+        {metrics.map((m) => (
+          <div key={m.label} className="rounded-lg bg-white/10 px-3 py-2.5">
+            <p className="text-[11px] opacity-80">{m.label}</p>
+            <p className="text-xl font-bold">{loading ? '…' : String(m.value ?? '—')}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -211,29 +251,21 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── 1. DIRECTION (Admin / Founder / Director) ── */}
           {group === 'direction' && (
             <>
-              <div className="rounded-2xl bg-[#1B3A6B] text-white p-6 shadow-sm">
-                <p className="text-xs font-medium text-blue-200 uppercase tracking-wide">Direction</p>
-                <h2 className="text-xl font-semibold mt-1">Vue d&apos;ensemble</h2>
-                <p className="text-sm text-blue-100/80 mt-1">
-                  Effectifs, scolarité et situation financière
-                </p>
-                <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    { label: 'Élèves', value: stats.totalStudents },
-                    { label: 'Enseignants', value: stats.totalTeachers },
-                    { label: 'Classes', value: stats.totalClasses },
-                    { label: 'Impayés', value: stats.unpaidCount },
-                  ].map((k) => (
-                    <div key={k.label} className="rounded-lg bg-white/10 px-3 py-2.5">
-                      <p className="text-[11px] text-blue-200">{k.label}</p>
-                      <p className="text-xl font-bold">{loading ? '…' : (k.value?.toString() ?? '—')}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <RoleHero
+                tone="navy"
+                eyebrow="Direction"
+                title="Vue d'ensemble"
+                subtitle="Effectifs, scolarité et situation financière"
+                loading={loading}
+                metrics={[
+                  { label: 'Élèves', value: stats.totalStudents },
+                  { label: 'Enseignants', value: stats.totalTeachers },
+                  { label: 'Classes', value: stats.totalClasses },
+                  { label: 'Impayés', value: stats.unpaidCount },
+                ]}
+              />
 
               <SectionTitle icon={<DollarSign className="w-5 h-5" />} title="Situation financière" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -263,21 +295,31 @@ export default function DashboardPage() {
           {/* ── 2. CENSEUR ── */}
           {group === 'pedagogie' && (
             <>
-              <SectionTitle icon={<GraduationCap className="w-5 h-5" />} title="Suivi pédagogique" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Kpi title="Élèves"                    value={stats.totalStudents?.toString() ?? '—'}         icon={Users}         colorKey="blue"   loading={loading} />
-                <Kpi title="Enseignants actifs"         value={stats.totalTeachers?.toString() ?? '—'}         icon={GraduationCap} colorKey="purple" loading={loading} />
-                <Kpi title="Classes"                    value={stats.totalClasses?.toString() ?? '—'}          icon={BookOpen}      colorKey="teal"   loading={loading} />
-                <Kpi title="Absences"                   value={stats.totalAbsences?.toString() ?? '—'}         icon={AlertCircle}   colorKey="red"    loading={loading} />
-                <Kpi title="Justifications en attente"  value={stats.pendingJustifications?.toString() ?? '—'} icon={Clock}         colorKey="yellow" loading={loading} />
+              <RoleHero
+                tone="indigo"
+                eyebrow="Censeur"
+                title="Suivi pédagogique"
+                subtitle="Classes, cahier de texte, bulletins et discipline"
+                loading={loading}
+                metrics={[
+                  { label: 'Élèves', value: stats.totalStudents },
+                  { label: 'Enseignants', value: stats.totalTeachers },
+                  { label: 'Classes', value: stats.totalClasses },
+                  { label: 'Absences', value: stats.totalAbsences },
+                ]}
+              />
+              <SectionTitle icon={<Clock className="w-5 h-5" />} title="À traiter" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Kpi title="Justifications en attente" value={stats.pendingJustifications?.toString() ?? '—'} icon={Clock} colorKey="yellow" loading={loading} />
+                <Kpi title="Absences signalées" value={stats.totalAbsences?.toString() ?? '—'} icon={AlertCircle} colorKey="red" loading={loading} />
               </div>
-
               <QuickActions actions={[
-                { label: 'Cahier de texte',    href: '/cahier',            variant: 'primary',    icon: Pencil },
-                { label: 'Bulletins',          href: '/bulletins',         variant: 'secondary',  icon: FileText },
-                { label: 'Emploi du temps',    href: '/emploi-du-temps',   variant: 'secondary',  icon: CalendarDays },
-                { label: 'Absences',           href: '/presences',         variant: 'secondary',  icon: AlertCircle },
-                { label: 'Messagerie',         href: '/messagerie',        variant: 'secondary',  icon: MessageSquare },
+                { label: 'Cahier de texte', href: '/cahier', variant: 'primary', icon: Pencil },
+                { label: 'Bulletins', href: '/bulletins', variant: 'secondary', icon: FileText },
+                { label: 'Conseil de classe', href: '/conseil', variant: 'secondary', icon: GraduationCap },
+                { label: 'Emploi du temps', href: '/emploi-du-temps', variant: 'secondary', icon: CalendarDays },
+                { label: 'Présences', href: '/presences', variant: 'secondary', icon: AlertCircle },
+                { label: 'Messagerie', href: '/messagerie', variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
           )}
@@ -285,88 +327,65 @@ export default function DashboardPage() {
           {/* ── 3. VIE SCOLAIRE (Surveillant / Éducateur) ── */}
           {group === 'vie_scolaire' && (
             <>
-              <SectionTitle icon={<UserCheck className="w-5 h-5" />} title="Vie scolaire & Discipline" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Kpi title="Élèves"                    value={stats.totalStudents?.toString() ?? '—'}         icon={Users}        colorKey="blue"   loading={loading} />
-                <Kpi title="Absences"                  value={stats.totalAbsences?.toString() ?? '—'}         icon={AlertCircle}  colorKey="red"    loading={loading} />
-                <Kpi title="Justifications en attente" value={stats.pendingJustifications?.toString() ?? '—'} icon={Clock}        colorKey="yellow" loading={loading} />
-              </div>
-
+              <RoleHero
+                tone="slate"
+                eyebrow={role === 'EDUCATOR' ? 'Éducateur' : 'Surveillant'}
+                title="Vie scolaire"
+                subtitle="Présences, discipline et suivi des élèves"
+                loading={loading}
+                metrics={[
+                  { label: 'Élèves', value: stats.totalStudents },
+                  { label: 'Absences', value: stats.totalAbsences },
+                  { label: 'À justifier', value: stats.pendingJustifications },
+                ]}
+              />
               {(stats.pendingJustifications ?? 0) > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
-                  <p className="text-sm text-yellow-800 font-medium">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <p className="text-sm text-amber-900 font-medium">
                     {stats.pendingJustifications} justification(s) en attente de validation
                   </p>
-                  <button onClick={() => router.push('/presences')}
-                    className="ml-auto px-4 py-1.5 bg-yellow-600 text-white rounded-lg text-xs font-medium hover:bg-yellow-700">
-                    Voir
+                  <button type="button" onClick={() => router.push('/presences')}
+                    className="ml-auto px-4 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700">
+                    Traiter
                   </button>
                 </div>
               )}
-
               <QuickActions actions={[
-                { label: 'Liste des classes',    href: '/classes',     variant: 'primary',   icon: BookOpen },
-                { label: 'Liste des élèves',     href: '/eleves',      variant: 'secondary', icon: List },
-                { label: 'Présences / absences', href: '/presences',   variant: 'secondary', icon: UserCheck },
-                { label: 'Messagerie',           href: '/messagerie',  variant: 'secondary', icon: MessageSquare },
+                { label: 'Faire l\'appel / Présences', href: '/presences', variant: 'primary', icon: UserCheck },
+                { label: 'Liste des élèves', href: '/eleves', variant: 'secondary', icon: List },
+                { label: 'Classes', href: '/classes', variant: 'secondary', icon: BookOpen },
+                { label: 'Messagerie', href: '/messagerie', variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
           )}
 
-          {/* ── 4. FINANCE (Comptable / Caissier) ── */}
           {group === 'finance' && (
             <>
-              <div className={`rounded-2xl text-white p-6 shadow-sm ${isCashierOnly ? 'bg-emerald-800' : 'bg-[#1B3A6B]'}`}>
-                <p className="text-xs font-medium uppercase tracking-wide opacity-80">
-                  {isCashierOnly ? 'Poste de caisse' : 'Comptabilité'}
-                </p>
-                <h2 className="text-xl font-semibold mt-1">
-                  {isCashierOnly ? 'Caisse du jour' : 'Pilotage financier'}
-                </h2>
-                <p className="text-sm opacity-80 mt-1">
-                  {isCashierOnly
+              <RoleHero
+                tone={isCashierOnly ? 'emerald' : 'navy'}
+                eyebrow={isCashierOnly ? 'Poste de caisse' : 'Comptabilité'}
+                title={isCashierOnly ? 'Caisse du jour' : 'Pilotage financier'}
+                subtitle={
+                  isCashierOnly
                     ? 'Encaissements, session de caisse et suivi des opérations'
-                    : 'Recouvrement, trésorerie et contrôle des opérations'}
-                </p>
-                <div className="mt-5 grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {isCashierOnly ? (
-                    <>
-                      <div className="rounded-lg bg-white/10 px-3 py-2.5 col-span-2 md:col-span-1">
-                        <p className="text-[11px] opacity-80">Encaissé aujourd&apos;hui</p>
-                        <p className="text-xl font-bold">
-                          {loading ? '…' : fmt(financeExtra.today ?? stats.totalPaye ?? 0)}
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                        <p className="text-[11px] opacity-80">Opérations</p>
-                        <p className="text-xl font-bold">{loading ? '…' : String(financeExtra.ops ?? 0)}</p>
-                      </div>
-                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                        <p className="text-[11px] opacity-80">Élèves non à jour</p>
-                        <p className="text-xl font-bold">{loading ? '…' : (stats.unpaidCount?.toString() ?? '—')}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                        <p className="text-[11px] opacity-80">Taux</p>
-                        <p className="text-xl font-bold">{loading ? '…' : `${taux}%`}</p>
-                      </div>
-                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                        <p className="text-[11px] opacity-80">Encaissé</p>
-                        <p className="text-xl font-bold">{loading ? '…' : fmt(stats.totalPaye ?? 0)}</p>
-                      </div>
-                      <div className="rounded-lg bg-white/10 px-3 py-2.5">
-                        <p className="text-[11px] opacity-80">Reste</p>
-                        <p className="text-xl font-bold">
-                          {loading ? '…' : fmt(Math.max(0, (stats.totalDu ?? 0) - (stats.totalPaye ?? 0)))}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+                    : 'Recouvrement, trésorerie et contrôle des opérations'
+                }
+                loading={loading}
+                metrics={
+                  isCashierOnly
+                    ? [
+                        { label: "Encaissé aujourd'hui", value: fmt(financeExtra.today ?? stats.totalPaye ?? 0) },
+                        { label: 'Opérations', value: financeExtra.ops ?? 0 },
+                        { label: 'Élèves non à jour', value: stats.unpaidCount },
+                      ]
+                    : [
+                        { label: 'Taux', value: `${taux}%` },
+                        { label: 'Encaissé', value: fmt(stats.totalPaye ?? 0) },
+                        { label: 'Reste', value: fmt(Math.max(0, (stats.totalDu ?? 0) - (stats.totalPaye ?? 0))) },
+                      ]
+                }
+              />
 
               {canViewFull && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -398,19 +417,25 @@ export default function DashboardPage() {
           {/* ── 5. SECRÉTARIAT ── */}
           {group === 'secretariat' && (
             <>
-              <SectionTitle icon={<Briefcase className="w-5 h-5" />} title="Secrétariat & Administration" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Kpi title="Élèves inscrits" value={stats.totalStudents?.toString() ?? '—'} icon={Users}         colorKey="blue"   loading={loading} />
-                <Kpi title="Classes"          value={stats.totalClasses?.toString() ?? '—'}  icon={BookOpen}      colorKey="teal"   loading={loading} />
-                <Kpi title="Enseignants"      value={stats.totalTeachers?.toString() ?? '—'} icon={GraduationCap} colorKey="purple" loading={loading} />
-              </div>
-
+              <RoleHero
+                tone="teal"
+                eyebrow="Secrétariat"
+                title="Administration scolaire"
+                subtitle="Inscriptions, dossiers élèves et documents"
+                loading={loading}
+                metrics={[
+                  { label: 'Élèves', value: stats.totalStudents },
+                  { label: 'Classes', value: stats.totalClasses },
+                  { label: 'Enseignants', value: stats.totalTeachers },
+                ]}
+              />
               <QuickActions actions={[
-                { label: 'Inscrire un élève',  href: '/eleves/nouveau',   variant: 'primary',   icon: Plus },
-                { label: 'Liste des élèves',   href: '/eleves',            variant: 'secondary', icon: List },
-                { label: 'Rapports',           href: '/rapports',          variant: 'secondary', icon: FileText },
-                { label: 'Emploi du temps',    href: '/emploi-du-temps',   variant: 'secondary', icon: CalendarDays },
-                { label: 'Messagerie',         href: '/messagerie',        variant: 'secondary', icon: MessageSquare },
+                { label: 'Inscrire un élève', href: '/eleves/nouveau', variant: 'primary', icon: Plus },
+                { label: 'Pré-inscriptions', href: '/inscriptions', variant: 'secondary', icon: Users },
+                { label: 'Liste des élèves', href: '/eleves', variant: 'secondary', icon: List },
+                { label: 'Rapports', href: '/rapports', variant: 'secondary', icon: FileText },
+                { label: 'Emploi du temps', href: '/emploi-du-temps', variant: 'secondary', icon: CalendarDays },
+                { label: 'Messagerie', href: '/messagerie', variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
           )}
@@ -418,19 +443,25 @@ export default function DashboardPage() {
           {/* ── 6. ENSEIGNANT ── */}
           {group === 'teacher' && (
             <>
-              <SectionTitle icon={<GraduationCap className="w-5 h-5" />} title="Mon espace enseignant" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Kpi title="Absences signalées" value={stats.totalAbsences?.toString() ?? '—'} icon={AlertCircle} colorKey="red"    loading={loading} />
-                <Kpi title="Séances cahier"     value={stats.totalGrades?.toString() ?? '—'}   icon={FileText}    colorKey="purple" loading={loading} />
-                <Kpi title="Classes actives"    value={stats.totalClasses?.toString() ?? '—'}  icon={BookOpen}    colorKey="teal"   loading={loading} />
-              </div>
-
+              <RoleHero
+                tone="violet"
+                eyebrow="Enseignant"
+                title="Mon espace pédagogique"
+                subtitle="Appel, notes, cahier de texte et examens"
+                loading={loading}
+                metrics={[
+                  { label: 'Classes', value: stats.totalClasses },
+                  { label: 'Séances cahier', value: stats.totalGrades },
+                  { label: 'Absences signalées', value: stats.totalAbsences },
+                ]}
+              />
               <QuickActions actions={[
-                { label: 'Faire l\'appel',   href: '/presences',       variant: 'primary',   icon: UserCheck },
-                { label: 'Saisir des notes', href: '/notes',           variant: 'primary',   icon: FileText },
-                { label: 'Cahier de texte',  href: '/cahier',          variant: 'secondary', icon: Pencil },
-                { label: 'Emploi du temps',  href: '/emploi-du-temps', variant: 'secondary', icon: CalendarDays },
-                { label: 'Messagerie',       href: '/messagerie',      variant: 'secondary', icon: MessageSquare },
+                { label: 'Faire l\'appel', href: '/presences', variant: 'primary', icon: UserCheck },
+                { label: 'Saisir des notes', href: '/notes', variant: 'primary', icon: FileText },
+                { label: 'Cahier de texte', href: '/cahier', variant: 'secondary', icon: Pencil },
+                { label: 'Examens', href: '/examens', variant: 'secondary', icon: BookOpen },
+                { label: 'Emploi du temps', href: '/emploi-du-temps', variant: 'secondary', icon: CalendarDays },
+                { label: 'Messagerie', href: '/messagerie', variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
           )}
