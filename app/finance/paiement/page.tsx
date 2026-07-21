@@ -86,10 +86,8 @@ export default function FinancePaiementPage() {
       setError('Saisissez le numéro de chèque');
       return;
     }
-    if (method === 'mobile_money') {
-      setError(
-        'Paiement Mobile Money non disponible pour le moment. Utilisez Espèces ou Chèque, ou le parcours parent sur mobile.',
-      );
+    if (method === 'mobile_money' && !phone.trim()) {
+      setError('Saisissez le numéro Mobile Money');
       return;
     }
 
@@ -101,17 +99,33 @@ export default function FinancePaiementPage() {
 
     setPaying(true);
     try {
+      const paymentMode =
+        method === 'cheque'
+          ? 'cheque'
+          : method === 'mobile_money'
+            ? mmOp
+            : 'especes';
+
       const { data } = await financeApi.recordPayment({
         studentId,
         feeId,
         amountPaid: amount,
-        paymentMode: method === 'cheque' ? 'cheque' : 'especes',
+        paymentMode,
         ...(method === 'cheque' ? { receiptNo: chequeNo.trim() } : {}),
+        ...(method === 'mobile_money'
+          ? { phoneNumber: phone.trim().replace(/\s/g, '') }
+          : {}),
       });
       setSuccess(data);
     } catch (err: any) {
       const msg = err?.response?.data?.message;
-      setError(Array.isArray(msg) ? msg.join(', ') : msg || 'Erreur paiement');
+      const status = err?.response?.status;
+      const detail = Array.isArray(msg) ? msg.join(', ') : msg || 'Erreur paiement';
+      setError(
+        status
+          ? `${detail} (HTTP ${status}${authStorage.getUser()?.role ? ` · rôle ${authStorage.getUser()?.role}` : ''})`
+          : detail,
+      );
     } finally {
       setPaying(false);
     }
@@ -284,10 +298,9 @@ export default function FinancePaiementPage() {
               )}
 
               {method === 'mobile_money' && (
-                <div className="space-y-3 p-4 bg-amber-50 border border-amber-100 rounded-xl">
-                  <p className="text-xs text-amber-800">
-                    Mobile Money n’est pas encore branché côté passerelle. Choisissez Espèces ou Chèque pour
-                    un encaissement immédiat.
+                <div className="space-y-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                  <p className="text-xs text-blue-800">
+                    Enregistrement d’un paiement déjà effectué par Mobile Money (encaissement staff).
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {MM_OPS.map((op) => (
@@ -306,6 +319,7 @@ export default function FinancePaiementPage() {
                     ))}
                   </div>
                   <input
+                    required={method === 'mobile_money'}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={`+225 ${MM_OPS.find((o) => o.value === mmOp)?.prefix} XX XX XX XX`}
@@ -339,7 +353,7 @@ export default function FinancePaiementPage() {
               >
                 {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 {method === 'mobile_money'
-                  ? 'Continuer vers Mobile Money'
+                  ? 'Valider le paiement Mobile Money'
                   : 'Valider le paiement'}
               </button>
             </form>

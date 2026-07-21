@@ -67,7 +67,9 @@ export const can = {
 };
 
 export function hasRole(role: string | undefined | null, allowed: readonly Role[]): boolean {
-  return !!role && allowed.includes(role as Role);
+  if (!role) return false;
+  const normalized = String(role).trim().toUpperCase() as Role;
+  return allowed.includes(normalized);
 }
 
 export function canAccessPath(role: string | undefined | null, path: string): boolean {

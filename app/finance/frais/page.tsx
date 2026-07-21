@@ -15,7 +15,7 @@ export default function ConfigurerFraisPage() {
   const router = useRouter();
   const year = currentSchoolYear();
   const role = authStorage.getUser()?.role;
-  const canManage = hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR']);
+  const canManage = hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT']);
 
   const [fees, setFees] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -163,7 +163,8 @@ export default function ConfigurerFraisPage() {
 
           {!canManage && (
             <div className="bg-amber-50 border border-amber-100 text-amber-800 rounded-xl px-4 py-3 text-sm">
-              Consultation seule — la création et l’assignation des frais sont réservées à la direction.
+              Consultation seule — la création et l’assignation des frais sont réservées à la direction / comptable.
+              {role ? ` (rôle détecté : ${role})` : ' (aucun rôle détecté — reconnectez-vous)'}
             </div>
           )}
 
