@@ -25,6 +25,7 @@ export default function BulletinsPage() {
     classMax?: number;
   }>({ averages: {} });
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [generating, setGenerating] = useState<string | null>(null);
   const [generatingAll, setGeneratingAll] = useState(false);
   const [done, setDone] = useState<string[]>([]);
@@ -39,22 +40,26 @@ export default function BulletinsPage() {
     classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
-    });
+    }).catch(() => setLoadError('Impossible de charger les classes.'));
   }, [router]);
 
   useEffect(() => {
     if (!selectedClass) return;
     setLoading(true);
     setDone([]);
+    setLoadError('');
     setClassStats({ averages: {} });
     studentsApi.getAll({ classId: selectedClass })
       .then(({ data }) => setStudents(data))
-      .catch(console.error)
+      .catch(() => {
+        setStudents([]);
+        setLoadError('Impossible de charger les élèves de cette classe.');
+      })
       .finally(() => setLoading(false));
   }, [selectedClass]);
 
   const loadClassStats = async () => {
-    if (!selectedClass) return classStats;
+    if (!selectedClass) return { averages: {} };
     try {
       const { data } = await gradesApi.getByClass(selectedClass, trimestre);
       const averages: Record<string, number> = {};
@@ -77,7 +82,10 @@ export default function BulletinsPage() {
       return stats;
     } catch (e) {
       console.error(e);
-      return classStats;
+      alert('Impossible de charger les moyennes de classe. Les rangs peuvent être incomplets.');
+      const empty = { averages: {} as Record<string, number> };
+      setClassStats(empty);
+      return empty;
     }
   };
 
@@ -101,7 +109,7 @@ export default function BulletinsPage() {
       const idx = sorted.findIndex(([id]) => id === student.id);
       rang = idx >= 0 ? idx + 1 : undefined;
     }
-    return {
+    const payload: Record<string, unknown> = {
       schoolName: tenant?.name || 'Etablissement',
       schoolCity: tenant?.city || 'Abidjan',
       schoolCode: tenant?.code || '',
@@ -122,9 +130,14 @@ export default function BulletinsPage() {
       gender: student.gender,
       dateOfBirth: student.dateOfBirth,
       photoUrl: student.photoUrl,
-      nationality: 'Ivoirienne',
-      isRepeater: false,
     };
+    if (student.nationality != null && student.nationality !== '') {
+      payload.nationality = student.nationality;
+    }
+    if (typeof student.isRepeater === 'boolean') {
+      payload.isRepeater = student.isRepeater;
+    }
+    return payload as any;
   };
 
   const generateOne = async (student: any) => {
@@ -144,6 +157,7 @@ export default function BulletinsPage() {
 
   const generateAll = async () => {
     setGeneratingAll(true);
+    const failures: string[] = [];
     try {
       const stats = await loadClassStats();
       for (const student of students) {
@@ -154,7 +168,13 @@ export default function BulletinsPage() {
           await new Promise((r) => setTimeout(r, 400));
         } catch (e) {
           console.error(`Erreur bulletin ${student.firstName}:`, e);
+          failures.push(`${student.lastName} ${student.firstName}`);
         }
+      }
+      if (failures.length > 0) {
+        alert(
+          `${failures.length} bulletin(s) en échec sur ${students.length} :\n${failures.slice(0, 8).join('\n')}${failures.length > 8 ? '\n…' : ''}`,
+        );
       }
     } finally {
       setGeneratingAll(false);
@@ -170,6 +190,11 @@ export default function BulletinsPage() {
           subtitle="Format MEN ivoirien — génération PDF trimestrielle"
         />
         <main className="flex-1 p-6">
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+              {loadError}
+            </div>
+          )}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
             <div className="flex gap-4 items-end flex-wrap">
               <div>

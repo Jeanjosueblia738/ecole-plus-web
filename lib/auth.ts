@@ -16,11 +16,14 @@ async function setHttpOnlySession(
   user: AuthUser,
   tenant: AuthTenant,
 ) {
-  await fetch('/api/auth/session', {
+  const res = await fetch('/api/auth/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ kind: 'ecole', token, user, tenant }),
   });
+  if (!res.ok) {
+    throw new Error(`Impossible de créer la session (${res.status})`);
+  }
 }
 
 export const authStorage = {

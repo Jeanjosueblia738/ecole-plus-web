@@ -23,6 +23,8 @@ export default function PresencesPage() {
   const [saved, setSaved] = useState(false);
   const [smsLoading, setSmsLoading] = useState(false);
   const [smsResult, setSmsResult] = useState<string | null>(null);
+  const [banner, setBanner] = useState('');
+  const [studentsError, setStudentsError] = useState('');
 
   const user = authStorage.getUser();
   const canDoAppel = hasRole(user?.role, can.doAppel);
@@ -38,14 +40,18 @@ export default function PresencesPage() {
       router.push('/dashboard');
       return;
     }
+    if (!canDoAppel) {
+      setBanner('Consultation seule : seuls les enseignants peuvent faire l\'appel.');
+    }
     classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
     }).catch(() => {
-      classesApi.getAll().then(({ data }) => {
-        setClasses(data);
-        if (data.length > 0) setSelectedClass(data[0].id);
-      });
+      setBanner((prev) =>
+        prev
+          ? `${prev} Impossible de charger les classes de l'année en cours.`
+          : 'Impossible de charger les classes de l\'année en cours.',
+      );
     });
   }, [router]);
 
@@ -53,11 +59,16 @@ export default function PresencesPage() {
     if (!selectedClass) return;
     setSaved(false);
     setSmsResult(null);
+    setStudentsError('');
     studentsApi.getAll({ classId: selectedClass }).then(({ data }) => {
       setStudents(data);
       const init: Record<string, string> = {};
       data.forEach((s: any) => { init[s.id] = 'PRESENT'; });
       setRecords(init);
+    }).catch(() => {
+      setStudents([]);
+      setRecords({});
+      setStudentsError('Impossible de charger les élèves de cette classe.');
     });
   }, [selectedClass]);
 
@@ -145,6 +156,16 @@ export default function PresencesPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Présences" subtitle={`Appel du ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`} />
         <main className="flex-1 p-6">
+          {banner && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm mb-4">
+              {banner}
+            </div>
+          )}
+          {studentsError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+              {studentsError}
+            </div>
+          )}
           <div className="flex gap-4 mb-6 flex-wrap items-end">
             <div>
               <label className="block text-xs text-gray-500 mb-1">Classe</label>

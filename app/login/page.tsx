@@ -6,6 +6,12 @@ import { School, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 
+function safeNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
+  if (raw.startsWith('/super-admin') || raw.startsWith('/login')) return '/dashboard';
+  return raw;
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ tenantCode: '', email: '', password: '' });
@@ -24,23 +30,10 @@ export default function LoginPage() {
         form.password
       );
       await authStorage.save(data.access_token, data.user, data.tenant);
-      router.push('/dashboard');
-    } catch (err: any) {
-      const status = err?.response?.status;
-      const apiMsg = err?.response?.data?.message;
-      if (status === 503 || status >= 500) {
-        setError(
-          typeof apiMsg === 'string'
-            ? apiMsg
-            : 'Serveur ou base indisponible — réessayez dans un instant.',
-        );
-      } else {
-        setError(
-          typeof apiMsg === 'string'
-            ? apiMsg
-            : 'Code établissement, email ou mot de passe incorrect.',
-        );
-      }
+      const next = new URLSearchParams(window.location.search).get('next');
+      router.push(safeNextPath(next));
+    } catch {
+      setError('Code établissement, email ou mot de passe incorrect.');
     } finally {
       setLoading(false);
     }

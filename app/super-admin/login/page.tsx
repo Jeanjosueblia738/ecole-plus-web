@@ -6,6 +6,12 @@ import { GraduationCap, Loader2, Lock, Mail } from 'lucide-react';
 import api from '@/lib/api';
 import { saAuth } from '@/lib/sa-auth';
 
+function safeSaNextPath(raw: string | null): string {
+  if (!raw || !raw.startsWith('/super-admin') || raw.startsWith('//')) return '/super-admin';
+  if (raw.startsWith('/super-admin/login')) return '/super-admin';
+  return raw;
+}
+
 export default function SuperAdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -22,7 +28,8 @@ export default function SuperAdminLoginPage() {
         headers: { 'X-Auth-Scope': 'sa' },
       });
       await saAuth.save(data.access_token, data.user);
-      router.push('/super-admin');
+      const next = new URLSearchParams(window.location.search).get('next');
+      router.push(safeSaNextPath(next));
     } catch (e: any) {
       const status = e.response?.status;
       const apiMsg = e.response?.data?.message;

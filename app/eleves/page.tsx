@@ -6,6 +6,7 @@ import { Search, Plus, User, Phone, Trash2, Pencil } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { studentsApi } from '@/lib/api';
+import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
@@ -28,8 +29,10 @@ export default function ElevesPage() {
   const [canDelete, setCanDelete] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const year = currentSchoolYear();
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -44,10 +47,15 @@ export default function ElevesPage() {
 
   const loadStudents = async (q?: string) => {
     setLoading(true);
+    setLoadError('');
     try {
       const { data } = await studentsApi.getAll({ search: q });
-      setStudents(data);
-    } catch (err) { console.error(err); }
+      setStudents(Array.isArray(data) ? data : data?.data ?? []);
+    } catch (err) {
+      console.error(err);
+      setStudents([]);
+      setLoadError('Impossible de charger les élèves. Vérifiez la connexion.');
+    }
     finally { setLoading(false); }
   };
 
@@ -63,7 +71,10 @@ export default function ElevesPage() {
     try {
       await studentsApi.delete(id);
       setStudents(s => s.filter(x => x.id !== id));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      alert('Suppression impossible. Réessayez.');
+    }
     finally { setDeleting(null); }
   };
 
@@ -74,8 +85,17 @@ export default function ElevesPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Gestion des élèves" subtitle={`${students.length} élève(s) inscrit(s)`} />
+        <Header title="Gestion des élèves" subtitle={`${students.length} élève(s) inscrit(s) — ${year}`} />
         <main className="flex-1 p-6">
+
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-6 text-sm text-red-700 flex items-center justify-between gap-3">
+              <span>{loadError}</span>
+              <button type="button" onClick={() => loadStudents(search)} className="text-red-600 font-medium text-xs hover:underline">
+                Réessayer
+              </button>
+            </div>
+          )}
 
           {/* Barre d'outils */}
           <div className="flex items-center gap-4 mb-6">
@@ -114,6 +134,12 @@ export default function ElevesPage() {
                       </td>
                     ))}</tr>
                   ))
+                ) : loadError ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-12 text-red-500 text-sm">
+                      Erreur de chargement
+                    </td>
+                  </tr>
                 ) : students.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-12 text-gray-400">

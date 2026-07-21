@@ -69,6 +69,7 @@ export default function EmploiDuTempsPage() {
     day: 'LUNDI', startTime: '08:00', endTime: '09:00', room: '', year: currentSchoolYear(),
   });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -87,16 +88,25 @@ export default function EmploiDuTempsPage() {
 
   const loadClasses = async () => {
     try {
-      const { data } = await api.get('/classes');
-      setClasses(data.data ?? data);
-    } catch (e) { console.error(e); }
+      const { data } = await api.get(`/classes?year=${encodeURIComponent(currentYear)}`);
+      const list = data.data ?? data;
+      setClasses(list);
+      if (list.length > 0 && !selectedClass) setSelectedClass(list[0].id);
+      setError('');
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de charger les classes.');
+    }
   };
 
   const loadTeachers = async () => {
     try {
       const { data } = await api.get('/teachers');
       setTeachers(data.data ?? data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de charger les enseignants.');
+    }
   };
 
   const loadTimetable = async () => {
@@ -112,7 +122,11 @@ export default function EmploiDuTempsPage() {
       if (!url) { return; }
       const { data } = await api.get(url);
       setByDay(data.byDay ?? {});
-    } catch (e) { console.error(e); }
+      setError('');
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de charger l\'emploi du temps.');
+    }
     finally { setLoading(false); }
   };
 
@@ -124,7 +138,11 @@ export default function EmploiDuTempsPage() {
       setShowForm(false);
       setForm({ classId: '', teacherId: '', subject: '', day: 'LUNDI', startTime: '08:00', endTime: '09:00', room: '', year: currentYear });
       if (selectedClass === form.classId) { loadTimetable(); }
-    } catch (e) { console.error(e); }
+      setError('');
+    } catch (e) {
+      console.error(e);
+      setError('Enregistrement de la séance impossible.');
+    }
     finally { setSaving(false); }
   };
 
@@ -139,7 +157,11 @@ export default function EmploiDuTempsPage() {
         }
         return updated;
       });
-    } catch (e) { console.error(e); }
+      setError('');
+    } catch (e) {
+      console.error(e);
+      setError('Suppression impossible.');
+    }
     finally { setDeleting(null); }
   };
 
@@ -151,6 +173,12 @@ export default function EmploiDuTempsPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Emploi du temps" subtitle={`Année scolaire ${currentYear}`} />
         <main className="flex-1 p-6 space-y-6">
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
           {/* Barre de contrôle */}
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">

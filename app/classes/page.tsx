@@ -23,6 +23,7 @@ export default function ClassesPage() {
   const router = useRouter();
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const role = authStorage.getUser()?.role;
   const canCreate = hasRole(role, can.createClass);
@@ -47,7 +48,10 @@ export default function ClassesPage() {
           setYearFilter('all');
         }
       })
-      .catch(console.error)
+      .catch(() => {
+        setClasses([]);
+        setLoadError('Impossible de charger les classes.');
+      })
       .finally(() => setLoading(false));
   }, [router, activeYear]);
 
@@ -71,6 +75,11 @@ export default function ClassesPage() {
           subtitle={`${filtered.length} classe(s)${yearFilter !== 'all' ? ` — ${yearFilter}` : ''}${classes.length !== filtered.length ? ` / ${classes.length} au total` : ''}`}
         />
         <main className="flex-1 p-6">
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+              {loadError}
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-gray-500">Année :</span>
@@ -119,6 +128,12 @@ export default function ClassesPage() {
                   <div className="h-4 bg-gray-100 rounded w-16" />
                 </div>
               ))}
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-20 text-red-500">
+              <GraduationCap className="w-16 h-16 mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Erreur de chargement</p>
+              <p className="text-sm mt-1 text-red-400">{loadError}</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20 text-gray-400">

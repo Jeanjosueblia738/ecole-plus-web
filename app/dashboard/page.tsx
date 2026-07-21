@@ -11,9 +11,10 @@ import {
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import KpiCard from '@/components/KpiCard';
-import { studentsApi, attendanceApi, financeApi } from '@/lib/api';
+import { studentsApi, attendanceApi, financeApi, cahierApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
+import { currentSchoolYear } from '@/lib/school-year';
 
 interface Stats {
   totalStudents: number;
@@ -40,7 +41,7 @@ function getRoleGroup(role: string) {
   if (FINANCE_ROLES.includes(role)) return 'finance';
   if (ADMIN_ROLES.includes(role)) return 'secretariat';
   if (role === 'TEACHER') return 'teacher';
-  return 'direction';
+  return 'unknown';
 }
 
 const roleLabels: Record<string, string> = {
@@ -108,7 +109,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const user = authStorage.getUser();
   const tenant = authStorage.getTenant();
-  const role = user?.role ?? 'ADMIN';
+  const role = user?.role ?? '';
   const group = getRoleGroup(role);
   const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
   const taux = (stats.totalDu ?? 0) > 0
@@ -123,26 +124,42 @@ export default function DashboardPage() {
   const loadStats = async () => {
     setLoading(true);
     try {
-      const [studRes, attRes, finRes] = await Promise.allSettled([
+      const canViewFinance = hasRole(role, can.viewFinance);
+      const fetches: Promise<any>[] = [
         studentsApi.getStats(),
         attendanceApi.getStats(),
-        financeApi.getStats(),
-      ]);
+      ];
+      if (canViewFinance) {
+        fetches.push(financeApi.getStats(currentSchoolYear()));
+      }
+      if (group === 'teacher') {
+        fetches.push(cahierApi.getStats().catch(() => null));
+      }
+      const results = await Promise.allSettled(fetches);
+      const studRes = results[0];
+      const attRes = results[1];
+      const finRes = canViewFinance ? results[2] : null;
+      const cahierRes = group === 'teacher' ? results[canViewFinance ? 3 : 2] : null;
+
       const s: Partial<Stats> = {};
-      if (studRes.status === 'fulfilled') {
+      if (studRes?.status === 'fulfilled') {
         s.totalStudents = studRes.value.data.total ?? 0;
         s.totalTeachers = studRes.value.data.totalTeachers ?? 0;
         s.totalClasses = studRes.value.data.totalClasses ?? 0;
         s.unpaidCount = studRes.value.data.unpaidCount ?? 0;
       }
-      if (attRes.status === 'fulfilled') {
+      if (attRes?.status === 'fulfilled') {
         s.totalAbsences = attRes.value.data.totalAbsences ?? 0;
         s.pendingJustifications = attRes.value.data.unJustified ?? 0;
       }
-      if (finRes.status === 'fulfilled') {
+      if (finRes?.status === 'fulfilled' && finRes.value) {
         const f = finRes.value.data;
         s.totalDu = f.totalDu ?? f.totalAttenduXof ?? 0;
         s.totalPaye = f.totalPaye ?? f.totalRecouvertXof ?? 0;
+      }
+      if (cahierRes?.status === 'fulfilled' && cahierRes.value?.data) {
+        const c = cahierRes.value.data;
+        s.totalGrades = c.totalEntries ?? c.total ?? undefined;
       }
       setStats(s);
     } catch (e) { console.error(e); }
@@ -293,7 +310,7 @@ export default function DashboardPage() {
               <QuickActions actions={[
                 { label: 'Inscrire un élève',  href: '/eleves/nouveau',   variant: 'primary',   icon: Plus },
                 { label: 'Liste des élèves',   href: '/eleves',            variant: 'secondary', icon: List },
-                { label: 'Bulletins',          href: '/bulletins',         variant: 'secondary', icon: FileText },
+                { label: 'Rapports',           href: '/rapports',          variant: 'secondary', icon: FileText },
                 { label: 'Emploi du temps',    href: '/emploi-du-temps',   variant: 'secondary', icon: CalendarDays },
                 { label: 'Messagerie',         href: '/messagerie',        variant: 'secondary', icon: MessageSquare },
               ]} />
@@ -306,7 +323,7 @@ export default function DashboardPage() {
               <SectionTitle icon={<GraduationCap className="w-5 h-5" />} title="Mon espace enseignant" />
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Kpi title="Absences signalées" value={stats.totalAbsences?.toString() ?? '—'} icon={AlertCircle} colorKey="red"    loading={loading} />
-                <Kpi title="Notes saisies"      value={stats.totalGrades?.toString() ?? '—'}   icon={FileText}    colorKey="purple" loading={loading} />
+                <Kpi title="Séances cahier"     value={stats.totalGrades?.toString() ?? '—'}   icon={FileText}    colorKey="purple" loading={loading} />
                 <Kpi title="Classes actives"    value={stats.totalClasses?.toString() ?? '—'}  icon={BookOpen}    colorKey="teal"   loading={loading} />
               </div>
 
@@ -318,6 +335,12 @@ export default function DashboardPage() {
                 { label: 'Messagerie',       href: '/messagerie',      variant: 'secondary', icon: MessageSquare },
               ]} />
             </>
+          )}
+
+          {group === 'unknown' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+              Rôle non reconnu ({role}). Contactez un administrateur.
+            </div>
           )}
 
         </main>

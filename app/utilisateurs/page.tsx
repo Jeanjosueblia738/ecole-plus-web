@@ -54,6 +54,7 @@ export default function UtilisateursPage() {
   const router = useRouter();
   const [users, setUsers] = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [resetting, setResetting] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
 
@@ -67,10 +68,15 @@ export default function UtilisateursPage() {
   }, [router]);
 
   const loadUsers = async () => {
+    setLoadError('');
     try {
       const { data } = await api.get('/users');
       setUsers(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setUsers([]);
+      setLoadError('Impossible de charger les utilisateurs.');
+    }
     finally { setLoading(false); }
   };
 
@@ -80,7 +86,10 @@ export default function UtilisateursPage() {
       const action = user.isActive ? 'deactivate' : 'activate';
       await api.patch(`/users/${user.id}/${action}`);
       setUsers(u => u.map(us => us.id === user.id ? { ...us, isActive: !us.isActive } : us));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      alert(user.isActive ? 'Désactivation impossible. Réessayez.' : 'Activation impossible. Réessayez.');
+    }
     finally { setToggling(null); }
   };
 
@@ -94,7 +103,10 @@ export default function UtilisateursPage() {
     try {
       await api.patch(`/users/${userId}/reset-password`, { newPassword });
       alert('Mot de passe réinitialisé avec succès !');
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      alert('Réinitialisation du mot de passe impossible. Réessayez.');
+    }
     finally { setResetting(null); }
   };
 
@@ -119,6 +131,11 @@ export default function UtilisateursPage() {
           subtitle={`${users.length} compte(s) dans votre établissement`}
         />
         <main className="flex-1 p-6">
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+              {loadError}
+            </div>
+          )}
           {/* Alerte info */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
             <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -161,6 +178,10 @@ export default function UtilisateursPage() {
                       </td>
                     ))}</tr>
                   ))
+                ) : loadError ? (
+                  <tr><td colSpan={5} className="text-center py-12 text-red-500">
+                    <p>Erreur de chargement</p>
+                  </td></tr>
                 ) : users.length === 0 ? (
                   <tr><td colSpan={5} className="text-center py-12 text-gray-400">
                     <User className="w-12 h-12 mx-auto mb-2 opacity-20" />

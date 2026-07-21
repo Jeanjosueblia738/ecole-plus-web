@@ -54,7 +54,13 @@ export default function PhotoUpload({
       if (url) {
         setPreview(url);
         onUpload(url);
+      } else {
+        setPreview(currentUrl || null);
+        alert('Échec de l\'upload de la photo. Réessayez.');
       }
+    } catch {
+      setPreview(currentUrl || null);
+      alert('Échec de l\'upload de la photo. Réessayez.');
     } finally {
       setUploading(false);
     }

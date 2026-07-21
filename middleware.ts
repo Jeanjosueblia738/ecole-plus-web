@@ -43,7 +43,9 @@ export function middleware(request: NextRequest) {
     }
     const saToken = request.cookies.get('sa_token')?.value;
     if (!saToken) {
-      return NextResponse.redirect(new URL('/super-admin/login', request.url));
+      const login = new URL('/super-admin/login', request.url);
+      login.searchParams.set('next', pathname);
+      return NextResponse.redirect(login);
     }
     return NextResponse.next();
   }

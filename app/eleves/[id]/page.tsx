@@ -20,6 +20,7 @@ export default function EleveDetailPage() {
   const [student, setStudent] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>({});
@@ -36,6 +37,7 @@ export default function EleveDetailPage() {
 
   const loadStudent = async () => {
     setLoading(true);
+    setNotFound(false);
     try {
       const { data } = await studentsApi.getOne(id);
       setStudent(data);
@@ -48,7 +50,12 @@ export default function EleveDetailPage() {
         niveauPrecedent: data.niveauPrecedent ?? '',
         statut: data.statut ?? (data.classId ? 'AFFECTE' : 'NON_AFFECTE'),
       });
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setStudent(null);
+      setNotFound(true);
+      alert('Impossible de charger le dossier élève.');
+    }
     finally { setLoading(false); }
   };
 
@@ -58,7 +65,10 @@ export default function EleveDetailPage() {
       await studentsApi.update(id, form);
       setStudent((s: any) => ({ ...s, ...form }));
       setEditing(false);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      alert('Enregistrement impossible. Réessayez.');
+    }
     finally { setSaving(false); }
   };
 
@@ -78,13 +88,25 @@ export default function EleveDetailPage() {
                 className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm">
                 <ArrowLeft className="w-4 h-4" /> Retour
               </button>
-              {canEdit && !editing && (
+              {canEdit && !editing && student && (
                 <button onClick={() => setEditing(true)}
                   className="px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
                   Modifier
                 </button>
               )}
             </div>
+
+            {notFound && (
+              <div className="bg-white rounded-xl p-12 shadow-sm border border-gray-100 text-center">
+                <User className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-lg font-medium text-gray-700">Élève introuvable</p>
+                <p className="text-sm text-gray-400 mt-1">Ce dossier n&apos;existe pas ou a été supprimé.</p>
+                <button onClick={() => router.push('/eleves')}
+                  className="mt-4 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
+                  Retour à la liste
+                </button>
+              </div>
+            )}
 
             {student && (
               <div className="space-y-6">

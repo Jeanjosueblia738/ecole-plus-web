@@ -54,6 +54,7 @@ export default function MessageriePage() {
   const [subject, setSubject] = useState('');
   const [firstMsg, setFirstMsg] = useState('');
   const [recipientSearch, setRecipientSearch] = useState('');
+  const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const user = authStorage.getUser();
 
@@ -71,7 +72,11 @@ export default function MessageriePage() {
     try {
       const { data } = await api.get('/messaging/conversations');
       setConversations(data);
-    } catch (e) { console.error(e); }
+      setError('');
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de charger les conversations.');
+    }
     finally { setLoading(false); }
   };
 
@@ -79,7 +84,10 @@ export default function MessageriePage() {
     try {
       const { data } = await api.get('/messaging/recipients');
       setRecipients(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de charger les destinataires.');
+    }
   };
 
   const selectConversation = async (conv: Conversation) => {
@@ -87,7 +95,11 @@ export default function MessageriePage() {
     try {
       const { data } = await api.get(`/messaging/conversations/${conv.id}/messages`);
       setMessages(data);
-    } catch (e) { console.error(e); }
+      setError('');
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de charger les messages.');
+    }
   };
 
   const sendMessage = async () => {
@@ -99,8 +111,12 @@ export default function MessageriePage() {
       });
       setMessages(m => [...m, data]);
       setNewMessage('');
+      setError('');
       loadConversations();
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError('Envoi impossible. Le message n\'a pas été envoyé.');
+    }
     finally { setSending(false); }
   };
 
@@ -120,8 +136,12 @@ export default function MessageriePage() {
       setSelectedRecipients([]);
       setSubject('');
       setFirstMsg('');
+      setError('');
       selectConversation(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de créer la conversation.');
+    }
     finally { setSending(false); }
   };
 
@@ -165,6 +185,15 @@ export default function MessageriePage() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header title="Messagerie" subtitle="Communication interne" />
+
+        {error && (
+          <div className="mx-6 mt-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3">
+            <span>{error}</span>
+            <button type="button" onClick={() => setError('')} className="text-red-500 hover:text-red-700 font-medium text-xs">
+              Fermer
+            </button>
+          </div>
+        )}
 
         <div className="flex-1 flex overflow-hidden">
 

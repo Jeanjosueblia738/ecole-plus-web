@@ -11,18 +11,21 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       const path = window.location.pathname;
+      const { default: Cookies } = await import('js-cookie');
       if (path.startsWith('/super-admin')) {
         await fetch('/api/auth/session?kind=sa', { method: 'DELETE' });
-        document.cookie = 'sa_user=; Max-Age=0; path=/';
+        Cookies.remove('sa_user', { path: '/' });
         if (!path.startsWith('/super-admin/login')) {
-          window.location.href = '/super-admin/login';
+          const next = encodeURIComponent(path);
+          window.location.href = `/super-admin/login?next=${next}`;
         }
       } else {
         await fetch('/api/auth/session?kind=ecole', { method: 'DELETE' });
-        document.cookie = 'ecole_user=; Max-Age=0; path=/';
-        document.cookie = 'ecole_tenant=; Max-Age=0; path=/';
+        Cookies.remove('ecole_user', { path: '/' });
+        Cookies.remove('ecole_tenant', { path: '/' });
         if (!path.startsWith('/login')) {
-          window.location.href = '/login';
+          const next = encodeURIComponent(path + window.location.search);
+          window.location.href = `/login?next=${next}`;
         }
       }
     }

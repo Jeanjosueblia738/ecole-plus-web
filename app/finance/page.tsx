@@ -60,7 +60,7 @@ export default function FinancePage() {
     setLoading(true);
     try {
       const [statsRes, feesRes, classesRes, alertsRes, previewRes] = await Promise.all([
-        financeApi.getStats(),
+        financeApi.getStats(year),
         financeApi.getFees(year),
         classesApi.getAll(year).catch(() => ({ data: [] })),
         financeApi.listAlerts(30).catch(() => ({ data: [] })),
@@ -73,6 +73,7 @@ export default function FinancePage() {
       setPreview(previewRes.data);
     } catch (e) {
       console.error(e);
+      alert('Impossible de charger les données finance.');
     } finally {
       setLoading(false);
     }

@@ -64,6 +64,7 @@ export default function CahierPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [emarging, setEmarging] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState('');
 
   const user = authStorage.getUser();
   const canWrite = hasRole(user?.role, can.writeCahier);
@@ -79,6 +80,9 @@ export default function CahierPage() {
     classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) setSelectedClass(data[0].id);
+    }).catch((e) => {
+      console.error(e);
+      setLoadError('Impossible de charger les classes.');
     });
   }, [router]);
 
@@ -89,10 +93,15 @@ export default function CahierPage() {
 
   const loadEntries = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const { data } = await cahierApi.getByClass(selectedClass, trimestre);
       setEntries(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setEntries([]);
+      setLoadError('Impossible de charger le cahier de texte.');
+    }
     finally { setLoading(false); }
   };
 
@@ -108,7 +117,7 @@ export default function CahierPage() {
         classId: selectedClass,
         subject: form.subject,
         date: form.date,
-        trimestre,
+        trimestre: form.trimestre,
         planCours: form.planCours,
         prochainCours: form.prochainCours || undefined,
         devoirDescription: form.devoirDescription || undefined,
@@ -119,8 +128,12 @@ export default function CahierPage() {
       setTimeout(() => setSaved(false), 2000);
       setForm(emptyForm);
       setShowForm(false);
-      loadEntries();
-    } catch (e) { console.error(e); }
+      if (form.trimestre !== trimestre) setTrimestre(form.trimestre);
+      else loadEntries();
+    } catch (e) {
+      console.error(e);
+      alert('Impossible d\'enregistrer la séance. Réessayez.');
+    }
     finally { setSaving(false); }
   };
 
@@ -130,15 +143,23 @@ export default function CahierPage() {
     try {
       await cahierApi.emargement(id);
       setEntries(e => e.map(en => en.id === id ? { ...en, isEmarge: true, emargeAt: new Date().toISOString() } : en));
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      alert('Émargement impossible. Réessayez.');
+    }
     finally { setEmarging(null); }
   };
 
   const handleDelete = async (id: string) => {
     if (!canDelete) { return; }
     if (!confirm('Supprimer cette entrée ?')) return;
-    await cahierApi.delete(id);
-    setEntries(e => e.filter(en => en.id !== id));
+    try {
+      await cahierApi.delete(id);
+      setEntries(e => e.filter(en => en.id !== id));
+    } catch (e) {
+      console.error(e);
+      alert('Suppression impossible. Réessayez.');
+    }
   };
 
   const selectedClassName = classes.find(c => c.id === selectedClass)?.name || '';
@@ -153,6 +174,12 @@ export default function CahierPage() {
           subtitle={`${selectedClassName} — Registre pédagogique officiel`}
         />
         <main className="flex-1 p-6">
+
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-6 text-sm text-red-700">
+              {loadError}
+            </div>
+          )}
 
           {!canWrite && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 flex items-center gap-3">

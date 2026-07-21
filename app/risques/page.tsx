@@ -62,7 +62,9 @@ export default function RisquesPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll(currentSchoolYear()).then(({ data }) => setClasses(data)).catch(() => {});
+    classesApi.getAll(currentSchoolYear()).then(({ data }) => setClasses(data)).catch(() => {
+      setError('Impossible de charger les classes.');
+    });
     load();
   }, [router]);
 
@@ -150,6 +152,8 @@ export default function RisquesPage() {
               </div>
               {loading ? (
                 <div className="p-8 text-center text-gray-400 text-sm">Analyse en cours…</div>
+              ) : error && !data?.students ? (
+                <div className="p-8 text-center text-red-500 text-sm">Erreur de chargement</div>
               ) : !data?.students?.length ? (
                 <div className="p-8 text-center text-gray-400 text-sm">Aucun élève au-dessus du seuil.</div>
               ) : (

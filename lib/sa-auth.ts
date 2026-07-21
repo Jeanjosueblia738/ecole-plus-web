@@ -19,11 +19,14 @@ export type SaUser = {
 };
 
 async function setHttpOnlySession(token: string, user: SaUser) {
-  await fetch('/api/auth/session', {
+  const res = await fetch('/api/auth/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ kind: 'sa', token, user }),
   });
+  if (!res.ok) {
+    throw new Error(`Impossible de créer la session SA (${res.status})`);
+  }
 }
 
 export const saAuth = {

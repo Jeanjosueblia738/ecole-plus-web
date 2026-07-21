@@ -13,6 +13,7 @@ export default function EnseignantsPage() {
   const router = useRouter();
   const [teachers, setTeachers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -22,7 +23,10 @@ export default function EnseignantsPage() {
     }
     teachersApi.getAll()
       .then(({ data }) => setTeachers(data))
-      .catch(console.error)
+      .catch(() => {
+        setTeachers([]);
+        setLoadError('Impossible de charger les enseignants.');
+      })
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -32,6 +36,11 @@ export default function EnseignantsPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Enseignants" subtitle={`${teachers.length} enseignant(s)`} />
         <main className="flex-1 p-6">
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
+              {loadError}
+            </div>
+          )}
           <div className="flex justify-end mb-6">
             <a href="/enseignants/nouveau"
               className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
@@ -57,6 +66,10 @@ export default function EnseignantsPage() {
                       <td key={j} className="px-6 py-4"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>
                     ))}</tr>
                   ))
+                ) : loadError ? (
+                  <tr><td colSpan={4} className="text-center py-12 text-red-500">
+                    <p>Erreur de chargement</p>
+                  </td></tr>
                 ) : teachers.length === 0 ? (
                   <tr><td colSpan={4} className="text-center py-12 text-gray-400">
                     <User className="w-12 h-12 mx-auto mb-2 opacity-20" />

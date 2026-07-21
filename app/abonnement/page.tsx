@@ -51,6 +51,7 @@ export default function AbonnementPage() {
   const [paying, setPaying] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -63,10 +64,15 @@ export default function AbonnementPage() {
 
   const loadSubscription = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const { data } = await api.get('/subscription/my');
       setSubscription(data);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setSubscription(null);
+      setLoadError('Impossible de charger les informations d\'abonnement.');
+    }
     finally { setLoading(false); }
   };
 
@@ -120,6 +126,12 @@ export default function AbonnementPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Abonnement" subtitle="Gérez votre plan et vos paiements" />
         <main className="flex-1 p-6 space-y-6">
+
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
 
           {/* Résultat paiement */}
           {paymentResult && (

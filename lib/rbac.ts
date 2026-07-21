@@ -48,7 +48,7 @@ export const can = {
   manageUsers: ['ADMIN', 'FOUNDER'] as Role[],
   manageTeachers: ['ADMIN', 'FOUNDER'] as Role[],
   enterGrades: ['TEACHER'] as Role[],
-  doAppel: ['TEACHER'] as Role[],
+  doAppel: ['TEACHER', 'SURVEILLANT', 'EDUCATOR'] as Role[],
   generateBulletin: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'] as Role[],
   viewCahier: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'TEACHER'] as Role[],
   writeCahier: ['TEACHER'] as Role[],

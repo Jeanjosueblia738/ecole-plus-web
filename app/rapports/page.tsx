@@ -56,6 +56,8 @@ export default function RapportsPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [reports, setReports] = useState<StudentReport[]>([]);
   const [generated, setGenerated] = useState(false);
+  const [error, setError] = useState('');
+  const [gradeWarnings, setGradeWarnings] = useState(0);
 
   const user = authStorage.getUser();
   const role = user?.role ?? '';
@@ -81,6 +83,8 @@ export default function RapportsPage() {
     if (!selectedClass) { return; }
     setLoading(true);
     setGenerated(false);
+    setError('');
+    setGradeWarnings(0);
     try {
       // Charger les élèves
       const { data: studData } = await studentsApi.getAll({ classId: selectedClass });
@@ -100,6 +104,7 @@ export default function RapportsPage() {
       // Charger les notes pour chaque élève
       const trimesters = reportType === 'annuel' ? TRIMESTERS : [selectedTrimestre];
       const studentReports: StudentReport[] = [];
+      let failedGradeFetches = 0;
 
       for (const student of studList) {
         const allGrades: Grade[] = [];
@@ -108,7 +113,10 @@ export default function RapportsPage() {
             const { data: gradeData } = await gradesApi.getByStudent(student.id, trim);
             const grades = gradeData.grades ?? [];
             allGrades.push(...grades);
-          } catch (_) {}
+          } catch (e) {
+            console.error(e);
+            failedGradeFetches += 1;
+          }
         }
 
         // Calculer moyennes par matière
@@ -139,8 +147,18 @@ export default function RapportsPage() {
       sorted.forEach((r, i) => { r.rang = i + 1; });
 
       setReports(sorted);
+      setGradeWarnings(failedGradeFetches);
+      if (failedGradeFetches > 0) {
+        setError(
+          `${failedGradeFetches} chargement(s) de notes ont échoué. Les moyennes peuvent être incomplètes.`,
+        );
+      }
       setGenerated(true);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setError('Impossible de générer le rapport. Vérifiez la connexion et réessayez.');
+      setGenerated(false);
+    }
     finally { setLoading(false); }
   };
 
@@ -234,6 +252,20 @@ export default function RapportsPage() {
       <div className="flex-1 flex flex-col">
         <Header title="Rapports scolaires" subtitle="Liste nominative, rapports trimestriels et annuels" />
         <main className="flex-1 p-6 space-y-6">
+
+          {error && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-amber-800 font-medium">{error}</p>
+                {gradeWarnings > 0 && generated && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Les rangs et moyennes affichés peuvent être incorrects.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Panneau de configuration */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
