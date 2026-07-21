@@ -19,6 +19,7 @@ const navItems = [
   { href: '/notes',           icon: BookOpen,        label: 'Notes' },
   { href: '/presences',       icon: ClipboardList,   label: 'Présences' },
   { href: '/finance',         icon: DollarSign,      label: 'Finance' },
+  { href: '/finance/frais',   icon: CreditCard,      label: 'Configurer frais' },
   { href: '/bulletins',       icon: FileText,        label: 'Bulletins' },
   { href: '/rapports',        icon: FileSpreadsheet, label: 'Rapports' },
   { href: '/risques',         icon: AlertTriangle,   label: 'Risque décrochage' },
@@ -88,7 +89,16 @@ function NavContent({
 
         {visibleItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          // Préférer le lien le plus spécifique (ex. /finance/frais vs /finance)
+          const moreSpecific = visibleItems.some(
+            (other) =>
+              other.href !== item.href &&
+              other.href.startsWith(`${item.href}/`) &&
+              (pathname === other.href || pathname.startsWith(`${other.href}/`)),
+          );
+          const isActive =
+            !moreSpecific &&
+            (pathname === item.href || pathname.startsWith(`${item.href}/`));
           return (
             <Link key={item.href} href={item.href} onClick={onNavigate}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${

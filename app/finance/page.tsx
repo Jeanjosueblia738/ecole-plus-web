@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   DollarSign, TrendingUp, AlertCircle, CheckCircle, Plus, Loader2,
-  Users, Bell, RefreshCw,
+  Users, Bell, RefreshCw, Settings2, History,
 } from 'lucide-react';
+import Link from 'next/link';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import KpiCard from '@/components/KpiCard';
@@ -189,11 +190,51 @@ export default function FinancePage() {
               icon={TrendingUp} color="text-purple-600" bgColor="bg-purple-50" loading={loading} />
           </div>
 
+          {/* Actions rapides (comme mobile) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              type="button"
+              onClick={() => { setShowPayForm(true); setShowFeeForm(false); }}
+              className="text-left bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:border-emerald-200 hover:bg-emerald-50/40 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-semibold text-gray-800">Enregistrer un paiement</p>
+              <p className="text-xs text-gray-500 mt-1">Espèces, Mobile Money…</p>
+            </button>
+            <Link
+              href="/finance/frais"
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:border-[#1B3A6B]/30 hover:bg-blue-50/40 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1B3A6B] flex items-center justify-center mb-3">
+                <Settings2 className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-semibold text-gray-800">Configurer les frais</p>
+              <p className="text-xs text-gray-500 mt-1">Scolarité, transport, examens…</p>
+            </Link>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 opacity-90">
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center mb-3">
+                <History className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-semibold text-gray-800">Frais de l’année</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {loading ? '…' : `${fees.length} type(s) configuré(s)`}
+              </p>
+            </div>
+          </div>
+
           {/* Frais + assignation */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-800">Frais — {year}</h2>
               <div className="flex gap-2">
+                <Link
+                  href="/finance/frais"
+                  className="flex items-center gap-2 px-4 py-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl text-sm font-medium hover:bg-blue-50"
+                >
+                  <Settings2 className="w-4 h-4" /> Configurer les frais
+                </Link>
                 {canPay && (
                   <button onClick={() => { setShowPayForm(!showPayForm); setShowFeeForm(false); }}
                     className="flex items-center gap-2 px-4 py-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl text-sm font-medium hover:bg-blue-50">
