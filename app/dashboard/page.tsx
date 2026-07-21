@@ -108,10 +108,13 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Partial<Stats>>({});
   const [loading, setLoading] = useState(true);
   const [statsError, setStatsError] = useState('');
+  const [financeExtra, setFinanceExtra] = useState<{ today?: number; ops?: number }>({});
   const user = authStorage.getUser();
   const tenant = authStorage.getTenant();
   const role = user?.role ?? '';
   const group = getRoleGroup(role);
+  const canViewFull = hasRole(role, can.viewFinanceFull);
+  const isCashierOnly = hasRole(role, ['CASHIER']) && !canViewFull;
   const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n ?? 0) + ' FCFA';
   const taux = (stats.totalDu ?? 0) > 0
     ? Math.round(((stats.totalPaye ?? 0) / (stats.totalDu ?? 1)) * 100)
@@ -163,6 +166,10 @@ export default function DashboardPage() {
         const f = finRes.value.data;
         s.totalDu = f.totalDu ?? f.totalAttenduXof ?? 0;
         s.totalPaye = f.totalPaye ?? f.totalRecouvertXof ?? 0;
+        setFinanceExtra({
+          today: f.encaissementsAujourdhuiXof ?? f.totalPaye ?? 0,
+          ops: f.operationsAujourdhui ?? 0,
+        });
       } else if (canViewFinance) {
         failed += 1;
       }
@@ -293,34 +300,48 @@ export default function DashboardPage() {
           {/* ── 4. FINANCE (Comptable / Caissier) ── */}
           {group === 'finance' && (
             <>
-              <SectionTitle icon={<DollarSign className="w-5 h-5" />} title="Tableau de bord financier" />
+              <SectionTitle
+                icon={<DollarSign className="w-5 h-5" />}
+                title={isCashierOnly ? 'Caisse du jour' : 'Tableau de bord financier'}
+              />
 
-              {/* Taux recouvrement visuel */}
-              <div className={`rounded-xl p-5 border ${taux >= 80 ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                <div className="flex items-center gap-4">
-                  <div>
-                    <p className={`text-4xl font-bold ${taux >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>{taux}%</p>
-                    <p className="text-sm text-gray-500">Taux de recouvrement</p>
+              {canViewFull ? (
+                <>
+                  <div className={`rounded-xl p-5 border ${taux >= 80 ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className={`text-4xl font-bold ${taux >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>{taux}%</p>
+                        <p className="text-sm text-gray-500">Taux de recouvrement</p>
+                      </div>
+                      <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${taux >= 80 ? 'bg-green-500' : 'bg-yellow-500'}`}
+                          style={{ width: `${taux}%` }} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${taux >= 80 ? 'bg-green-500' : 'bg-yellow-500'}`}
-                      style={{ width: `${taux}%` }} />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Kpi title="Total dû"          value={fmt(stats.totalDu ?? 0)}                                   icon={DollarSign}  colorKey="blue"   loading={loading} />
+                    <Kpi title="Encaissé"          value={fmt(stats.totalPaye ?? 0)}                                 icon={TrendingUp}  colorKey="green"  loading={loading} />
+                    <Kpi title="Reste à recouvrer" value={fmt((stats.totalDu ?? 0) - (stats.totalPaye ?? 0))}       icon={AlertCircle} colorKey="red"    loading={loading} />
+                    <Kpi title="Élèves non à jour" value={stats.unpaidCount?.toString() ?? '—'}                     icon={Users}       colorKey="yellow" loading={loading} />
                   </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Kpi title="Encaissé aujourd'hui" value={fmt(financeExtra.today ?? stats.totalPaye ?? 0)} icon={TrendingUp} colorKey="green" loading={loading} />
+                  <Kpi title="Opérations du jour" value={String(financeExtra.ops ?? 0)} icon={List} colorKey="blue" loading={loading} />
+                  <Kpi title="Élèves non à jour" value={stats.unpaidCount?.toString() ?? '—'} icon={Users} colorKey="yellow" loading={loading} />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Kpi title="Total dû"          value={fmt(stats.totalDu ?? 0)}                                   icon={DollarSign}  colorKey="blue"   loading={loading} />
-                <Kpi title="Encaissé"          value={fmt(stats.totalPaye ?? 0)}                                 icon={TrendingUp}  colorKey="green"  loading={loading} />
-                <Kpi title="Reste à recouvrer" value={fmt((stats.totalDu ?? 0) - (stats.totalPaye ?? 0))}       icon={AlertCircle} colorKey="red"    loading={loading} />
-                <Kpi title="Élèves non à jour" value={stats.unpaidCount?.toString() ?? '—'}                     icon={Users}       colorKey="yellow" loading={loading} />
-              </div>
+              )}
 
               <QuickActions actions={[
-                { label: 'Enregistrer un paiement', href: '/finance',   variant: 'primary',   icon: Receipt },
-                { label: 'Voir les impayés',        href: '/finance',   variant: 'secondary', icon: AlertCircle },
-                { label: 'Historique paiements',    href: '/finance',   variant: 'secondary', icon: List },
-                { label: 'Messagerie',              href: '/messagerie', variant: 'secondary', icon: MessageSquare },
+                { label: 'Enregistrer un paiement', href: '/finance/paiement', variant: 'primary', icon: Receipt },
+                { label: 'Historique', href: '/finance/historique', variant: 'secondary', icon: List },
+                { label: 'Caisse', href: '/finance/caisse', variant: 'secondary', icon: DollarSign },
+                ...(canViewFull
+                  ? [{ label: 'Pilotage', href: '/finance', variant: 'secondary' as const, icon: BarChart2 }]
+                  : [{ label: 'Espace caisse', href: '/finance', variant: 'secondary' as const, icon: DollarSign }]),
               ]} />
             </>
           )}

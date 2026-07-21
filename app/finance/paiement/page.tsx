@@ -60,7 +60,7 @@ export default function FinancePaiementPage() {
       router.push('/login');
       return;
     }
-    if (!hasRole(authStorage.getUser()?.role, can.viewFinance)) {
+    if (!hasRole(authStorage.getUser()?.role, can.recordPayment)) {
       router.push('/dashboard');
       return;
     }

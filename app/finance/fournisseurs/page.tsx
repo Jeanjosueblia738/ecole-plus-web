@@ -80,12 +80,24 @@ export default function FournisseursPage() {
             <div className="bg-white rounded-xl border divide-y">
               {rows.length === 0 && <p className="p-4 text-sm text-gray-500">Aucun fournisseur.</p>}
               {rows.map((r) => (
-                <div key={r.id} className="p-4 text-sm">
-                  <p className="font-semibold text-gray-800">{r.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {[r.category, r.phone, r.email].filter(Boolean).join(' · ') || '—'}
-                    {!r.isActive ? ' · inactif' : ''}
-                  </p>
+                <div key={r.id} className="p-4 text-sm flex justify-between gap-3 items-center">
+                  <div>
+                    <p className="font-semibold text-gray-800">{r.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {[r.category, r.phone, r.email].filter(Boolean).join(' · ') || '—'}
+                      {!r.isActive ? ' · inactif' : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-[#1B3A6B] border rounded-lg px-3 py-1.5"
+                    onClick={async () => {
+                      await financeApi.updateSupplier(r.id, { isActive: !r.isActive });
+                      await load();
+                    }}
+                  >
+                    {r.isActive ? 'Désactiver' : 'Réactiver'}
+                  </button>
                 </div>
               ))}
             </div>

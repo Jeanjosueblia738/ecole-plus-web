@@ -150,6 +150,8 @@ export const financeApi = {
   reconcileBank: (data: object) => api.post('/finance/bank/reconcile', data),
   listReconciliations: (accountId?: string) =>
     api.get('/finance/bank/reconciliations', { params: { accountId } }),
+  markBankReconciled: (ids: string[]) =>
+    api.post('/finance/bank/transactions/mark-reconciled', { ids }),
 };
 
 export const analyticsApi = {

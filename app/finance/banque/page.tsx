@@ -192,7 +192,7 @@ export default function BanquePage() {
                 <div className="p-3 text-xs font-semibold text-gray-500 uppercase">Mouvements</div>
                 {txs.length === 0 && <p className="p-4 text-sm text-gray-500">Aucun mouvement.</p>}
                 {txs.map((t) => (
-                  <div key={t.id} className="p-4 text-sm flex justify-between gap-2">
+                  <div key={t.id} className="p-4 text-sm flex justify-between gap-2 items-center">
                     <div>
                       <p className="font-medium">{t.label}</p>
                       <p className="text-xs text-gray-500">
@@ -200,9 +200,23 @@ export default function BanquePage() {
                         {t.isReconciled ? ' · rapproché' : ''}
                       </p>
                     </div>
-                    <p className={`font-bold ${t.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {t.type === 'CREDIT' ? '+' : '-'}{fmt(t.amountXof)}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      {!t.isReconciled && (
+                        <button
+                          type="button"
+                          className="text-xs text-[#1B3A6B] font-medium underline"
+                          onClick={async () => {
+                            await financeApi.markBankReconciled([t.id]);
+                            await loadDetail(selected);
+                          }}
+                        >
+                          Marquer rapproché
+                        </button>
+                      )}
+                      <p className={`font-bold ${t.type === 'CREDIT' ? 'text-emerald-600' : 'text-red-600'}`}>
+                        {t.type === 'CREDIT' ? '+' : '-'}{fmt(t.amountXof)}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>

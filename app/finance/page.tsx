@@ -119,32 +119,53 @@ export default function FinancePage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <KpiCard
-              title="Élèves"
-              value={loading ? '…' : String(studentsCount)}
-              icon={Users}
-              color="text-blue-600"
-              bgColor="bg-blue-50"
-              loading={loading}
-            />
-            <KpiCard
-              title="Paiements"
-              value={loading ? '…' : String(payments.length)}
-              icon={CheckCircle}
-              color="text-green-600"
-              bgColor="bg-green-50"
-              loading={loading}
-            />
-            <KpiCard
-              title="En attente"
-              value={loading ? '…' : String(pending.length)}
-              icon={AlertCircle}
-              color={pending.length ? 'text-amber-600' : 'text-gray-500'}
-              bgColor={pending.length ? 'bg-amber-50' : 'bg-gray-50'}
-              loading={loading}
-            />
-          </div>
+          {canViewFull ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <KpiCard
+                title="Élèves"
+                value={loading ? '…' : String(studentsCount)}
+                icon={Users}
+                color="text-blue-600"
+                bgColor="bg-blue-50"
+                loading={loading}
+              />
+              <KpiCard
+                title="Paiements"
+                value={loading ? '…' : String(payments.length)}
+                icon={CheckCircle}
+                color="text-green-600"
+                bgColor="bg-green-50"
+                loading={loading}
+              />
+              <KpiCard
+                title="En attente"
+                value={loading ? '…' : String(pending.length)}
+                icon={AlertCircle}
+                color={pending.length ? 'text-amber-600' : 'text-gray-500'}
+                bgColor={pending.length ? 'bg-amber-50' : 'bg-gray-50'}
+                loading={loading}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <KpiCard
+                title="Paiements (liste)"
+                value={loading ? '…' : String(payments.length)}
+                icon={CheckCircle}
+                color="text-green-600"
+                bgColor="bg-green-50"
+                loading={loading}
+              />
+              <KpiCard
+                title="Impayés / en attente"
+                value={loading ? '…' : String(pending.length)}
+                icon={AlertCircle}
+                color={pending.length ? 'text-amber-600' : 'text-gray-500'}
+                bgColor={pending.length ? 'bg-amber-50' : 'bg-gray-50'}
+                loading={loading}
+              />
+            </div>
+          )}
 
           <div>
             <h2 className="text-base font-bold text-gray-800 mb-3">Actions</h2>
