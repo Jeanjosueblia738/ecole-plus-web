@@ -126,6 +126,11 @@ export const analyticsApi = {
 export const teachersApi = {
   getAll: () => api.get('/teachers'),
   create: (data: object) => api.post('/teachers', data),
+  /** Classes de l'enseignant connecté (1 → N) */
+  getMyClasses: (year?: string) =>
+    api.get('/teachers/my-classes', { params: { year } }),
+  getMyStats: (year?: string) =>
+    api.get('/teachers/my-stats', { params: { year } }),
 };
 
 // ── Cahier de texte ───────────────────────────────────────────────────────

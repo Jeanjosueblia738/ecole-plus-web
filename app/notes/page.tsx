@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ChevronDown, Save, Loader2, BookOpen, CheckCircle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { classesApi, gradesApi, studentsApi } from '@/lib/api';
-import { currentSchoolYear } from '@/lib/school-year';
+import { gradesApi, studentsApi } from '@/lib/api';
+import { loadClassesForUser } from '@/lib/load-classes-for-user';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 
@@ -39,10 +39,13 @@ export default function NotesPage() {
       router.push('/dashboard');
       return;
     }
-    classesApi.getAll(currentSchoolYear()).then(({ data }) => {
-      setClasses(data);
-      if (data.length > 0) setSelectedClass(data[0].id);
-    }).catch(() => setLoadError('Impossible de charger les classes.'));
+    loadClassesForUser(authStorage.getUser()?.role)
+      .then((data) => {
+        setClasses(data);
+        if (data.length > 0) setSelectedClass(data[0].id);
+        else setLoadError('Aucune classe assignée. Vérifiez votre emploi du temps.');
+      })
+      .catch(() => setLoadError('Impossible de charger les classes.'));
   }, [router]);
 
   useEffect(() => {
@@ -121,11 +124,6 @@ export default function NotesPage() {
           subtitle={selectedClassName ? `Classe : ${selectedClassName}` : 'Sélectionnez une classe'}
         />
         <main className="flex-1 p-6">
-          {loadError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-4">
-              {loadError}
-            </div>
-          )}
 
           {/* Paramètres de saisie */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
@@ -227,11 +225,6 @@ export default function NotesPage() {
             {loading ? (
               <div className="py-16 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-              </div>
-            ) : loadError ? (
-              <div className="py-16 text-center text-red-500">
-                <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>Erreur de chargement</p>
               </div>
             ) : students.length === 0 ? (
               <div className="py-16 text-center text-gray-400">

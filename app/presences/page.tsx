@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ClipboardList, ChevronDown, CheckCircle, XCircle, Clock, MessageSquare } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { classesApi, studentsApi, attendanceApi } from '@/lib/api';
-import { currentSchoolYear } from '@/lib/school-year';
+import { studentsApi, attendanceApi } from '@/lib/api';
+import { loadClassesForUser } from '@/lib/load-classes-for-user';
 import { authStorage } from '@/lib/auth';
 import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
@@ -43,16 +43,25 @@ export default function PresencesPage() {
     if (!canDoAppel) {
       setBanner('Consultation seule : seuls les enseignants peuvent faire l\'appel.');
     }
-    classesApi.getAll(currentSchoolYear()).then(({ data }) => {
-      setClasses(data);
-      if (data.length > 0) setSelectedClass(data[0].id);
-    }).catch(() => {
-      setBanner((prev) =>
-        prev
-          ? `${prev} Impossible de charger les classes de l'année en cours.`
-          : 'Impossible de charger les classes de l\'année en cours.',
-      );
-    });
+    loadClassesForUser(authStorage.getUser()?.role)
+      .then((data) => {
+        setClasses(data);
+        if (data.length > 0) setSelectedClass(data[0].id);
+        else if (authStorage.getUser()?.role === 'TEACHER') {
+          setBanner((prev) =>
+            prev
+              ? `${prev} Aucune classe assignée pour cet enseignant.`
+              : 'Aucune classe assignée pour cet enseignant.',
+          );
+        }
+      })
+      .catch(() => {
+        setBanner((prev) =>
+          prev
+            ? `${prev} Impossible de charger les classes.`
+            : 'Impossible de charger les classes.',
+        );
+      });
   }, [router]);
 
   useEffect(() => {
