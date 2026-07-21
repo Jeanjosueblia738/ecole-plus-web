@@ -15,7 +15,7 @@ export default function ConfigurerFraisPage() {
   const router = useRouter();
   const year = currentSchoolYear();
   const role = authStorage.getUser()?.role;
-  const canManage = hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT']);
+  const canManage = hasRole(role, can.configureFees);
 
   const [fees, setFees] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -66,8 +66,8 @@ export default function ConfigurerFraisPage() {
       router.push('/login');
       return;
     }
-    if (!hasRole(authStorage.getUser()?.role, can.viewFinance)) {
-      router.push('/dashboard');
+    if (!hasRole(authStorage.getUser()?.role, can.configureFees)) {
+      router.push('/finance');
       return;
     }
     load();

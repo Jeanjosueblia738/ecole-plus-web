@@ -23,14 +23,21 @@ const ALL_STAFF: Role[] = [
 /** Qui voit chaque entrée de navigation */
 export const NAV_ACCESS: Record<string, Role[]> = {
   '/dashboard': ALL_STAFF,
-  '/eleves': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'],
+  '/eleves': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR', 'ACCOUNTANT', 'CASHIER'],
   '/classes': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'],
   '/notes': ['TEACHER'],
   '/presences': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'TEACHER', 'EDUCATOR'],
   '/finance': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
-  '/finance/frais': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
+  /** Config frais = comptable / direction uniquement (pas caissier) */
+  '/finance/frais': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
   '/finance/paiement': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
   '/finance/historique': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
+  '/finance/caisse': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
+  '/finance/depenses': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
+  '/finance/fournisseurs': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
+  '/finance/paie': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
+  '/finance/budget': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
+  '/finance/banque': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
   '/bulletins': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'],
   '/rapports': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SECRETARY', 'SURVEILLANT', 'TEACHER'],
   '/risques': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT'],
@@ -63,6 +70,16 @@ export const can = {
   viewTimetable: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'] as Role[],
   writeTimetable: ['CENSOR'] as Role[],
   viewFinance: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'] as Role[],
+  /** Encaisser / reçus / historique caisse */
+  recordPayment: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'] as Role[],
+  /** Définir / modifier les frais scolaires */
+  configureFees: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'] as Role[],
+  /** Tableau de bord financier complet (taux, attendu, analyses) */
+  viewFinanceFull: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'] as Role[],
+  /** Dépenses, fournisseurs, paie, budget, banque */
+  manageFinanceOps: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'] as Role[],
+  /** Ouverture / clôture de caisse */
+  manageCashSession: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'] as Role[],
   manageSubscription: ['ADMIN', 'FOUNDER'] as Role[],
 };
 

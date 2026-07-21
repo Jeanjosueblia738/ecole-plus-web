@@ -114,6 +114,42 @@ export const financeApi = {
   previewAlerts: () => api.get('/finance/alerts/preview'),
   processAlerts: () => api.post('/finance/alerts/process'),
   listPayments: (year?: string) => api.get('/finance/payments', { params: { year } }),
+
+  // Caisse
+  cashCurrent: () => api.get('/finance/cash/current'),
+  cashSessions: (limit?: number) => api.get('/finance/cash/sessions', { params: { limit } }),
+  cashOpen: (data: { openingFloatXof?: number; notes?: string }) =>
+    api.post('/finance/cash/open', data),
+  cashClose: (data: object) => api.post('/finance/cash/close', data),
+  cashJustify: (id: string, varianceNote: string) =>
+    api.patch(`/finance/cash/sessions/${id}/justify`, { varianceNote }),
+
+  // Ops comptable
+  opsSummary: (year?: string) => api.get('/finance/ops/summary', { params: { year } }),
+  listSuppliers: (all?: boolean) =>
+    api.get('/finance/suppliers', { params: all ? { all: '1' } : {} }),
+  createSupplier: (data: object) => api.post('/finance/suppliers', data),
+  updateSupplier: (id: string, data: object) => api.put(`/finance/suppliers/${id}`, data),
+  listExpenses: (params?: { year?: string; category?: string }) =>
+    api.get('/finance/expenses', { params }),
+  createExpense: (data: object) => api.post('/finance/expenses', data),
+  listPayroll: (year?: string) => api.get('/finance/payroll', { params: { year } }),
+  createPayroll: (data: object) => api.post('/finance/payroll', data),
+  payrollStatus: (id: string, status: string) =>
+    api.patch(`/finance/payroll/${id}/status`, { status }),
+  listBudgets: (year?: string) => api.get('/finance/budgets', { params: { year } }),
+  createBudget: (data: object) => api.post('/finance/budgets', data),
+  budgetVsActual: (id: string) => api.get(`/finance/budgets/${id}/vs-actual`),
+  listBankAccounts: () => api.get('/finance/bank/accounts'),
+  createBankAccount: (data: object) => api.post('/finance/bank/accounts', data),
+  listBankTransactions: (accountId: string, reconciled?: boolean) =>
+    api.get(`/finance/bank/accounts/${accountId}/transactions`, {
+      params: reconciled === undefined ? {} : { reconciled: reconciled ? '1' : '0' },
+    }),
+  createBankTransaction: (data: object) => api.post('/finance/bank/transactions', data),
+  reconcileBank: (data: object) => api.post('/finance/bank/reconcile', data),
+  listReconciliations: (accountId?: string) =>
+    api.get('/finance/bank/reconciliations', { params: { accountId } }),
 };
 
 export const analyticsApi = {
