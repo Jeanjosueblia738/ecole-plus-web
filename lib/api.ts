@@ -131,6 +131,11 @@ export const teachersApi = {
     api.get('/teachers/my-classes', { params: { year } }),
   getMyStats: (year?: string) =>
     api.get('/teachers/my-stats', { params: { year } }),
+  /** Affectations officielles d'un enseignant */
+  getClasses: (id: string, year?: string) =>
+    api.get(`/teachers/${id}/classes`, { params: { year } }),
+  setClasses: (id: string, data: { classIds: string[]; year?: string }) =>
+    api.put(`/teachers/${id}/classes`, data),
 };
 
 // ── Cahier de texte ───────────────────────────────────────────────────────
