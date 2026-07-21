@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  ArrowLeft, Plus, Loader2, Users, Settings2,
-} from 'lucide-react';
+import { ArrowLeft, Plus, Loader2, Users, Settings2 } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { financeApi, classesApi } from '@/lib/api';
@@ -30,13 +28,13 @@ export default function ConfigurerFraisPage() {
   const [assigning, setAssigning] = useState<string | null>(null);
   const [assignClassId, setAssignClassId] = useState<Record<string, string>>({});
 
+  // Champs alignés mobile : libellé, type, montant, trimestre, obligatoire (+ année affichée)
   const [form, setForm] = useState({
     label: '',
-    type: '',
+    type: 'Scolarité',
     amountXof: '',
-    dueDate: '',
-    year,
-    level: '',
+    trimestre: 'T1',
+    obligatoire: true,
   });
 
   const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n) + ' FCFA';
@@ -82,22 +80,24 @@ export default function ConfigurerFraisPage() {
     setError('');
     setSuccess('');
     try {
+      const due = new Date();
+      due.setDate(due.getDate() + 30);
       await financeApi.createFee({
         label: form.label.trim(),
         type: form.type.trim() || 'Scolarité',
         amountXof: Number(form.amountXof),
-        dueDate: form.dueDate,
-        year: form.year || year,
-        level: form.level.trim() || undefined,
+        dueDate: due.toISOString().slice(0, 10),
+        year,
+        trimestre: form.trimestre,
+        obligatoire: form.obligatoire,
       });
       setShowForm(false);
       setForm({
         label: '',
-        type: '',
+        type: 'Scolarité',
         amountXof: '',
-        dueDate: '',
-        year,
-        level: '',
+        trimestre: 'T1',
+        obligatoire: true,
       });
       setSuccess('Frais créé avec succès.');
       await load();
@@ -186,73 +186,88 @@ export default function ConfigurerFraisPage() {
           {showForm && canManage && (
             <form
               onSubmit={handleCreate}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-4"
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4 max-w-xl"
             >
-              <h2 className="md:col-span-2 text-base font-semibold text-gray-800 flex items-center gap-2">
+              <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
                 <Settings2 className="w-5 h-5 text-[#1B3A6B]" />
                 Ajouter un frais
               </h2>
+              <p className="text-xs text-gray-500">Année scolaire : {year}</p>
+
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Libellé *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Libellé du frais *
+                </label>
                 <input
                   required
-                  placeholder="Ex. Scolarité T1, Transport…"
+                  placeholder="Ex. Scolarité 1er trimestre"
                   value={form.label}
                   onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Type de frais *</label>
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Type de frais *
+                </label>
                 <input
                   required
-                  placeholder="Ex. Scolarité, Transport, Cantine, Examens…"
+                  placeholder="Scolarité, Transport, Cantine…"
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Montant (FCFA) *</label>
-                <input
-                  required
-                  type="number"
-                  min={1}
-                  placeholder="Ex. 75000"
-                  value={form.amountXof}
-                  onChange={(e) => setForm((f) => ({ ...f, amountXof: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
-                />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Montant (FCFA) *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    min={1}
+                    placeholder="Ex. 75000"
+                    value={form.amountXof}
+                    onChange={(e) => setForm((f) => ({ ...f, amountXof: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Trimestre *
+                  </label>
+                  <select
+                    value={form.trimestre}
+                    onChange={(e) => setForm((f) => ({ ...f, trimestre: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white"
+                  >
+                    <option value="T1">T1</option>
+                    <option value="T2">T2</option>
+                    <option value="T3">T3</option>
+                    <option value="Annuel">Annuel</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Échéance *</label>
+
+              <label className="flex items-center gap-3 text-sm text-gray-700">
                 <input
-                  required
-                  type="date"
-                  value={form.dueDate}
-                  onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
+                  type="checkbox"
+                  checked={form.obligatoire}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, obligatoire: e.target.checked }))
+                  }
+                  className="w-4 h-4 rounded border-gray-300"
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Niveau (optionnel)</label>
-                <input
-                  placeholder="Ex. 6ème, Terminale…"
-                  value={form.level}
-                  onChange={(e) => setForm((f) => ({ ...f, level: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Année scolaire *</label>
-                <input
-                  required
-                  value={form.year}
-                  onChange={(e) => setForm((f) => ({ ...f, year: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
-                />
-              </div>
-              <div className="md:col-span-2 flex justify-end gap-2">
+                Obligatoire
+              </label>
+              <p className="text-xs text-gray-400">
+                Échéance par défaut : dans 30 jours (comme sur mobile).
+              </p>
+
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
@@ -288,15 +303,6 @@ export default function ConfigurerFraisPage() {
               <div className="p-12 text-center text-gray-400">
                 <Settings2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p>Aucun frais configuré</p>
-                {canManage && (
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(true)}
-                    className="mt-4 text-sm text-[#1B3A6B] font-medium hover:underline"
-                  >
-                    Créer le premier frais
-                  </button>
-                )}
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
@@ -314,9 +320,18 @@ export default function ConfigurerFraisPage() {
                           <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
                             {fee.type || '—'}
                           </span>
+                          {fee.trimestre && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                              {fee.trimestre}
+                            </span>
+                          )}
+                          {fee.obligatoire === false && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                              Optionnel
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-gray-500 mt-1">
-                          {fee.level ? `${fee.level} · ` : ''}
                           Échéance{' '}
                           <span className={expired ? 'text-red-600 font-medium' : ''}>
                             {due ? due.toLocaleDateString('fr-FR') : '—'}
@@ -369,10 +384,6 @@ export default function ConfigurerFraisPage() {
               </div>
             )}
           </div>
-
-          <p className="text-xs text-gray-400">
-            Après création, assignez chaque frais à une ou plusieurs classes pour générer les dettes élèves.
-          </p>
         </main>
       </div>
     </div>

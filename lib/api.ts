@@ -113,6 +113,7 @@ export const financeApi = {
   listAlerts: (limit?: number) => api.get('/finance/alerts', { params: { limit } }),
   previewAlerts: () => api.get('/finance/alerts/preview'),
   processAlerts: () => api.post('/finance/alerts/process'),
+  listPayments: (year?: string) => api.get('/finance/payments', { params: { year } }),
 };
 
 export const analyticsApi = {

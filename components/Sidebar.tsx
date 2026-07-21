@@ -20,6 +20,8 @@ const navItems = [
   { href: '/presences',       icon: ClipboardList,   label: 'Présences' },
   { href: '/finance',         icon: DollarSign,      label: 'Finance' },
   { href: '/finance/frais',   icon: CreditCard,      label: 'Configurer frais' },
+  { href: '/finance/paiement', icon: CreditCard,     label: 'Encaisser' },
+  { href: '/finance/historique', icon: FileText,     label: 'Historique paiements' },
   { href: '/bulletins',       icon: FileText,        label: 'Bulletins' },
   { href: '/rapports',        icon: FileSpreadsheet, label: 'Rapports' },
   { href: '/risques',         icon: AlertTriangle,   label: 'Risque décrochage' },

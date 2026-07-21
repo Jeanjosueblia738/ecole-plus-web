@@ -807,3 +807,86 @@ export function generateReleveNotes(data: ReleveNotesData): void {
 
   doc.save(`releve_${data.studentRegistration || 'eleve'}_${data.trimestre}.pdf`);
 }
+
+export interface PaymentReceiptData {
+  schoolName: string;
+  schoolCity?: string;
+  receiptNo: string;
+  studentName: string;
+  matricule?: string;
+  className?: string;
+  feeLabel: string;
+  amountPaid: number;
+  amountDue?: number;
+  paymentMode?: string;
+  paidAt?: string;
+}
+
+/** Reçu de paiement (aligné mobile). */
+export function generatePaymentReceipt(data: PaymentReceiptData): void {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+  const margin = 12;
+  let y = 16;
+  const fmt = (n: number) =>
+    new Intl.NumberFormat('fr-CI').format(n || 0) + ' FCFA';
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(27, 58, 107);
+  doc.text(data.schoolName || 'ECOLE+', margin, y);
+  y += 6;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80);
+  if (data.schoolCity) {
+    doc.text(data.schoolCity, margin, y);
+    y += 5;
+  }
+  doc.setDrawColor(27, 58, 107);
+  doc.line(margin, y, 136, y);
+  y += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(0);
+  doc.text('REÇU DE PAIEMENT', 74, y, { align: 'center' });
+  y += 8;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  const rows: [string, string][] = [
+    ['N° reçu', data.receiptNo || '—'],
+    ['Élève', data.studentName || '—'],
+    ['Matricule', data.matricule || '—'],
+    ['Classe', data.className || '—'],
+    ['Frais', data.feeLabel || '—'],
+    ['Montant payé', fmt(data.amountPaid)],
+    ['Montant dû', data.amountDue != null ? fmt(data.amountDue) : '—'],
+    ['Mode', (data.paymentMode || 'especes').replace(/_/g, ' ')],
+    [
+      'Date',
+      data.paidAt
+        ? new Date(data.paidAt).toLocaleDateString('fr-FR')
+        : new Date().toLocaleDateString('fr-FR'),
+    ],
+  ];
+  for (const [k, v] of rows) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${k} :`, margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(String(v), margin + 35, y);
+    y += 6;
+  }
+
+  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text('Merci pour votre règlement.', margin, y);
+  y += 10;
+  doc.setTextColor(0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('Cachet / Signature', 95, y);
+
+  doc.save(`recu_${data.receiptNo || 'paiement'}.pdf`);
+}

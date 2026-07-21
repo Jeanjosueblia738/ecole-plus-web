@@ -29,6 +29,8 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/presences': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'TEACHER', 'EDUCATOR'],
   '/finance': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
   '/finance/frais': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
+  '/finance/paiement': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
+  '/finance/historique': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
   '/bulletins': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'],
   '/rapports': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SECRETARY', 'SURVEILLANT', 'TEACHER'],
   '/risques': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT'],
