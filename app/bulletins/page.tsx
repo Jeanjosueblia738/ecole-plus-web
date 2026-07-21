@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FileText, Download, Loader2, ChevronDown, CheckCircle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { classesApi, studentsApi, gradesApi } from '@/lib/api';
+import { classesApi, studentsApi, gradesApi, conseilApi } from '@/lib/api';
 import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { generateBulletin } from '@/lib/pdf';
@@ -29,6 +29,7 @@ export default function BulletinsPage() {
   const [generating, setGenerating] = useState<string | null>(null);
   const [generatingAll, setGeneratingAll] = useState(false);
   const [done, setDone] = useState<string[]>([]);
+  const [councilByStudent, setCouncilByStudent] = useState<Record<string, any>>({});
   const tenant = authStorage.getTenant();
 
   useEffect(() => {
@@ -49,14 +50,31 @@ export default function BulletinsPage() {
     setDone([]);
     setLoadError('');
     setClassStats({ averages: {} });
-    studentsApi.getAll({ classId: selectedClass })
-      .then(({ data }) => setStudents(data))
+    setCouncilByStudent({});
+    Promise.all([
+      studentsApi.getAll({ classId: selectedClass }),
+      conseilApi.list({
+        classId: selectedClass,
+        trimestre,
+        year: currentSchoolYear(),
+      }).catch(() => ({ data: [] })),
+    ])
+      .then(([studentsRes, councilRes]) => {
+        setStudents(studentsRes.data);
+        const map: Record<string, any> = {};
+        const rows = Array.isArray(councilRes.data) ? councilRes.data : [];
+        for (const row of rows) {
+          const sid = row.student?.id || row.decision?.studentId;
+          if (sid && row.decision) map[sid] = row.decision;
+        }
+        setCouncilByStudent(map);
+      })
       .catch(() => {
         setStudents([]);
         setLoadError('Impossible de charger les élèves de cette classe.');
       })
       .finally(() => setLoading(false));
-  }, [selectedClass]);
+  }, [selectedClass, trimestre]);
 
   const loadClassStats = async () => {
     if (!selectedClass) return { averages: {} };
@@ -136,6 +154,12 @@ export default function BulletinsPage() {
     }
     if (typeof student.isRepeater === 'boolean') {
       payload.isRepeater = student.isRepeater;
+    }
+    const council = councilByStudent[student.id];
+    if (council) {
+      if (council.mention) payload.councilMention = council.mention;
+      if (council.decision) payload.councilDecision = council.decision;
+      if (council.appreciation) payload.councilAppreciation = council.appreciation;
     }
     return payload as any;
   };

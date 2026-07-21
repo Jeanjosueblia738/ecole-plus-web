@@ -13,6 +13,7 @@ async function forward(req: NextRequest, path: string[], method: string) {
 
   const isSa =
     joined.startsWith('tenants') ||
+    joined.startsWith('school-groups') ||
     joined.startsWith('auth/super-admin') ||
     req.headers.get('x-auth-scope') === 'sa';
 

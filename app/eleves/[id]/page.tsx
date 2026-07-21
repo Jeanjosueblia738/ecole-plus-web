@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, BookOpen, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, MapPin, Calendar, Save, Loader2, Download, TrendingUp, AlertTriangle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { studentsApi, classesApi } from '@/lib/api';
+import { studentsApi, classesApi, analyticsApi, gradesApi } from '@/lib/api';
 import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
 import { can, canAccessPath, hasRole } from '@/lib/rbac';
+import {
+  generateAttestationScolarite,
+  generateCertificatScolarite,
+  generateReleveNotes,
+  aggregateSubjects,
+} from '@/lib/pdf';
 
 export default function EleveDetailPage() {
   const router = useRouter();
@@ -24,6 +30,12 @@ export default function EleveDetailPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>({});
+  const [progress, setProgress] = useState<any>(null);
+  const [progressLoading, setProgressLoading] = useState(false);
+  const [pdfTrimestre, setPdfTrimestre] = useState('T1');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const tenant = authStorage.getTenant();
+  const year = currentSchoolYear();
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -32,8 +44,62 @@ export default function EleveDetailPage() {
     setCanEdit(hasRole(u?.role, can.editStudent));
     setReady(true);
     loadStudent();
-    classesApi.getAll(currentSchoolYear()).then(({ data }) => setClasses(data));
+    loadProgress();
+    classesApi.getAll(year).then(({ data }) => setClasses(data));
   }, [id, router]);
+
+  const loadProgress = async () => {
+    setProgressLoading(true);
+    try {
+      const { data } = await analyticsApi.studentProgress(id);
+      setProgress(data);
+    } catch {
+      setProgress(null);
+    } finally {
+      setProgressLoading(false);
+    }
+  };
+
+  const schoolDocBase = () => ({
+    schoolName: tenant?.name || 'Établissement',
+    schoolCity: tenant?.city || '',
+    schoolCode: tenant?.code || '',
+    studentName: `${student?.firstName ?? ''} ${student?.lastName ?? ''}`.trim(),
+    studentRegistration: student?.registrationNo || '',
+    className: student?.class?.name || '—',
+    level: student?.class?.level || '—',
+    year,
+    gender: student?.gender,
+    dateOfBirth: student?.dateOfBirth,
+    parentName: student?.parentName,
+  });
+
+  const downloadReleve = async () => {
+    if (!student) return;
+    setPdfLoading(true);
+    try {
+      const { data: grades } = await gradesApi.getByStudent(id, pdfTrimestre);
+      const gradeList = Array.isArray(grades) ? grades : [];
+      const bulletinGrades = gradeList.map((g: any) => ({
+        subject: g.subject,
+        value: Number(g.value),
+        coefficient: g.coefficient ?? 1,
+      }));
+      const lines = aggregateSubjects(bulletinGrades);
+      const coef = lines.reduce((s, l) => s + l.coefficient, 0) || 1;
+      const moyenne = lines.reduce((s, l) => s + l.total, 0) / coef;
+      generateReleveNotes({
+        ...schoolDocBase(),
+        trimestre: pdfTrimestre,
+        grades: bulletinGrades,
+        moyenneGenerale: progress?.overall ?? moyenne,
+      });
+    } catch {
+      alert('Impossible de générer le relevé de notes.');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   const loadStudent = async () => {
     setLoading(true);
@@ -249,6 +315,130 @@ export default function EleveDetailPage() {
                       )}
                     </div>
                   )}
+                </div>
+
+                {/* Progression pédagogique */}
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-[#1B3A6B]" />
+                    Progression
+                  </h3>
+                  {progressLoading ? (
+                    <div className="flex items-center gap-2 text-gray-400 text-sm py-4">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Chargement…
+                    </div>
+                  ) : !progress ? (
+                    <p className="text-sm text-gray-400">Aucune donnée de progression disponible.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-4">
+                        <div className="bg-blue-50 rounded-xl px-4 py-3">
+                          <p className="text-xs text-blue-600">Moyenne générale</p>
+                          <p className="text-xl font-bold text-[#1B3A6B]">
+                            {progress.overall != null ? `${progress.overall}/20` : '—'}
+                          </p>
+                        </div>
+                        {(['T1', 'T2', 'T3'] as const).map((t) => (
+                          <div key={t} className="bg-gray-50 rounded-xl px-4 py-3">
+                            <p className="text-xs text-gray-500">{t}</p>
+                            <p className="text-lg font-semibold text-gray-800">
+                              {progress.byTrimestre?.[t] != null ? `${progress.byTrimestre[t]}/20` : '—'}
+                            </p>
+                          </div>
+                        ))}
+                        {progress.trend !== 'unknown' && (
+                          <div className="bg-gray-50 rounded-xl px-4 py-3">
+                            <p className="text-xs text-gray-500">Tendance</p>
+                            <p className={`text-sm font-medium ${
+                              progress.trend === 'up' ? 'text-green-600' :
+                              progress.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                              {progress.trend === 'up' ? 'En hausse' :
+                               progress.trend === 'down' ? 'En baisse' : 'Stable'}
+                              {progress.trendDelta != null && ` (${progress.trendDelta > 0 ? '+' : ''}${progress.trendDelta})`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {progress.bySubject?.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Moyennes par matière</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {progress.bySubject.map((s: any) => (
+                              <div key={s.subject} className="flex justify-between items-center bg-gray-50 rounded-lg px-3 py-2 text-sm">
+                                <span className="text-gray-700 truncate mr-2">{s.subject}</span>
+                                <span className="font-semibold text-gray-800 shrink-0">
+                                  {s.overall != null ? s.overall : '—'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {progress.alerts?.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-1">
+                            <AlertTriangle className="w-3.5 h-3.5" /> Alertes
+                          </p>
+                          <div className="space-y-2">
+                            {progress.alerts.map((a: any, i: number) => (
+                              <p key={i} className={`text-sm px-3 py-2 rounded-lg ${
+                                a.severity === 'danger' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-800'
+                              }`}>
+                                {a.message}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Documents PDF */}
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <Download className="w-5 h-5 text-[#1B3A6B]" />
+                    Documents PDF
+                  </h3>
+                  <div className="flex flex-wrap gap-3 items-end">
+                    <button
+                      type="button"
+                      onClick={() => student && generateAttestationScolarite(schoolDocBase())}
+                      className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Attestation de scolarité
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => student && generateCertificatScolarite(schoolDocBase())}
+                      className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Certificat de scolarité
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={pdfTrimestre}
+                        onChange={(e) => setPdfTrimestre(e.target.value)}
+                        className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white"
+                      >
+                        <option value="T1">T1</option>
+                        <option value="T2">T2</option>
+                        <option value="T3">T3</option>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={downloadReleve}
+                        disabled={pdfLoading}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
+                      >
+                        {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        Relevé de notes
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Boutons save/cancel */}

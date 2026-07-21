@@ -35,7 +35,6 @@ export default function SuperAdminPage() {
   const [meta, setMeta] = useState<any>(null);
   const [saUser, setSaUser] = useState<any>({});
   const [mounted, setMounted] = useState(false);
-  const [loadError, setLoadError] = useState('');
 
   const getHeaders = () => saAuth.authHeader();
 
@@ -55,40 +54,18 @@ export default function SuperAdminPage() {
 
   const loadData = async () => {
     setLoading(true);
-    setLoadError('');
     try {
       const headers = getHeaders();
       const [tenantsRes, statsRes] = await Promise.allSettled([
         api.get(`/tenants?page=${page}&limit=15`, { headers }),
         api.get('/tenants/stats', { headers }),
       ]);
-      let failed = 0;
       if (tenantsRes.status === 'fulfilled') {
         setTenants(tenantsRes.value.data.data ?? []);
         setMeta(tenantsRes.value.data.meta);
-      } else {
-        failed += 1;
-        setTenants([]);
       }
-      if (statsRes.status === 'fulfilled') {
-        setStats(statsRes.value.data);
-      } else {
-        failed += 1;
-        setStats(null);
-      }
-      if (failed > 0) {
-        setLoadError(
-          failed === 2
-            ? 'Impossible de charger les établissements et les statistiques.'
-            : tenantsRes.status === 'rejected'
-              ? 'Impossible de charger la liste des établissements.'
-              : 'Impossible de charger les statistiques.',
-        );
-      }
-    } catch (e) {
-      console.error(e);
-      setLoadError('Impossible de charger les données Super Admin.');
-    }
+      if (statsRes.status === 'fulfilled') { setStats(statsRes.value.data); }
+    } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
@@ -97,10 +74,7 @@ export default function SuperAdminPage() {
     try {
       await api.patch(`/tenants/${id}/${isActive ? 'suspend' : 'activate'}`, {}, { headers: getHeaders() });
       setTenants(t => t.map(x => x.id === id ? { ...x, isActive: !isActive } : x));
-    } catch (e) {
-      console.error(e);
-      alert(isActive ? 'Suspension impossible. Réessayez.' : 'Activation impossible. Réessayez.');
-    }
+    } catch (e) { console.error(e); }
     finally { setActionLoading(null); }
   };
 
@@ -142,11 +116,6 @@ export default function SuperAdminPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
-        {loadError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-            {loadError}
-          </div>
-        )}
         {/* KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
@@ -213,6 +182,14 @@ export default function SuperAdminPage() {
               className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm hover:bg-gray-50">
               <RefreshCw className="w-4 h-4" /> Actualiser
             </button>
+            <button onClick={() => router.push('/super-admin/drena')}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm hover:bg-blue-700">
+              <BarChart2 className="w-4 h-4" /> Dashboard DRENA
+            </button>
+            <button onClick={() => router.push('/super-admin/groups')}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700">
+              <Building2 className="w-4 h-4" /> Groupes
+            </button>
             <button onClick={() => router.push('/super-admin/admins')}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700">
               <UserCog className="w-4 h-4" /> Super Admins
@@ -233,11 +210,6 @@ export default function SuperAdminPage() {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
-            </div>
-          ) : loadError && filtered.length === 0 ? (
-            <div className="text-center py-16 text-red-500">
-              <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>Erreur de chargement</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 text-gray-400">

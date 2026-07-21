@@ -65,6 +65,7 @@ export default function CahierPage() {
   const [saved, setSaved] = useState(false);
   const [emarging, setEmarging] = useState<string | null>(null);
   const [loadError, setLoadError] = useState('');
+  const [devoirsOnly, setDevoirsOnly] = useState(false);
 
   const user = authStorage.getUser();
   const canWrite = hasRole(user?.role, can.writeCahier);
@@ -169,6 +170,9 @@ export default function CahierPage() {
 
   const selectedClassName = classes.find(c => c.id === selectedClass)?.name || '';
   const nonEmarges = entries.filter(e => !e.isEmarge).length;
+  const displayedEntries = devoirsOnly
+    ? entries.filter((e) => e.devoirDescription?.trim())
+    : entries;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -224,8 +228,17 @@ export default function CahierPage() {
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={devoirsOnly}
+                onChange={(e) => setDevoirsOnly(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-[#1B3A6B]"
+              />
+              Devoirs uniquement
+            </label>
             <div className="ml-auto flex items-center gap-3">
-              <span className="text-sm text-gray-500">{entries.length} séance(s)</span>
+              <span className="text-sm text-gray-500">{displayedEntries.length} séance(s)</span>
               {canWrite && (
                 <button onClick={() => setShowForm(!showForm)}
                   className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
@@ -336,7 +349,7 @@ export default function CahierPage() {
               <div className="py-12 flex justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
               </div>
-            ) : entries.length === 0 ? (
+            ) : displayedEntries.length === 0 ? (
               <div className="py-16 text-center text-gray-400">
                 <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p className="font-medium">Aucune séance enregistrée</p>
@@ -356,7 +369,7 @@ export default function CahierPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {entries.map((entry, idx) => (
+                    {displayedEntries.map((entry, idx) => (
                       <tr key={entry.id} className={`hover:bg-gray-50 transition-colors ${idx % 2 === 0 ? '' : 'bg-gray-50/50'}`}>
                         <td className="px-4 py-4 align-top">
                           <div className="flex flex-col">

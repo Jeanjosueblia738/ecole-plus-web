@@ -120,6 +120,8 @@ export const analyticsApi = {
     api.get('/analytics/dropout-risk', { params }),
   studentDropoutRisk: (studentId: string) =>
     api.get(`/analytics/dropout-risk/${studentId}`),
+  studentProgress: (studentId: string) =>
+    api.get(`/analytics/student/${studentId}/progress`),
 };
 
 // ── Teachers ─────────────────────────────────────────────────────────────
@@ -136,6 +138,12 @@ export const teachersApi = {
     api.get(`/teachers/${id}/classes`, { params: { year } }),
   setClasses: (id: string, data: { classIds: string[]; year?: string }) =>
     api.put(`/teachers/${id}/classes`, data),
+  getAssignments: (id: string, year?: string) =>
+    api.get(`/teachers/${id}/assignments`, { params: { year } }),
+  setAssignments: (
+    id: string,
+    data: { items: { classId: string; subject: string }[]; year?: string },
+  ) => api.put(`/teachers/${id}/assignments`, data),
 };
 
 // ── Cahier de texte ───────────────────────────────────────────────────────
@@ -150,4 +158,49 @@ export const cahierApi = {
   update: (id: string, data: object) => api.put(`/cahier/${id}`, data),
   emargement: (id: string) => api.patch(`/cahier/${id}/emargement`),
   delete: (id: string) => api.delete(`/cahier/${id}`),
+  getHomework: (classId?: string) =>
+    api.get('/cahier/homework', { params: classId ? { classId } : {} }),
+};
+
+// ── Conseil de classe ────────────────────────────────────────────────────
+export const conseilApi = {
+  list: (params: { classId: string; trimestre: string; year: string }) =>
+    api.get('/conseil', { params }),
+  upsert: (data: {
+    studentId: string;
+    classId: string;
+    trimestre: string;
+    year: string;
+    mention?: string;
+    decision?: string;
+    appreciation?: string;
+  }) => api.put('/conseil', data),
+};
+
+// ── Examens ────────────────────────────────────────────────────────────────
+export const examensApi = {
+  list: (params?: { classId?: string; year?: string; from?: string; to?: string }) =>
+    api.get('/examens', { params }),
+  create: (data: object) => api.post('/examens', data),
+  update: (id: string, data: object) => api.put(`/examens/${id}`, data),
+  delete: (id: string) => api.delete(`/examens/${id}`),
+};
+
+// ── Pré-inscriptions ───────────────────────────────────────────────────────
+export const enrollmentsApi = {
+  submitPublic: (data: object) => api.post('/enrollments', data),
+  list: (status?: string) => api.get('/enrollments', { params: status ? { status } : {} }),
+  review: (id: string, data: object) => api.patch(`/enrollments/${id}`, data),
+};
+
+// ── Super Admin — groupes scolaires ────────────────────────────────────────
+export const schoolGroupsApi = {
+  list: () => api.get('/school-groups'),
+  getOne: (id: string) => api.get(`/school-groups/${id}`),
+  create: (data: { name: string; code: string; city?: string }) =>
+    api.post('/school-groups', data),
+  attachTenants: (id: string, tenantIds: string[]) =>
+    api.patch(`/school-groups/${id}/tenants`, { tenantIds }),
+  detachTenant: (tenantId: string) =>
+    api.delete(`/tenants/${tenantId}/group`),
 };

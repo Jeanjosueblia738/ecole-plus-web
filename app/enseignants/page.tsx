@@ -17,6 +17,12 @@ interface SchoolClass {
   year: string;
 }
 
+interface Assignment {
+  classId: string;
+  subject: string;
+  class?: SchoolClass;
+}
+
 export default function EnseignantsPage() {
   const router = useRouter();
   const [teachers, setTeachers] = useState<any[]>([]);
@@ -24,10 +30,10 @@ export default function EnseignantsPage() {
   const [loadError, setLoadError] = useState('');
   const [classCounts, setClassCounts] = useState<Record<string, number>>({});
 
-  // Modal affectation classes
   const [assignTeacher, setAssignTeacher] = useState<any | null>(null);
   const [allClasses, setAllClasses] = useState<SchoolClass[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  /** classId → subjects selected for that class */
+  const [classSubjects, setClassSubjects] = useState<Record<string, string[]>>({});
   const [modalLoading, setModalLoading] = useState(false);
   const [modalSaving, setModalSaving] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -35,13 +41,16 @@ export default function EnseignantsPage() {
 
   const year = currentSchoolYear();
 
+  const countUniqueClasses = (assignments: Assignment[]) =>
+    new Set(assignments.map((a) => a.classId)).size;
+
   const loadClassCounts = useCallback(async (list: any[]) => {
     const entries = await Promise.all(
       list.map(async (t) => {
         try {
-          const { data } = await teachersApi.getClasses(t.id, year);
-          const classes = Array.isArray(data) ? data : [];
-          return [t.id, classes.length] as const;
+          const { data } = await teachersApi.getAssignments(t.id, year);
+          const assignments = Array.isArray(data) ? data : [];
+          return [t.id, countUniqueClasses(assignments)] as const;
         } catch {
           return [t.id, 0] as const;
         }
@@ -74,20 +83,28 @@ export default function EnseignantsPage() {
     setModalError('');
     setModalSuccess('');
     setModalLoading(true);
-    setSelectedIds(new Set());
+    setClassSubjects({});
     setAllClasses([]);
     try {
       const [classesRes, assignedRes] = await Promise.all([
         classesApi.getAll(year),
-        teachersApi.getClasses(teacher.id, year),
+        teachersApi.getAssignments(teacher.id, year),
       ]);
       const classes = Array.isArray(classesRes.data) ? classesRes.data : [];
-      const assigned = Array.isArray(assignedRes.data) ? assignedRes.data : [];
+      const assignments: Assignment[] = Array.isArray(assignedRes.data) ? assignedRes.data : [];
+      const map: Record<string, string[]> = {};
+      for (const a of assignments) {
+        if (!map[a.classId]) map[a.classId] = [];
+        if (!map[a.classId].includes(a.subject)) map[a.classId].push(a.subject);
+      }
       setAllClasses(classes);
-      setSelectedIds(new Set(assigned.map((c: SchoolClass) => c.id)));
-      setClassCounts((prev) => ({ ...prev, [teacher.id]: assigned.length }));
+      setClassSubjects(map);
+      setClassCounts((prev) => ({
+        ...prev,
+        [teacher.id]: countUniqueClasses(assignments),
+      }));
     } catch {
-      setModalError('Impossible de charger les classes.');
+      setModalError('Impossible de charger les affectations.');
     } finally {
       setModalLoading(false);
     }
@@ -100,12 +117,38 @@ export default function EnseignantsPage() {
     setModalSuccess('');
   };
 
+  const isClassSelected = (classId: string) => classId in classSubjects;
+
   const toggleClass = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+    setClassSubjects((prev) => {
+      const next = { ...prev };
+      if (id in next) {
+        delete next[id];
+      } else {
+        const subjects: string[] = assignTeacher?.subjects?.length
+          ? [assignTeacher.subjects[0]]
+          : ['GENERAL'];
+        next[id] = subjects;
+      }
       return next;
+    });
+    setModalSuccess('');
+    setModalError('');
+  };
+
+  const toggleSubject = (classId: string, subject: string) => {
+    setClassSubjects((prev) => {
+      const current = prev[classId] ?? [];
+      const has = current.includes(subject);
+      const updated = has
+        ? current.filter((s) => s !== subject)
+        : [...current, subject];
+      if (updated.length === 0) {
+        const next = { ...prev };
+        delete next[classId];
+        return next;
+      }
+      return { ...prev, [classId]: updated };
     });
     setModalSuccess('');
     setModalError('');
@@ -117,18 +160,23 @@ export default function EnseignantsPage() {
     setModalError('');
     setModalSuccess('');
     try {
-      const classIds = [...selectedIds];
-      const { data } = await teachersApi.setClasses(assignTeacher.id, {
-        classIds,
+      const items = Object.entries(classSubjects).flatMap(([classId, subjects]) =>
+        subjects.map((subject) => ({ classId, subject })),
+      );
+      const { data } = await teachersApi.setAssignments(assignTeacher.id, {
+        items,
         year,
       });
-      const saved: SchoolClass[] = Array.isArray(data) ? data : [];
-      const count = saved.length > 0 ? saved.length : classIds.length;
-      if (saved.length > 0) {
-        setSelectedIds(new Set(saved.map((c) => c.id)));
+      const saved: Assignment[] = Array.isArray(data) ? data : [];
+      const map: Record<string, string[]> = {};
+      for (const a of saved) {
+        if (!map[a.classId]) map[a.classId] = [];
+        if (!map[a.classId].includes(a.subject)) map[a.classId].push(a.subject);
       }
+      setClassSubjects(map);
+      const count = countUniqueClasses(saved.length ? saved : items);
       setClassCounts((prev) => ({ ...prev, [assignTeacher.id]: count }));
-      setModalSuccess(`${count} classe(s) affectée(s) pour ${year}.`);
+      setModalSuccess(`${items.length} affectation(s) enregistrée(s) pour ${year}.`);
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -138,6 +186,15 @@ export default function EnseignantsPage() {
       setModalSaving(false);
     }
   };
+
+  const teacherSubjects: string[] = assignTeacher?.subjects?.length
+    ? assignTeacher.subjects
+    : ['GENERAL'];
+
+  const totalAssignments = Object.values(classSubjects).reduce(
+    (n, subs) => n + subs.length,
+    0,
+  );
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -220,7 +277,7 @@ export default function EnseignantsPage() {
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1B3A6B] hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
                       >
                         <BookOpen className="w-4 h-4" />
-                        Classes
+                        Affectations
                       </button>
                     </td>
                   </tr>
@@ -231,22 +288,17 @@ export default function EnseignantsPage() {
         </main>
       </div>
 
-      {/* Modal affectation classes */}
       {assignTeacher && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div>
-                <h3 className="font-bold text-gray-800">Affecter des classes</h3>
+                <h3 className="font-bold text-gray-800">Affectation matière-classe</h3>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {assignTeacher.firstName} {assignTeacher.lastName} — {year}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 text-xl"
-              >
+              <button type="button" onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl">
                 ✕
               </button>
             </div>
@@ -269,25 +321,52 @@ export default function EnseignantsPage() {
                   Aucune classe pour l&apos;année {year}.
                 </p>
               ) : (
-                <div className="space-y-1 max-h-72 overflow-y-auto border border-gray-100 rounded-xl divide-y divide-gray-50">
+                <div className="space-y-3 max-h-96 overflow-y-auto">
                   {allClasses.map((c) => {
-                    const checked = selectedIds.has(c.id);
+                    const selected = isClassSelected(c.id);
+                    const subjects = classSubjects[c.id] ?? [];
                     return (
-                      <label
+                      <div
                         key={c.id}
-                        className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${checked ? 'bg-blue-50/60' : ''}`}
+                        className={`border rounded-xl p-4 transition-colors ${selected ? 'border-blue-200 bg-blue-50/40' : 'border-gray-100'}`}
                       >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleClass(c.id)}
-                          className="w-4 h-4 rounded border-gray-300 text-[#1B3A6B] focus:ring-[#1B3A6B]"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-800">{c.name}</p>
-                          <p className="text-xs text-gray-400">{c.level}</p>
-                        </div>
-                      </label>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={() => toggleClass(c.id)}
+                            className="w-4 h-4 rounded border-gray-300 text-[#1B3A6B] focus:ring-[#1B3A6B]"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{c.name}</p>
+                            <p className="text-xs text-gray-400">{c.level}</p>
+                          </div>
+                        </label>
+                        {selected && (
+                          <div className="mt-3 pl-7">
+                            <p className="text-xs text-gray-500 mb-2">Matières enseignées dans cette classe :</p>
+                            <div className="flex flex-wrap gap-2">
+                              {teacherSubjects.map((s) => {
+                                const active = subjects.includes(s);
+                                return (
+                                  <button
+                                    key={s}
+                                    type="button"
+                                    onClick={() => toggleSubject(c.id, s)}
+                                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
+                                      active
+                                        ? 'bg-[#1B3A6B] text-white'
+                                        : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300'
+                                    }`}
+                                  >
+                                    {s}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>
@@ -295,7 +374,7 @@ export default function EnseignantsPage() {
 
               {!modalLoading && allClasses.length > 0 && (
                 <p className="text-xs text-gray-500">
-                  {selectedIds.size} classe(s) sélectionnée(s)
+                  {Object.keys(classSubjects).length} classe(s) — {totalAssignments} affectation(s)
                 </p>
               )}
             </div>

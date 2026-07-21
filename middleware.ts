@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/login', '/super-admin/login'];
+const PUBLIC_PATHS = ['/', '/login', '/inscription', '/super-admin/login'];
 
 const STAFF_PREFIXES = [
   '/dashboard',
@@ -14,6 +14,10 @@ const STAFF_PREFIXES = [
   '/rapports',
   '/risques',
   '/cahier',
+  '/devoirs',
+  '/conseil',
+  '/examens',
+  '/inscriptions',
   '/messagerie',
   '/emploi-du-temps',
   '/enseignants',

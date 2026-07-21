@@ -42,6 +42,10 @@ export interface BulletinData {
   appreciation?: string;
   directorName?: string;
   motto?: string;
+  /** Décision conseil de classe (si saisie) */
+  councilMention?: string;
+  councilDecision?: string;
+  councilAppreciation?: string;
 }
 
 type SubjectLine = {
@@ -99,12 +103,27 @@ function appreciation(note: number): string {
   return 'Médiocre';
 }
 
-function mentionConseil(moy: number): string {
-  if (moy >= 16) return 'Félicitations';
-  if (moy >= 14) return 'Tableau d\'Honneur';
-  if (moy >= 12) return 'Encouragements';
-  if (moy >= 10) return 'À encourager';
-  return 'Avertissement travail';
+function councilMentionLabel(m?: string, fallbackMoy?: number): string {
+  const map: Record<string, string> = {
+    TRES_BIEN: 'Félicitations',
+    BIEN: 'Tableau d\'Honneur',
+    ASSEZ_BIEN: 'Encouragements',
+    PASSABLE: 'À encourager',
+    MEDIOCRE: 'Avertissement travail',
+    NIL: '',
+  };
+  if (m && map[m]) return map[m];
+  if (fallbackMoy != null) return mentionConseil(fallbackMoy);
+  return '';
+}
+
+function councilDecisionLabel(d?: string): string {
+  const map: Record<string, string> = {
+    PASSAGE: 'Passage',
+    REDOUBLEMENT: 'Redoublement',
+    CONDITIONAL: 'Passage conditionnel',
+  };
+  return d ? map[d] || d : '';
 }
 
 /** Agrège les notes brutes en une ligne par matière */
@@ -538,7 +557,7 @@ export function generateBulletin(data: BulletinData): void {
   });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
-  const ment = mentionConseil(data.moyenneGenerale);
+  const ment = councilMentionLabel(data.councilMention, data.moyenneGenerale);
   const checks = [
     'Tableau d\'Honneur',
     'Encouragements',
@@ -558,6 +577,13 @@ export function generateBulletin(data: BulletinData): void {
     doc.text(c, margin + 6, cy);
     cy += 4.5;
   }
+  const decisionLbl = councilDecisionLabel(data.councilDecision);
+  if (decisionLbl) {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.5);
+    doc.text(`Décision : ${decisionLbl}`, margin + 2, y + footH - 3);
+    doc.setFont('helvetica', 'normal');
+  }
 
   const ax = margin + fW + gap;
   doc.rect(ax, y, fW, footH);
@@ -569,7 +595,9 @@ export function generateBulletin(data: BulletinData): void {
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8);
   const apprec =
-    data.appreciation || appreciation(data.moyenneGenerale);
+    data.councilAppreciation ||
+    data.appreciation ||
+    appreciation(data.moyenneGenerale);
   doc.text(apprec, ax + fW / 2, y + 14, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
@@ -607,4 +635,175 @@ export function generateBulletin(data: BulletinData): void {
 
   const filename = `bulletin_${data.studentRegistration || 'eleve'}_${data.trimestre}.pdf`;
   doc.save(filename);
+}
+
+export interface SchoolDocData {
+  schoolName: string;
+  schoolCity: string;
+  schoolCode: string;
+  schoolAddress?: string;
+  schoolPhone?: string;
+  directorName?: string;
+  studentName: string;
+  studentRegistration: string;
+  className: string;
+  level: string;
+  year: string;
+  gender?: string;
+  dateOfBirth?: string;
+  parentName?: string;
+}
+
+function schoolDocHeader(doc: jsPDF, data: SchoolDocData, title: string) {
+  const pageW = 210;
+  let y = 15;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('MINISTÈRE DE L\'ÉDUCATION NATIONALE ET DE L\'ALPHABÉTISATION', pageW / 2, y, { align: 'center' });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.text(`DRENA DE ${(data.schoolCity || '').toUpperCase() || '—'}`, pageW / 2, y, { align: 'center' });
+  y += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text((data.schoolName || 'ÉTABLISSEMENT').toUpperCase(), pageW / 2, y, { align: 'center' });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  if (data.schoolAddress) doc.text(data.schoolAddress, pageW / 2, y, { align: 'center' });
+  y += 4;
+  doc.text(`Code MENA : ${data.schoolCode || '—'}`, pageW / 2, y, { align: 'center' });
+  y += 10;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text(title, pageW / 2, y, { align: 'center' });
+  return y + 12;
+}
+
+/** Attestation de scolarité (inscription en cours). */
+export function generateAttestationScolarite(data: SchoolDocData): void {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const margin = 20;
+  let y = schoolDocHeader(doc, data, 'ATTESTATION DE SCOLARITÉ');
+  const city = data.schoolCity || '—';
+  const today = new Date().toLocaleDateString('fr-FR');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  const body = [
+    `Je soussigné(e), Chef(fe) d'établissement de ${data.schoolName},`,
+    `certifie que l'élève :`,
+    ``,
+    `    ${(data.studentName || '').toUpperCase()}`,
+    `    Matricule : ${data.studentRegistration || '—'}`,
+    `    Né(e) le : ${fmtDate(data.dateOfBirth)}`,
+    ``,
+    `est régulièrement inscrit(e) et scolarisé(e) en classe de ${data.className} (${data.level})`,
+    `pour l'année scolaire ${data.year}.`,
+    ``,
+    `L'élève fréquente assidûment les cours depuis le début de l'année scolaire.`,
+    ``,
+    `La présente attestation est délivrée à l'intéressé(e) pour servir et valoir ce que de droit.`,
+  ];
+  for (const line of body) {
+    doc.text(line, margin, y, { maxWidth: 170 });
+    y += line === '' ? 4 : 7;
+  }
+
+  y += 10;
+  doc.text(`Fait à ${city}, le ${today}`, margin, y);
+  y += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Le(La) Chef(fe) d\'établissement', 140, y);
+  if (data.directorName) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.directorName, 140, y + 10);
+  }
+  doc.save(`attestation_${data.studentRegistration || 'eleve'}.pdf`);
+}
+
+/** Certificat de scolarité (fin d'année / radiation). */
+export function generateCertificatScolarite(data: SchoolDocData & { purpose?: string }): void {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const margin = 20;
+  let y = schoolDocHeader(doc, data, 'CERTIFICAT DE SCOLARITÉ');
+  const city = data.schoolCity || '—';
+  const today = new Date().toLocaleDateString('fr-FR');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  const lines = [
+    `Certifie que l'élève ${(data.studentName || '').toUpperCase()}, matricule ${data.studentRegistration || '—'},`,
+    `a été scolarisé(e) au sein de notre établissement en classe de ${data.className} (${data.level})`,
+    `durant l'année scolaire ${data.year}.`,
+    ``,
+    data.purpose || `Ce certificat est délivré à la demande de la famille pour toutes fins utiles.`,
+  ];
+  for (const line of lines) {
+    doc.text(line, margin, y, { maxWidth: 170 });
+    y += line === '' ? 4 : 7;
+  }
+
+  y += 10;
+  doc.text(`Fait à ${city}, le ${today}`, margin, y);
+  y += 15;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Le(La) Chef(fe) d\'établissement', 140, y);
+  if (data.directorName) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.directorName, 140, y + 10);
+  }
+  doc.save(`certificat_${data.studentRegistration || 'eleve'}.pdf`);
+}
+
+export interface ReleveNotesData extends SchoolDocData {
+  trimestre: string;
+  grades: BulletinGrade[];
+  moyenneGenerale: number;
+}
+
+/** Relevé de notes trimestriel (simplifié). */
+export function generateReleveNotes(data: ReleveNotesData): void {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const margin = 15;
+  let y = schoolDocHeader(doc, data, `RELEVÉ DE NOTES — ${trimestreLabel(data.trimestre)}`);
+  y += 2;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Élève : ${data.studentName}`, margin, y);
+  doc.text(`Matricule : ${data.studentRegistration}`, margin + 100, y);
+  y += 6;
+  doc.text(`Classe : ${data.className} (${data.level})`, margin, y);
+  doc.text(`Année : ${data.year}`, margin + 100, y);
+  y += 8;
+
+  const lines = aggregateSubjects(data.grades || []);
+  autoTable(doc, {
+    startY: y,
+    margin: { left: margin, right: margin },
+    head: [['Matière', 'Moyenne', 'Coef.', 'Appréciation']],
+    body: lines.map((l) => [
+      l.subject,
+      l.moyenne.toFixed(2),
+      String(l.coefficient),
+      l.appreciation,
+    ]),
+    styles: { fontSize: 9, cellPadding: 2 },
+    headStyles: { fillColor: [27, 58, 107], textColor: 255 },
+    theme: 'grid',
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 8;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(`Moyenne générale : ${data.moyenneGenerale.toFixed(2)} / 20`, margin, y);
+  y += 12;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  const city = data.schoolCity || '—';
+  doc.text(`Fait à ${city}, le ${new Date().toLocaleDateString('fr-FR')}`, margin, y);
+
+  doc.save(`releve_${data.studentRegistration || 'eleve'}_${data.trimestre}.pdf`);
 }
