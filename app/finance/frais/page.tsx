@@ -13,11 +13,6 @@ import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
 
-const FEE_TYPES = [
-  { value: 'SCOLAIRE', label: 'Scolarité / Inscription' },
-  { value: 'ANNEXE', label: 'Annexe (transport, cantine, examens…)' },
-] as const;
-
 export default function ConfigurerFraisPage() {
   const router = useRouter();
   const year = currentSchoolYear();
@@ -37,7 +32,7 @@ export default function ConfigurerFraisPage() {
 
   const [form, setForm] = useState({
     label: '',
-    type: 'SCOLAIRE',
+    type: '',
     amountXof: '',
     dueDate: '',
     year,
@@ -89,7 +84,7 @@ export default function ConfigurerFraisPage() {
     try {
       await financeApi.createFee({
         label: form.label.trim(),
-        type: form.type,
+        type: form.type.trim() || 'Scolarité',
         amountXof: Number(form.amountXof),
         dueDate: form.dueDate,
         year: form.year || year,
@@ -98,7 +93,7 @@ export default function ConfigurerFraisPage() {
       setShowForm(false);
       setForm({
         label: '',
-        type: 'SCOLAIRE',
+        type: '',
         amountXof: '',
         dueDate: '',
         year,
@@ -208,16 +203,14 @@ export default function ConfigurerFraisPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Type *</label>
-                <select
+                <label className="block text-xs font-medium text-gray-500 mb-1">Type de frais *</label>
+                <input
+                  required
+                  placeholder="Ex. Scolarité, Transport, Cantine, Examens…"
                   value={form.type}
                   onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white"
-                >
-                  {FEE_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
+                />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Montant (FCFA) *</label>
@@ -318,14 +311,8 @@ export default function ConfigurerFraisPage() {
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-semibold text-gray-800">{fee.label}</p>
-                          <span
-                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                              fee.type === 'ANNEXE'
-                                ? 'bg-orange-50 text-orange-700'
-                                : 'bg-blue-50 text-blue-700'
-                            }`}
-                          >
-                            {fee.type === 'ANNEXE' ? 'Annexe' : 'Scolarité'}
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                            {fee.type || '—'}
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">

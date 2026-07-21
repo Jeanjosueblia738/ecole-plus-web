@@ -43,7 +43,7 @@ export default function FinancePage() {
 
   const [feeForm, setFeeForm] = useState({
     label: '',
-    type: 'SCOLAIRE',
+    type: '',
     amountXof: '',
     dueDate: '',
     year,
@@ -98,14 +98,14 @@ export default function FinancePage() {
     try {
       await financeApi.createFee({
         label: feeForm.label,
-        type: feeForm.type,
+        type: feeForm.type.trim() || 'Scolarité',
         amountXof: Number(feeForm.amountXof),
         dueDate: feeForm.dueDate,
         year: feeForm.year,
         level: feeForm.level || undefined,
       });
       setShowFeeForm(false);
-      setFeeForm({ label: '', type: 'SCOLAIRE', amountXof: '', dueDate: '', year, level: '' });
+      setFeeForm({ label: '', type: '', amountXof: '', dueDate: '', year, level: '' });
       await load();
     } catch (err: any) {
       const msg = err.response?.data?.message;
@@ -295,11 +295,9 @@ export default function FinancePage() {
                 <input required placeholder="Libellé *" value={feeForm.label}
                   onChange={e => setFeeForm(f => ({ ...f, label: e.target.value }))}
                   className="px-3 py-2 border border-gray-200 rounded-xl text-sm" />
-                <select value={feeForm.type} onChange={e => setFeeForm(f => ({ ...f, type: e.target.value }))}
-                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
-                  <option value="SCOLAIRE">Frais scolaires</option>
-                  <option value="ANNEXE">Frais annexes</option>
-                </select>
+                <input required placeholder="Type de frais * (Scolarité, Transport…)" value={feeForm.type}
+                  onChange={e => setFeeForm(f => ({ ...f, type: e.target.value }))}
+                  className="px-3 py-2 border border-gray-200 rounded-xl text-sm" />
                 <input required type="number" min={1} placeholder="Montant FCFA *" value={feeForm.amountXof}
                   onChange={e => setFeeForm(f => ({ ...f, amountXof: e.target.value }))}
                   className="px-3 py-2 border border-gray-200 rounded-xl text-sm" />
@@ -337,7 +335,7 @@ export default function FinancePage() {
                     <div>
                       <p className="text-sm font-medium text-gray-800">{fee.label}</p>
                       <p className="text-xs text-gray-500">
-                        {fee.type === 'ANNEXE' ? 'Annexe' : 'Scolarité'}
+                        {fee.type || '—'}
                         {fee.level ? ` · ${fee.level}` : ''}
                         {' · échéance '}
                         {new Date(fee.dueDate).toLocaleDateString('fr-FR')}
