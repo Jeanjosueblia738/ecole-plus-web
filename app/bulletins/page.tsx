@@ -108,9 +108,8 @@ export default function BulletinsPage() {
   };
 
   const loadGrades = async (studentId: string) => {
-    const key = `${studentId}_${trimestre}`;
-    if (gradesMap[key]) return gradesMap[key];
     const { data } = await gradesApi.getByStudent(studentId, trimestre);
+    const key = `${studentId}_${trimestre}`;
     setGradesMap((m) => ({ ...m, [key]: data }));
     return data;
   };

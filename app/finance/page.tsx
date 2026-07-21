@@ -28,27 +28,54 @@ export default function FinancePage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [studentsCount, setStudentsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('fr-CI').format(n || 0) + ' FCFA';
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
-      const [statsRes, feesRes, paymentsRes, studentsRes] = await Promise.all([
+      const results = await Promise.allSettled([
         financeApi.getStats(year),
-        financeApi.getFees(year).catch(() => ({ data: [] })),
-        financeApi.listPayments(year).catch(() => ({ data: [] })),
-        studentsApi.getAll().catch(() => ({ data: [] })),
+        financeApi.getFees(year),
+        financeApi.listPayments(year),
+        studentsApi.getAll(),
       ]);
-      setStats(statsRes.data);
-      setFees(Array.isArray(feesRes.data) ? feesRes.data : []);
-      setPayments(Array.isArray(paymentsRes.data) ? paymentsRes.data : []);
-      const students = Array.isArray(studentsRes.data) ? studentsRes.data : [];
-      setStudentsCount(students.length);
+      const [statsRes, feesRes, paymentsRes, studentsRes] = results;
+      const fails: string[] = [];
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
+      else fails.push('stats');
+      if (feesRes.status === 'fulfilled') {
+        setFees(Array.isArray(feesRes.value.data) ? feesRes.value.data : []);
+      } else {
+        setFees([]);
+        fails.push('frais');
+      }
+      if (paymentsRes.status === 'fulfilled') {
+        setPayments(
+          Array.isArray(paymentsRes.value.data) ? paymentsRes.value.data : [],
+        );
+      } else {
+        setPayments([]);
+        fails.push('paiements');
+      }
+      if (studentsRes.status === 'fulfilled') {
+        const students = Array.isArray(studentsRes.value.data)
+          ? studentsRes.value.data
+          : [];
+        setStudentsCount(students.length);
+      } else {
+        setStudentsCount(0);
+        fails.push('élèves');
+      }
+      if (fails.length) {
+        setLoadError(`Chargement partiel — échec : ${fails.join(', ')}`);
+      }
     } catch (e) {
       console.error(e);
-      alert('Impossible de charger les données finance.');
+      setLoadError('Impossible de charger les données finance.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +93,9 @@ export default function FinancePage() {
     load();
   }, [router]);
 
-  const pending = payments.filter((p) => p.status === 'en_attente' || !p.isPaid);
+  const pending = payments.filter(
+    (p) => p.status === 'partiel' || p.status === 'en_attente' || !p.isPaid,
+  );
   const tauxRaw = String(stats?.tauxRecouvrement ?? '0').replace('%', '');
   const taux = Number(tauxRaw) || 0;
   const heroAmount = isCashierOnly
@@ -83,6 +112,11 @@ export default function FinancePage() {
           subtitle={`Année ${year}${isCashierOnly ? ' · Profil caissier' : ''}`}
         />
         <main className="flex-1 p-6 space-y-6 max-w-5xl">
+          {loadError && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
           <div className="rounded-2xl bg-gradient-to-br from-[#1B3A6B] to-blue-700 text-white p-6 shadow-sm">
             <p className="text-sm text-white/70">{heroLabel}</p>
             <p className="text-3xl font-bold mt-1">
@@ -103,7 +137,7 @@ export default function FinancePage() {
                 </div>
               )}
               <div>
-                <p className="text-xs text-white/60">En attente validation</p>
+                <p className="text-xs text-white/60">Paiements partiels</p>
                 <p className="text-lg font-bold">
                   {loading ? '…' : `${pending.length} paiement${pending.length !== 1 ? 's' : ''}`}
                 </p>

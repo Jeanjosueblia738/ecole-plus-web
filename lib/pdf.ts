@@ -103,6 +103,14 @@ function appreciation(note: number): string {
   return 'Médiocre';
 }
 
+function mentionConseil(moy: number): string {
+  if (moy >= 16) return 'Félicitations';
+  if (moy >= 14) return "Tableau d'Honneur";
+  if (moy >= 12) return 'Encouragements';
+  if (moy >= 10) return 'À encourager';
+  return 'Avertissement travail';
+}
+
 function councilMentionLabel(m?: string, fallbackMoy?: number): string {
   const map: Record<string, string> = {
     TRES_BIEN: 'Félicitations',
@@ -126,25 +134,33 @@ function councilDecisionLabel(d?: string): string {
   return d ? map[d] || d : '';
 }
 
-/** Agrège les notes brutes en une ligne par matière */
+/** Agrège les notes brutes en une ligne par matière (moyenne pondérée = API) */
 export function aggregateSubjects(grades: BulletinGrade[]): SubjectLine[] {
-  const bySubject = new Map<string, { sum: number; n: number; coef: number }>();
+  const bySubject = new Map<
+    string,
+    { weightedSum: number; coefSum: number; lastCoef: number }
+  >();
   for (const g of grades) {
     const key = g.subject.trim();
     if (!key) continue;
-    const cur = bySubject.get(key) || { sum: 0, n: 0, coef: g.coefficient || 1 };
-    cur.sum += g.value;
-    cur.n += 1;
-    cur.coef = g.coefficient || cur.coef;
+    const coef = g.coefficient || 1;
+    const cur = bySubject.get(key) || {
+      weightedSum: 0,
+      coefSum: 0,
+      lastCoef: coef,
+    };
+    cur.weightedSum += g.value * coef;
+    cur.coefSum += coef;
+    cur.lastCoef = coef;
     bySubject.set(key, cur);
   }
   return [...bySubject.entries()].map(([subject, v]) => {
-    const moyenne = v.n ? v.sum / v.n : 0;
+    const moyenne = v.coefSum > 0 ? v.weightedSum / v.coefSum : 0;
     return {
       subject,
       moyenne,
-      coefficient: v.coef,
-      total: moyenne * v.coef,
+      coefficient: v.lastCoef || 1,
+      total: moyenne * (v.lastCoef || 1),
       appreciation: appreciation(moyenne),
     };
   });
@@ -314,7 +330,7 @@ export function generateBulletin(data: BulletinData): void {
   iy += 4;
   doc.text(`Effectif : ${data.effectif ?? '—'}`, col1, iy);
   doc.text(
-    `Redoublant : ${data.isRepeater ? 'Oui' : 'Non'}`,
+    `Redoublant : ${data.isRepeater == null ? '—' : data.isRepeater ? 'Oui' : 'Non'}`,
     col2,
     iy,
   );
@@ -367,7 +383,7 @@ export function generateBulletin(data: BulletinData): void {
         styles: { fontStyle: 'bold', fillColor: [245, 245, 245] },
       },
       {
-        content: b.moyenne ? b.moyenne.toFixed(2) : '—',
+        content: Number.isFinite(b.moyenne) ? b.moyenne.toFixed(2) : '—',
         styles: { fontStyle: 'bold', fillColor: [245, 245, 245], halign: 'center' },
       },
       {

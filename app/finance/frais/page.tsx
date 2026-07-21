@@ -43,16 +43,27 @@ export default function ConfigurerFraisPage() {
     setLoading(true);
     setLoadError('');
     try {
-      const [feesRes, classesRes] = await Promise.all([
+      const [feesRes, classesRes] = await Promise.allSettled([
         financeApi.getFees(year),
-        classesApi.getAll(year).catch(() => ({ data: [] })),
+        classesApi.getAll(year),
       ]);
-      setFees(Array.isArray(feesRes.data) ? feesRes.data : []);
-      setClasses(
-        Array.isArray(classesRes.data)
-          ? classesRes.data
-          : classesRes.data?.data ?? [],
-      );
+      if (feesRes.status === 'fulfilled') {
+        setFees(Array.isArray(feesRes.value.data) ? feesRes.value.data : []);
+      } else {
+        setFees([]);
+        setLoadError('Impossible de charger les frais.');
+      }
+      if (classesRes.status === 'fulfilled') {
+        const d = classesRes.value.data;
+        setClasses(Array.isArray(d) ? d : d?.data ?? []);
+      } else {
+        setClasses([]);
+        setLoadError((prev) =>
+          prev
+            ? `${prev} Classes indisponibles.`
+            : 'Impossible de charger les classes (assignation impossible).',
+        );
+      }
     } catch {
       setFees([]);
       setLoadError('Impossible de charger les frais.');

@@ -215,7 +215,7 @@ export default function RapportsPage() {
   };
 
   const getMention = (moy: number | null) => {
-    if (!moy) { return '—'; }
+    if (moy == null || Number.isNaN(moy)) { return '—'; }
     if (moy >= 16) { return 'Très bien'; }
     if (moy >= 14) { return 'Bien'; }
     if (moy >= 12) { return 'Assez bien'; }
@@ -224,7 +224,7 @@ export default function RapportsPage() {
   };
 
   const getMentionColor = (moy: number | null) => {
-    if (!moy) { return 'text-gray-400'; }
+    if (moy == null || Number.isNaN(moy)) { return 'text-gray-400'; }
     if (moy >= 14) { return 'text-green-600 font-bold'; }
     if (moy >= 10) { return 'text-blue-600'; }
     return 'text-red-500';

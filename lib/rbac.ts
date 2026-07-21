@@ -93,6 +93,6 @@ export function canAccessPath(role: string | undefined | null, path: string): bo
   const match = Object.entries(NAV_ACCESS)
     .filter(([p]) => path === p || path.startsWith(`${p}/`))
     .sort((a, b) => b[0].length - a[0].length)[0];
-  if (!match) return true;
+  if (!match) return false;
   return hasRole(role, match[1]);
 }
