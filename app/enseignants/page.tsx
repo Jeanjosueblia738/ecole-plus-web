@@ -178,7 +178,7 @@ export default function EnseignantsPage() {
         delete next[id];
       } else {
         const subjects: string[] = assignTeacher?.subjects?.length
-          ? [assignTeacher.subjects[0]]
+          ? [...assignTeacher.subjects]
           : ['GENERAL'];
         next[id] = subjects;
       }
