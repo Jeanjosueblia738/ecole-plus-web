@@ -57,6 +57,10 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/utilisateurs': ['ADMIN', 'FOUNDER'],
   '/abonnement': ['ADMIN', 'FOUNDER'],
   '/parametres': ALL_STAFF,
+  '/parent': ['PARENT'] as Role[],
+  '/parent/notes': ['PARENT'] as Role[],
+  '/parent/presences': ['PARENT'] as Role[],
+  '/parent/finance': ['PARENT'] as Role[],
 };
 
 export const can = {

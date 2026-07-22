@@ -28,6 +28,7 @@ const STAFF_PREFIXES = [
   '/utilisateurs',
   '/abonnement',
   '/parametres',
+  '/parent',
 ];
 
 export function middleware(request: NextRequest) {

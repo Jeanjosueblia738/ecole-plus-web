@@ -77,6 +77,24 @@ export const studentsApi = {
   delete: (id: string) => api.delete(`/students/${id}`),
 };
 
+// ── Espace parent ────────────────────────────────────────────────────────
+export const parentApi = {
+  myChildren: () => api.get('/students/my-children'),
+  myChild: () => api.get('/students/my-child'),
+};
+
+export const paymentsApi = {
+  enabledMerchants: () => api.get('/finance/merchants/enabled'),
+  initiateFee: (data: {
+    provider: string;
+    studentId: string;
+    feeId: string;
+    amountXof: number;
+    payerPhone: string;
+  }) => api.post('/payments/fees/initiate', data),
+  getTransaction: (id: string) => api.get(`/payments/transactions/${id}`),
+};
+
 // ── Classes ──────────────────────────────────────────────────────────────
 export const classesApi = {
   getAll: (year?: string) => api.get('/classes', { params: { year } }),

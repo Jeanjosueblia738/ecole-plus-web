@@ -179,16 +179,19 @@ export default function FinanceMerchantsPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500">Merchant ID (API)</label>
+                      <label className="text-xs text-gray-500">
+                        Merchant ID (API / site_id CinetPay)
+                      </label>
                       <input
                         value={d.merchantId || ''}
                         onChange={(e) => setDraft(m.provider, 'merchantId', e.target.value)}
                         className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                        placeholder="site_id CinetPay ou API user MTN"
                       />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500">
-                        API Key {m.hasApiKey ? `(${m.apiKeyMasked})` : ''}
+                        API Key {m.hasApiKey ? `(${m.apiKeyMasked})` : ''} — Wave secret / CinetPay apikey / MTN sub-key
                       </label>
                       <input
                         type="password"

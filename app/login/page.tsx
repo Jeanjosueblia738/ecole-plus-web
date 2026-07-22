@@ -34,6 +34,11 @@ export default function LoginPage() {
         router.push('/abonnement');
         return;
       }
+      const role = String(data.user?.role || '').toUpperCase();
+      if (role === 'PARENT') {
+        router.push('/parent');
+        return;
+      }
       const next = new URLSearchParams(window.location.search).get('next');
       router.push(safeNextPath(next));
     } catch (err: any) {
