@@ -21,6 +21,7 @@ const STAFF_PREFIXES = [
   '/messagerie',
   '/emploi-du-temps',
   '/enseignants',
+  '/matieres',
   '/utilisateurs',
   '/abonnement',
   '/parametres',

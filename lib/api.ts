@@ -194,6 +194,21 @@ export const teachersApi = {
   ) => api.put(`/teachers/${id}/assignments`, data),
 };
 
+// ── Matières (catalogue école) ───────────────────────────────────────────
+export const subjectsApi = {
+  getAll: (includeInactive?: boolean) =>
+    api.get('/subjects', {
+      params: includeInactive ? { includeInactive: true } : undefined,
+    }),
+  create: (data: { name: string; coefficient: number }) =>
+    api.post('/subjects', data),
+  update: (
+    id: string,
+    data: { name?: string; coefficient?: number; isActive?: boolean },
+  ) => api.put(`/subjects/${id}`, data),
+  remove: (id: string) => api.delete(`/subjects/${id}`),
+};
+
 // ── Cahier de texte ───────────────────────────────────────────────────────
 export const cahierApi = {
   create: (data: object) => api.post('/cahier', data),

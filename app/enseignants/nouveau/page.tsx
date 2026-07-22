@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Loader2, Plus, X, BookOpen } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { teachersApi } from '@/lib/api';
+import { teachersApi, subjectsApi } from '@/lib/api';
 import PhotoUpload from '@/components/PhotoUpload';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
@@ -16,6 +16,7 @@ export default function NouvelEnseignantPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [customSubject, setCustomSubject] = useState('');
+  const [catalog, setCatalog] = useState<string[]>([...SCHOOL_SUBJECTS]);
   const [tempId] = useState(() => crypto.randomUUID());
   const [form, setForm] = useState({
     firstName: '',
@@ -34,7 +35,19 @@ export default function NouvelEnseignantPage() {
     }
     if (!hasRole(authStorage.getUser()?.role, can.manageTeachers)) {
       router.push('/dashboard');
+      return;
     }
+    subjectsApi
+      .getAll()
+      .then(({ data }) => {
+        const names = (Array.isArray(data) ? data : [])
+          .map((s: { name?: string }) => String(s.name || '').trim())
+          .filter(Boolean);
+        if (names.length) setCatalog(names);
+      })
+      .catch(() => {
+        /* fallback SCHOOL_SUBJECTS */
+      });
   }, [router]);
 
   const set = (key: string, val: unknown) =>
@@ -209,15 +222,14 @@ export default function NouvelEnseignantPage() {
                     Matières enseignées * (1 ou plusieurs)
                   </h2>
                   <p className="text-xs text-gray-500 mt-1">
-                    Cochez toutes les matières tenues par cet enseignant — ex.{' '}
-                    <strong>Français</strong> + <strong>EDHC</strong>, ou{' '}
-                    <strong>Philosophie</strong> + <strong>EDHC</strong>.
+                    Catalogue de l’école (page Matières). Ex.{' '}
+                    <strong>Français</strong> + <strong>EDHC</strong>.
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                {SCHOOL_SUBJECTS.map((name) => {
+                {catalog.map((name) => {
                   const active = isSelected(name);
                   return (
                     <button

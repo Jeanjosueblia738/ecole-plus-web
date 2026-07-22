@@ -87,6 +87,7 @@ const navSections: NavSection[] = [
     label: 'Administration',
     items: [
       { href: '/enseignants', icon: Users, label: 'Enseignants' },
+      { href: '/matieres', icon: BookOpen, label: 'Matières' },
       { href: '/utilisateurs', icon: UserCheck, label: 'Utilisateurs' },
       { href: '/abonnement', icon: CreditCard, label: 'Abonnement' },
       { href: '/parametres', icon: Settings, label: 'Paramètres' },

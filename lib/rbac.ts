@@ -50,6 +50,7 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/messagerie': ALL_STAFF,
   '/emploi-du-temps': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'],
   '/enseignants': ['ADMIN', 'FOUNDER'],
+  '/matieres': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'],
   '/utilisateurs': ['ADMIN', 'FOUNDER'],
   '/abonnement': ['ADMIN', 'FOUNDER'],
   '/parametres': ALL_STAFF,
@@ -62,6 +63,10 @@ export const can = {
   deleteStudent: ['ADMIN', 'FOUNDER'] as Role[],
   manageUsers: ['ADMIN', 'FOUNDER'] as Role[],
   manageTeachers: ['ADMIN', 'FOUNDER'] as Role[],
+  /** Catalogue matières (lecture) */
+  viewSubjects: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'TEACHER'] as Role[],
+  /** Créer / modifier / désactiver matières */
+  manageSubjects: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'] as Role[],
   enterGrades: ['TEACHER'] as Role[],
   doAppel: ['TEACHER', 'SURVEILLANT', 'EDUCATOR'] as Role[],
   generateBulletin: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'] as Role[],

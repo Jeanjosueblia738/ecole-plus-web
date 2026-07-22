@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronDown, Save, Loader2, BookOpen, CheckCircle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { gradesApi, studentsApi } from '@/lib/api';
+import { gradesApi, studentsApi, subjectsApi } from '@/lib/api';
 import { loadClassesForUser } from '@/lib/load-classes-for-user';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
@@ -18,6 +18,8 @@ interface StudentGrade {
   value: string; // string pour permettre la saisie vide
 }
 
+type CatalogSubject = { id: string; name: string; coefficient: number };
+
 export default function NotesPage() {
   const router = useRouter();
   const [classes, setClasses] = useState<any[]>([]);
@@ -26,6 +28,7 @@ export default function NotesPage() {
   const [subject, setSubject] = useState('');
   const [evalType, setEvalType] = useState('DEVOIR');
   const [coefficient, setCoefficient] = useState('1');
+  const [catalog, setCatalog] = useState<CatalogSubject[]>([]);
   const [students, setStudents] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
@@ -46,7 +49,30 @@ export default function NotesPage() {
         else setLoadError('Aucune classe assignée. Vérifiez votre emploi du temps.');
       })
       .catch(() => setLoadError('Impossible de charger les classes.'));
+    subjectsApi
+      .getAll()
+      .then(({ data }) => {
+        const rows = (Array.isArray(data) ? data : []).map((s: any) => ({
+          id: s.id,
+          name: String(s.name || ''),
+          coefficient: Number(s.coefficient) || 1,
+        })).filter((s: CatalogSubject) => s.name);
+        setCatalog(rows);
+        if (rows.length && !subject) {
+          setSubject(rows[0].name);
+          setCoefficient(String(rows[0].coefficient));
+        }
+      })
+      .catch(() => setCatalog([]));
   }, [router]);
+
+  const onSubjectChange = (name: string) => {
+    setSubject(name);
+    const hit = catalog.find(
+      (s) => s.name.toLocaleLowerCase('fr') === name.toLocaleLowerCase('fr'),
+    );
+    if (hit) setCoefficient(String(hit.coefficient));
+  };
 
   useEffect(() => {
     if (!selectedClass) return;
@@ -159,12 +185,29 @@ export default function NotesPage() {
               {/* Matière */}
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1">Matière *</label>
-                <input
-                  value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  placeholder="ex: Mathématiques"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                {catalog.length > 0 ? (
+                  <div className="relative">
+                    <select
+                      value={subject}
+                      onChange={(e) => onSubjectChange(e.target.value)}
+                      className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {catalog.map((s) => (
+                        <option key={s.id} value={s.name}>
+                          {s.name} (×{s.coefficient})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                ) : (
+                  <input
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder="ex: Mathématiques"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                )}
               </div>
 
               {/* Type évaluation */}
