@@ -447,7 +447,7 @@ export default function DashboardPage() {
                 tone="violet"
                 eyebrow="Enseignant"
                 title="Mon espace pédagogique"
-                subtitle="Appel, notes, cahier de texte et examens"
+                subtitle="Appel, notes, cahier de texte et évaluations"
                 loading={loading}
                 metrics={[
                   { label: 'Classes', value: stats.totalClasses },
@@ -459,7 +459,7 @@ export default function DashboardPage() {
                 { label: 'Faire l\'appel', href: '/presences', variant: 'primary', icon: UserCheck },
                 { label: 'Saisir des notes', href: '/notes', variant: 'primary', icon: FileText },
                 { label: 'Cahier de texte', href: '/cahier', variant: 'secondary', icon: Pencil },
-                { label: 'Examens', href: '/examens', variant: 'secondary', icon: BookOpen },
+                { label: 'Évaluations', href: '/examens', variant: 'secondary', icon: BookOpen },
                 { label: 'Emploi du temps', href: '/emploi-du-temps', variant: 'secondary', icon: CalendarDays },
                 { label: 'Messagerie', href: '/messagerie', variant: 'secondary', icon: MessageSquare },
               ]} />

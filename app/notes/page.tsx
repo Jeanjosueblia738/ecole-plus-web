@@ -173,10 +173,10 @@ export default function NotesPage() {
                 <div className="relative">
                   <select value={evalType} onChange={e => setEvalType(e.target.value)}
                     className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="CONTROLE">Interrogation</option>
                     <option value="DEVOIR">Devoir</option>
-                    <option value="COMPOSITION">Composition</option>
                     <option value="EXAMEN">Examen</option>
-                    <option value="INTERROGATION">Interrogation</option>
+                    <option value="TP">TP</option>
                   </select>
                   <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>

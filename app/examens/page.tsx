@@ -14,7 +14,7 @@ import { currentSchoolYear } from '@/lib/school-year';
 
 const EXAM_TYPES = [
   { value: 'DEVOIR', label: 'Devoir' },
-  { value: 'COMPOSITION', label: 'Composition' },
+  { value: 'COMPOSITION', label: 'Interrogation' },
   { value: 'EXAMEN', label: 'Examen' },
 ];
 
@@ -76,7 +76,7 @@ export default function ExamensPage() {
       setExams(Array.isArray(data) ? data : []);
     } catch {
       setExams([]);
-      setLoadError('Impossible de charger les examens.');
+      setLoadError('Impossible de charger les évaluations.');
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,7 @@ export default function ExamensPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Supprimer cette session d\'examen ?')) return;
+    if (!confirm('Supprimer cette session d\'évaluation ?')) return;
     try {
       await examensApi.delete(id);
       setExams((prev) => prev.filter((x) => x.id !== id));
@@ -123,7 +123,7 @@ export default function ExamensPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Examens" subtitle={`Sessions d'évaluation — ${year}`} />
+        <Header title="Évaluations" subtitle={`Sessions d'évaluation — ${year}`} />
         <main className="flex-1 p-6">
           {loadError && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-700 flex items-center gap-2">

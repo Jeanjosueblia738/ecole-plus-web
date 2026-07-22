@@ -61,7 +61,7 @@ export default function DevoirsPage() {
       setItems(Array.isArray(list) ? list : []);
     } catch {
       setItems([]);
-      setLoadError('Impossible de charger les devoirs.');
+      setLoadError('Impossible de charger les travaux à rendre.');
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ export default function DevoirsPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Devoirs" subtitle="Agenda des devoirs (cahier de texte)" />
+        <Header title="Travail à rendre" subtitle="Agenda des travaux à rendre (cahier de texte)" />
         <main className="flex-1 p-6">
           {loadError && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-6 text-sm text-red-700 flex items-center gap-2">
@@ -120,7 +120,9 @@ export default function DevoirsPage() {
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
-            <span className="text-sm text-gray-500 ml-auto">{filtered.length} devoir(s)</span>
+            <span className="text-sm text-gray-500 ml-auto">
+              {filtered.length} travail{filtered.length !== 1 ? 'x' : ''} à rendre
+            </span>
           </div>
 
           {loading ? (
@@ -131,7 +133,7 @@ export default function DevoirsPage() {
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-100 p-12 text-center text-gray-400">
               <NotebookPen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>Aucun devoir enregistré</p>
+              <p>Aucun travail à rendre enregistré</p>
             </div>
           ) : (
             <div className="space-y-3">

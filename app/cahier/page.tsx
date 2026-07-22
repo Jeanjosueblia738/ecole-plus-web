@@ -235,7 +235,7 @@ export default function CahierPage() {
                 onChange={(e) => setDevoirsOnly(e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-[#1B3A6B]"
               />
-              Devoirs uniquement
+              Travaux à rendre uniquement
             </label>
             <div className="ml-auto flex items-center gap-3">
               <span className="text-sm text-gray-500">{displayedEntries.length} séance(s)</span>
@@ -313,14 +313,14 @@ export default function CahierPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1">
-                      Devoir donné <span className="text-gray-400 font-normal">(description)</span>
+                      Travail à rendre <span className="text-gray-400 font-normal">(description)</span>
                     </label>
                     <textarea value={form.devoirDescription} onChange={e => set('devoirDescription', e.target.value)}
                       rows={3} placeholder="Exercice page 42, problème n°5..."
                       className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
                   </div>
                   <div className="flex flex-col justify-end">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">Date de remise du devoir</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Date de remise</label>
                     <input type="date" value={form.devoirDateRemise} onChange={e => set('devoirDateRemise', e.target.value)}
                       className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
@@ -363,7 +363,7 @@ export default function CahierPage() {
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-32">Date</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase">Plan du cours</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-48">Prochain cours</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-40">Devoir</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-40">À rendre</th>
                       <th className="text-center px-4 py-3 text-xs font-semibold uppercase w-32">Émargement</th>
                       {canDelete && <th className="text-center px-4 py-3 text-xs font-semibold uppercase w-16"></th>}
                     </tr>
