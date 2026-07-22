@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, User, BookOpen, Loader2 } from 'lucide-react';
+import { Plus, User, BookOpen, Loader2, Key, CheckCircle, XCircle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { teachersApi, classesApi } from '@/lib/api';
@@ -38,6 +38,8 @@ export default function EnseignantsPage() {
   const [modalSaving, setModalSaving] = useState(false);
   const [modalError, setModalError] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
+  const [toggling, setToggling] = useState<string | null>(null);
+  const [resetting, setResetting] = useState<string | null>(null);
 
   const year = currentSchoolYear();
 
@@ -65,11 +67,11 @@ export default function EnseignantsPage() {
       router.push('/dashboard');
       return;
     }
-    teachersApi.getAll()
+    teachersApi.getAll({ includeInactive: true })
       .then(({ data }) => {
         const list = Array.isArray(data) ? data : [];
         setTeachers(list);
-        loadClassCounts(list);
+        loadClassCounts(list.filter((t: any) => t.isActive));
       })
       .catch(() => {
         setTeachers([]);
@@ -77,6 +79,50 @@ export default function EnseignantsPage() {
       })
       .finally(() => setLoading(false));
   }, [router, loadClassCounts]);
+
+  const handleToggle = async (teacher: any) => {
+    setToggling(teacher.id);
+    try {
+      if (teacher.isActive) {
+        await teachersApi.deactivate(teacher.id);
+      } else {
+        await teachersApi.activate(teacher.id);
+      }
+      setTeachers((list) =>
+        list.map((t) =>
+          t.id === teacher.id ? { ...t, isActive: !t.isActive } : t,
+        ),
+      );
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        (teacher.isActive
+          ? 'Désactivation impossible. Réessayez.'
+          : 'Activation impossible. Réessayez.');
+      alert(Array.isArray(msg) ? msg.join(', ') : String(msg));
+    } finally {
+      setToggling(null);
+    }
+  };
+
+  const handleResetPassword = async (teacherId: string) => {
+    const newPassword = prompt('Nouveau mot de passe (min 8 caractères) :');
+    if (!newPassword || newPassword.length < 8) {
+      alert('Le mot de passe doit contenir au moins 8 caractères');
+      return;
+    }
+    setResetting(teacherId);
+    try {
+      await teachersApi.resetPassword(teacherId, newPassword);
+      alert('Mot de passe réinitialisé avec succès !');
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || 'Réinitialisation impossible. Réessayez.';
+      alert(Array.isArray(msg) ? msg.join(', ') : String(msg));
+    } finally {
+      setResetting(null);
+    }
+  };
 
   const openClassesModal = async (teacher: any) => {
     setAssignTeacher(teacher);
@@ -240,7 +286,7 @@ export default function EnseignantsPage() {
                     <p>Aucun enseignant enregistré</p>
                   </td></tr>
                 ) : teachers.map((t: any) => (
-                  <tr key={t.id} className="hover:bg-gray-50">
+                  <tr key={t.id} className={`hover:bg-gray-50 transition-colors ${!t.isActive ? 'opacity-60' : ''}`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-semibold text-sm">
@@ -266,19 +312,50 @@ export default function EnseignantsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${t.isActive ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
-                        {t.isActive ? 'Actif' : 'Inactif'}
-                      </span>
+                      {t.isActive ? (
+                        <span className="inline-flex items-center gap-1 text-green-600 text-xs font-medium">
+                          <CheckCircle className="w-4 h-4" /> Actif
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-red-500 text-xs font-medium">
+                          <XCircle className="w-4 h-4" /> Inactif
+                        </span>
+                      )}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => openClassesModal(t)}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1B3A6B] hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        Affectations
-                      </button>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openClassesModal(t)}
+                          title="Affectations"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1B3A6B] hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          Affectations
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleResetPassword(t.id)}
+                          disabled={resetting === t.id}
+                          title="Réinitialiser le mot de passe"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-40"
+                        >
+                          <Key className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggle(t)}
+                          disabled={toggling === t.id}
+                          title={t.isActive ? 'Désactiver l\'accès' : 'Activer l\'accès'}
+                          className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 ${
+                            t.isActive
+                              ? 'text-gray-400 hover:text-orange-500 hover:bg-orange-50'
+                              : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                          }`}
+                        >
+                          {t.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

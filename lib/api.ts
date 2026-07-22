@@ -165,8 +165,15 @@ export const analyticsApi = {
 
 // ── Teachers ─────────────────────────────────────────────────────────────
 export const teachersApi = {
-  getAll: () => api.get('/teachers'),
+  getAll: (params?: { includeInactive?: boolean }) =>
+    api.get('/teachers', {
+      params: params?.includeInactive ? { includeInactive: true } : undefined,
+    }),
   create: (data: object) => api.post('/teachers', data),
+  activate: (id: string) => api.patch(`/teachers/${id}/activate`),
+  deactivate: (id: string) => api.patch(`/teachers/${id}/deactivate`),
+  resetPassword: (id: string, newPassword: string) =>
+    api.patch(`/teachers/${id}/reset-password`, { newPassword }),
   /** Classes de l'enseignant connecté (1 → N) */
   getMyClasses: (year?: string) =>
     api.get('/teachers/my-classes', { params: { year } }),
