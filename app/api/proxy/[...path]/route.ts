@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const maxDuration = 30;
+
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   'https://ecole-plus-api-production.up.railway.app/api/v1';
@@ -26,20 +28,54 @@ async function forward(req: NextRequest, path: string[], method: string) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const init: RequestInit = { method, headers };
+  const init: RequestInit = {
+    method,
+    headers,
+    signal: AbortSignal.timeout(25_000),
+  };
   if (method !== 'GET' && method !== 'HEAD') {
     const body = await req.text();
     if (body) init.body = body;
   }
 
-  const upstream = await fetch(url.toString(), init);
-  const text = await upstream.text();
-  return new NextResponse(text, {
-    status: upstream.status,
-    headers: {
-      'Content-Type': upstream.headers.get('Content-Type') || 'application/json',
-    },
-  });
+  try {
+    const upstream = await fetch(url.toString(), init);
+    const text = await upstream.text();
+    const contentType = upstream.headers.get('Content-Type') || '';
+
+    // Railway / proxy HTML errors → JSON lisible côté UI
+    if (
+      upstream.status >= 502 &&
+      (!contentType.includes('application/json') || text.startsWith('<'))
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            'Le serveur API ne répond pas (redémarrage ou surcharge). Réessayez dans quelques secondes.',
+          statusCode: upstream.status,
+        },
+        { status: upstream.status },
+      );
+    }
+
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        'Content-Type': contentType || 'application/json',
+      },
+    });
+  } catch (err: any) {
+    const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+    return NextResponse.json(
+      {
+        message: timedOut
+          ? 'Délai dépassé — l’API met trop de temps à répondre. Réessayez.'
+          : 'Impossible de joindre l’API. Réessayez dans un instant.',
+        statusCode: 502,
+      },
+      { status: 502 },
+    );
+  }
 }
 
 export async function GET(req: NextRequest, ctx: Ctx) {

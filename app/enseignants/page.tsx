@@ -116,8 +116,14 @@ export default function EnseignantsPage() {
       await teachersApi.resetPassword(teacherId, newPassword);
       alert('Mot de passe réinitialisé avec succès !');
     } catch (err: any) {
+      const data = err?.response?.data;
       const msg =
-        err?.response?.data?.message || 'Réinitialisation impossible. Réessayez.';
+        (typeof data === 'string' && data.includes('failed to respond')
+          ? 'Le serveur API ne répond pas. Réessayez dans quelques secondes.'
+          : null) ||
+        data?.message ||
+        (typeof data === 'string' ? data.slice(0, 180) : null) ||
+        'Réinitialisation impossible. Réessayez.';
       alert(Array.isArray(msg) ? msg.join(', ') : String(msg));
     } finally {
       setResetting(null);
