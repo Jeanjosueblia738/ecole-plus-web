@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/', '/login', '/inscription', '/super-admin/login'];
+const PUBLIC_PATHS = ['/', '/login', '/inscription', '/onboarding', '/super-admin/login'];
 
 const STAFF_PREFIXES = [
   '/dashboard',
@@ -31,10 +31,6 @@ export function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/api/')) {
     return NextResponse.next();
-  }
-
-  if (pathname === '/onboarding') {
-    return NextResponse.redirect(new URL('/super-admin', request.url));
   }
 
   if (PUBLIC_PATHS.some((p) => pathname === p)) {

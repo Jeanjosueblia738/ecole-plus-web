@@ -30,11 +30,19 @@ export default function LoginPage() {
         form.password
       );
       await authStorage.save(data.access_token, data.user, data.tenant);
+      if (data.subscriptionRequired) {
+        router.push('/abonnement');
+        return;
+      }
       const next = new URLSearchParams(window.location.search).get('next');
       router.push(safeNextPath(next));
-    } catch {
-      setError('Code établissement, email ou mot de passe incorrect.');
-    } finally {
+    } catch (err: any) {
+      const apiMsg = err?.response?.data?.message;
+      setError(
+        typeof apiMsg === 'string'
+          ? apiMsg
+          : 'Code établissement, email ou mot de passe incorrect.',
+      ); finally {
       setLoading(false);
     }
   };

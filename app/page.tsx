@@ -191,7 +191,9 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Tarifs simples et transparents</h2>
-            <p className="text-gray-500 text-lg">Adaptés à tous les types d'établissements scolaires.</p>
+            <p className="text-gray-500 text-lg">
+              30 jours d&apos;essai gratuit à l&apos;inscription, puis forfait payant obligatoire.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -246,7 +248,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={p.plan === 'Enterprise' ? '#contact' : '/onboarding'}
+                <Link href={p.plan === 'Enterprise' ? '#contact' : `/onboarding?plan=${p.plan === 'Starter' ? 'STARTER' : 'PRO'}`}
                   className={`block w-full py-3 rounded-xl text-center font-medium transition-colors ${
                     p.highlight
                       ? 'bg-[#1B3A6B] text-white hover:bg-blue-800'

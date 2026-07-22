@@ -27,6 +27,12 @@ const PLANS = [
     popular: true,
   },
   {
+    key: 'GROUP', label: 'Groupe', price: 75000,
+    color: 'border-indigo-200 bg-indigo-50',
+    btnColor: 'bg-indigo-600 hover:bg-indigo-700',
+    features: ['Multi-établissements', 'Pilotage consolidé', 'Toutes fonctionnalités Pro', 'Accompagnement dédié'],
+  },
+  {
     key: 'ENTERPRISE', label: 'Enterprise', price: 0,
     color: 'border-green-200 bg-green-50',
     btnColor: 'bg-green-600 hover:bg-green-700',
@@ -51,7 +57,6 @@ export default function AbonnementPage() {
   const [paying, setPaying] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -64,15 +69,13 @@ export default function AbonnementPage() {
 
   const loadSubscription = async () => {
     setLoading(true);
-    setLoadError('');
     try {
       const { data } = await api.get('/subscription/my');
       setSubscription(data);
-    } catch (e) {
-      console.error(e);
-      setSubscription(null);
-      setLoadError('Impossible de charger les informations d\'abonnement.');
-    }
+      if (data?.intendedPlan && ['STARTER', 'PRO', 'GROUP'].includes(data.intendedPlan)) {
+        setSelectedPlan(data.intendedPlan);
+      }
+    } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
@@ -127,12 +130,6 @@ export default function AbonnementPage() {
         <Header title="Abonnement" subtitle="Gérez votre plan et vos paiements" />
         <main className="flex-1 p-6 space-y-6">
 
-          {loadError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-              {loadError}
-            </div>
-          )}
-
           {/* Résultat paiement */}
           {paymentResult && (
             <div className={`rounded-xl p-4 border flex items-center gap-3 ${
@@ -154,6 +151,17 @@ export default function AbonnementPage() {
 
           {/* Carte état abonnement */}
           <div className={`rounded-xl p-6 border-2 ${cfg.bg}`}>
+            {(status === 'TRIAL_EXPIRED' || status === 'EXPIRED' || status === 'SUSPENDED') && (
+              <div className="mb-4 bg-red-100 border border-red-200 rounded-xl p-3 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-800 font-medium">
+                  Accès suspendu : un forfait payant est obligatoire pour réactiver l’établissement.
+                  {subscription?.intendedPlan
+                    ? ` Forfait prévu à l’inscription : ${subscription.intendedPlan}.`
+                    : ''}
+                </p>
+              </div>
+            )}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
                 <StatusIcon className={`w-8 h-8 ${cfg.color}`} />
@@ -214,7 +222,7 @@ export default function AbonnementPage() {
           {/* Plans */}
           <div>
             <h2 className="font-bold text-gray-800 text-lg mb-4">Choisir un plan</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {PLANS.map(p => (
                 <div key={p.key}
                   onClick={() => { setSelectedPlan(p.key); setShowPaymentForm(p.key !== 'ENTERPRISE'); }}

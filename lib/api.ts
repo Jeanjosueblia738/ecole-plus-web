@@ -56,6 +56,8 @@ export interface LoginResponse {
   access_token: string;
   user: AuthUser;
   tenant: AuthTenant;
+  subscriptionRequired?: boolean;
+  billingReason?: string | null;
 }
 
 // ── Auth ────────────────────────────────────────────────────────────────
