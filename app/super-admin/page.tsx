@@ -190,6 +190,10 @@ export default function SuperAdminPage() {
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700">
               <Building2 className="w-4 h-4" /> Groupes
             </button>
+            <button onClick={() => router.push('/super-admin/merchants')}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm hover:bg-emerald-700">
+              <Building2 className="w-4 h-4" /> Comptes marchands
+            </button>
             <button onClick={() => router.push('/super-admin/admins')}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl text-sm hover:bg-purple-700">
               <UserCog className="w-4 h-4" /> Super Admins

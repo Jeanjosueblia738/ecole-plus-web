@@ -9,7 +9,7 @@ import {
   FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays,
   CreditCard, FileSpreadsheet, AlertTriangle, Menu, X, NotebookPen,
   Gavel, ClipboardCheck, UserPlus, Wallet, Landmark, Receipt,
-  Building2, PiggyBank, Banknote,
+  Building2, PiggyBank, Banknote, Smartphone,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
@@ -53,6 +53,7 @@ const navSections: NavSection[] = [
       { href: '/finance/paie', icon: UserCheck, label: 'Paie' },
       { href: '/finance/budget', icon: PiggyBank, label: 'Budget' },
       { href: '/finance/banque', icon: Landmark, label: 'Banque' },
+      { href: '/finance/merchants', icon: Smartphone, label: 'Comptes Mobile Money' },
     ],
   },
   {

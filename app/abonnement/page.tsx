@@ -41,10 +41,10 @@ const PLANS = [
 ];
 
 const PAYMENT_METHODS = [
-  { key: 'orange_money', label: 'Orange Money', emoji: '🟠' },
-  { key: 'wave', label: 'Wave', emoji: '🔵' },
-  { key: 'mtn_momo', label: 'MTN MoMo', emoji: '🟡' },
-  { key: 'moov_money', label: 'Moov Money', emoji: '🟢' },
+  { key: 'ORANGE_MONEY', label: 'Orange Money', emoji: '🟠' },
+  { key: 'WAVE', label: 'Wave', emoji: '🔵' },
+  { key: 'MTN_MOMO', label: 'MTN MoMo', emoji: '🟡' },
+  { key: 'MOOV_MONEY', label: 'Moov Money', emoji: '🟢' },
 ];
 
 export default function AbonnementPage() {
@@ -52,7 +52,7 @@ export default function AbonnementPage() {
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('orange_money');
+  const [paymentMethod, setPaymentMethod] = useState('ORANGE_MONEY');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paying, setPaying] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
@@ -296,7 +296,7 @@ export default function AbonnementPage() {
                 {/* Numéro */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Numéro de téléphone
+                    Numéro payeur (votre Mobile Money)
                   </label>
                   <div className="relative">
                     <Smartphone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
