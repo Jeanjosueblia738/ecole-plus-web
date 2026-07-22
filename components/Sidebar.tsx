@@ -9,7 +9,7 @@ import {
   FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays,
   CreditCard, FileSpreadsheet, AlertTriangle, Menu, X, NotebookPen,
   Gavel, ClipboardCheck, UserPlus, Wallet, Landmark, Receipt,
-  Building2, PiggyBank, Banknote, Smartphone,
+  Building2, PiggyBank, Banknote, Smartphone, Bus, Calculator,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
@@ -54,6 +54,7 @@ const navSections: NavSection[] = [
       { href: '/finance/budget', icon: PiggyBank, label: 'Budget' },
       { href: '/finance/banque', icon: Landmark, label: 'Banque' },
       { href: '/finance/merchants', icon: Smartphone, label: 'Comptes Mobile Money' },
+      { href: '/comptabilite', icon: Calculator, label: 'Comptabilité OHADA' },
     ],
   },
   {
@@ -65,6 +66,8 @@ const navSections: NavSection[] = [
       { href: '/inscriptions', icon: UserPlus, label: 'Pré-inscriptions' },
       { href: '/notes', icon: BookOpen, label: 'Notes' },
       { href: '/presences', icon: ClipboardList, label: 'Présences' },
+      { href: '/discipline', icon: ShieldCheck, label: 'Discipline' },
+      { href: '/campus', icon: Bus, label: 'Campus' },
       { href: '/bulletins', icon: FileText, label: 'Bulletins' },
       { href: '/devoirs', icon: NotebookPen, label: 'Travail à rendre' },
       { href: '/conseil', icon: Gavel, label: 'Conseil de classe' },

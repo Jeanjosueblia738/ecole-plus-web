@@ -27,6 +27,9 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/classes': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'],
   '/notes': ['TEACHER'],
   '/presences': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'TEACHER', 'EDUCATOR'],
+  '/discipline': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'],
+  '/campus': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SECRETARY', 'SURVEILLANT', 'EDUCATOR'],
+  '/comptabilite': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
   '/finance': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],
   /** Config / pilotage = comptable uniquement (direction = vue globale) */
   '/finance/frais': ['ACCOUNTANT'],
@@ -67,6 +70,9 @@ export const can = {
   viewSubjects: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'TEACHER'] as Role[],
   /** Créer / modifier / désactiver matières */
   manageSubjects: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'] as Role[],
+  /** Sanctions / discipline (vie scolaire) */
+  recordSanction: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'] as Role[],
+  deleteSanction: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'] as Role[],
   enterGrades: ['TEACHER'] as Role[],
   doAppel: ['TEACHER', 'SURVEILLANT', 'EDUCATOR'] as Role[],
   generateBulletin: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'] as Role[],

@@ -249,6 +249,54 @@ export const examensApi = {
   delete: (id: string) => api.delete(`/examens/${id}`),
 };
 
+// ── Discipline / sanctions ─────────────────────────────────────────────────
+export const disciplineApi = {
+  list: (params?: {
+    classId?: string;
+    studentId?: string;
+    year?: string;
+    type?: string;
+  }) => api.get('/discipline', { params }),
+  stats: (year?: string) =>
+    api.get('/discipline/stats', { params: year ? { year } : undefined }),
+  create: (data: object) => api.post('/discipline', data),
+  update: (id: string, data: object) => api.put(`/discipline/${id}`, data),
+  delete: (id: string) => api.delete(`/discipline/${id}`),
+  byStudent: (studentId: string) => api.get(`/discipline/student/${studentId}`),
+};
+
+// ── Sync offline ───────────────────────────────────────────────────────────
+export const syncApi = {
+  pushOutbox: (ops: { clientOpId: string; type: string; payload?: object }[]) =>
+    api.post('/sync/outbox', { ops }),
+};
+
+// ── Campus ─────────────────────────────────────────────────────────────────
+export const campusApi = {
+  overview: () => api.get('/campus/overview'),
+  listBooks: () => api.get('/campus/library'),
+  createBook: (data: object) => api.post('/campus/library', data),
+  listLoans: (all?: boolean) =>
+    api.get('/campus/library/loans', { params: all ? { all: true } : undefined }),
+  loan: (data: object) => api.post('/campus/library/loans', data),
+  returnLoan: (id: string) => api.patch(`/campus/library/loans/${id}/return`),
+  listRoutes: () => api.get('/campus/transport'),
+  createRoute: (data: object) => api.post('/campus/transport', data),
+  assignTransport: (data: object) => api.post('/campus/transport/assign', data),
+  listPlans: () => api.get('/campus/canteen'),
+  createPlan: (data: object) => api.post('/campus/canteen', data),
+  subscribeCanteen: (data: object) => api.post('/campus/canteen/subscribe', data),
+};
+
+// ── Comptabilité OHADA ─────────────────────────────────────────────────────
+export const accountingApi = {
+  accounts: () => api.get('/accounting/accounts'),
+  entries: (limit?: number) =>
+    api.get('/accounting/entries', { params: limit ? { limit } : undefined }),
+  createEntry: (data: object) => api.post('/accounting/entries', data),
+  trialBalance: () => api.get('/accounting/trial-balance'),
+};
+
 // ── Pré-inscriptions ───────────────────────────────────────────────────────
 export const enrollmentsApi = {
   submitPublic: (data: object) => api.post('/enrollments', data),
