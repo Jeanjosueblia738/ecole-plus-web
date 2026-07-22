@@ -7,15 +7,11 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { accountingApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
-import { canAccessPath, hasRole } from '@/lib/rbac';
+import { canAccessPath, hasRole, can } from '@/lib/rbac';
 
 export default function ComptabilitePage() {
   const router = useRouter();
-  const canWrite = hasRole(authStorage.getUser()?.role, [
-    'ADMIN',
-    'FOUNDER',
-    'ACCOUNTANT',
-  ]);
+  const canWrite = hasRole(authStorage.getUser()?.role, can.writeOhada);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [entries, setEntries] = useState<any[]>([]);
   const [balance, setBalance] = useState<any[]>([]);
