@@ -68,7 +68,14 @@ export default function SuperAdminMerchantsPage() {
       }
       setDrafts(next);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Impossible de charger les comptes marchands');
+      const msg = e?.response?.data?.message;
+      setError(
+        Array.isArray(msg)
+          ? msg.join(' · ')
+          : typeof msg === 'string'
+            ? msg
+            : 'Impossible de charger les comptes marchands (erreur serveur).',
+      );
     } finally {
       setLoading(false);
     }

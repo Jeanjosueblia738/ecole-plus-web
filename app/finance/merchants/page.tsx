@@ -66,7 +66,14 @@ export default function FinanceMerchantsPage() {
       }
       setDrafts(next);
     } catch (e: any) {
-      setError(e?.response?.data?.message || 'Impossible de charger la configuration');
+      const msg = e?.response?.data?.message;
+      setError(
+        Array.isArray(msg)
+          ? msg.join(' · ')
+          : typeof msg === 'string'
+            ? msg
+            : 'Impossible de charger la configuration (erreur serveur).',
+      );
     } finally {
       setLoading(false);
     }

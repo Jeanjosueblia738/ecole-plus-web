@@ -17,6 +17,7 @@ async function forward(req: NextRequest, path: string[], method: string) {
     joined.startsWith('tenants') ||
     joined.startsWith('school-groups') ||
     joined.startsWith('auth/super-admin') ||
+    joined.startsWith('super-admin') ||
     req.headers.get('x-auth-scope') === 'sa';
 
   const token = isSa
