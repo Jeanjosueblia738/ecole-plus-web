@@ -21,6 +21,7 @@ const PLANS = [
     label: 'Starter',
     price: 25000,
     desc: 'Petits établissements',
+    popular: false,
     features: ["Jusqu'à 200 élèves", '5 enseignants', 'Web + Mobile', 'Notes & Présences'],
   },
   {
@@ -42,6 +43,7 @@ const PLANS = [
     label: 'Groupe',
     price: 75000,
     desc: 'Réseaux / multi-campus',
+    popular: false,
     features: [
       'Plusieurs établissements',
       'Pilotage consolidé',

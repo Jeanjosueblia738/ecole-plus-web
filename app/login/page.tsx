@@ -42,7 +42,8 @@ export default function LoginPage() {
         typeof apiMsg === 'string'
           ? apiMsg
           : 'Code établissement, email ou mot de passe incorrect.',
-      ); finally {
+      );
+    } finally {
       setLoading(false);
     }
   };
