@@ -133,7 +133,7 @@ export default function LandingPage() {
               { emoji: '🏫', role: 'Direction', desc: 'KPIs globaux, gestion du personnel, supervision générale de l\'établissement.', color: 'border-blue-200 bg-blue-50' },
               { emoji: '📚', role: 'Enseignants', desc: 'Saisie des notes, appel numérique, cahier de texte et emploi du temps.', color: 'border-purple-200 bg-purple-50' },
               { emoji: '👨‍👩‍👧', role: 'Parents', desc: 'Suivi en temps réel des notes, absences et paiements de leur enfant.', color: 'border-green-200 bg-green-50' },
-              { emoji: '🎓', role: 'Élèves', desc: 'Consultation des notes, emploi du temps et devoirs depuis l\'application.', color: 'border-orange-200 bg-orange-50' },
+              { emoji: '🎓', role: 'Élèves', desc: 'Consultation des notes, emploi du temps et travaux à rendre depuis l\'application.', color: 'border-orange-200 bg-orange-50' },
             ].map((r) => (
               <div key={r.role} className={`rounded-xl p-6 border-2 ${r.color} hover:shadow-md transition-shadow`}>
                 <div className="text-4xl mb-4">{r.emoji}</div>

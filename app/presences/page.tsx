@@ -41,7 +41,7 @@ export default function PresencesPage() {
       return;
     }
     if (!canDoAppel) {
-      setBanner('Consultation seule : seuls les enseignants peuvent faire l\'appel.');
+      setBanner('Consultation seule : seuls les enseignants, surveillants et éducateurs peuvent faire l\'appel.');
     }
     loadClassesForUser(authStorage.getUser()?.role)
       .then((data) => {

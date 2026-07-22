@@ -20,6 +20,7 @@ export default function DepensesPage() {
   const [rows, setRows] = useState<any[]>([]);
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [show, setShow] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -32,6 +33,7 @@ export default function DepensesPage() {
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [e, s] = await Promise.all([
         financeApi.listExpenses({ year }),
@@ -39,6 +41,10 @@ export default function DepensesPage() {
       ]);
       setRows(Array.isArray(e.data) ? e.data : []);
       setSuppliers(Array.isArray(s.data) ? s.data : []);
+    } catch {
+      setRows([]);
+      setSuppliers([]);
+      setLoadError('Impossible de charger les dépenses.');
     } finally {
       setLoading(false);
     }
@@ -93,6 +99,12 @@ export default function DepensesPage() {
               <Plus className="w-4 h-4" /> Nouvelle dépense
             </button>
           </div>
+
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
 
           {show && (
             <form onSubmit={submit} className="bg-white border rounded-xl p-4 grid sm:grid-cols-2 gap-3">

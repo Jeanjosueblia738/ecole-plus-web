@@ -19,6 +19,7 @@ export default function PaiePage() {
   const year = currentSchoolYear();
   const [runs, setRuns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [show, setShow] = useState(false);
   const [form, setForm] = useState({
     label: '',
@@ -31,9 +32,13 @@ export default function PaiePage() {
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await financeApi.listPayroll(year);
       setRuns(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setRuns([]);
+      setLoadError('Impossible de charger la paie.');
     } finally {
       setLoading(false);
     }
@@ -79,6 +84,11 @@ export default function PaiePage() {
               <Plus className="w-4 h-4" /> Nouvelle paie
             </button>
           </div>
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
           {show && (
             <form onSubmit={submit} className="bg-white border rounded-xl p-4 grid sm:grid-cols-2 gap-3">
               <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Libellé (ex. Mars 2026)"

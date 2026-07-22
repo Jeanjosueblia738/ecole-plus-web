@@ -11,7 +11,7 @@ import {
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import KpiCard from '@/components/KpiCard';
-import { studentsApi, attendanceApi, financeApi, cahierApi } from '@/lib/api';
+import { studentsApi, attendanceApi, financeApi, teachersApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
@@ -170,36 +170,47 @@ export default function DashboardPage() {
     setStatsError('');
     try {
       const canViewFinance = hasRole(role, can.viewFinance);
-      const fetches: Promise<any>[] = [
-        studentsApi.getStats(),
-        attendanceApi.getStats(),
-      ];
+      const isTeacher = group === 'teacher';
+      const fetches: Promise<any>[] = [];
+
+      if (isTeacher) {
+        fetches.push(teachersApi.getMyStats(currentSchoolYear()));
+        fetches.push(attendanceApi.getStats().catch(() => ({ data: {} })));
+      } else {
+        fetches.push(studentsApi.getStats());
+        fetches.push(attendanceApi.getStats());
+      }
       if (canViewFinance) {
         fetches.push(financeApi.getStats(currentSchoolYear()));
       }
-      if (group === 'teacher') {
-        fetches.push(cahierApi.getStats().catch(() => null));
-      }
+
       const results = await Promise.allSettled(fetches);
-      const studRes = results[0];
+      const primaryRes = results[0];
       const attRes = results[1];
       const finRes = canViewFinance ? results[2] : null;
-      const cahierRes = group === 'teacher' ? results[canViewFinance ? 3 : 2] : null;
 
       const s: Partial<Stats> = {};
       let failed = 0;
-      if (studRes?.status === 'fulfilled') {
-        s.totalStudents = studRes.value.data.total ?? 0;
-        s.totalTeachers = studRes.value.data.totalTeachers ?? 0;
-        s.totalClasses = studRes.value.data.totalClasses ?? 0;
-        s.unpaidCount = studRes.value.data.unpaidCount ?? 0;
+      if (primaryRes?.status === 'fulfilled') {
+        const d = primaryRes.value.data ?? {};
+        if (isTeacher) {
+          s.totalClasses = d.totalClasses ?? 0;
+          s.totalStudents = d.totalStudents ?? 0;
+          s.totalGrades = d.totalGrades ?? 0;
+          s.totalAbsences = d.totalAbsences ?? 0;
+        } else {
+          s.totalStudents = d.total ?? 0;
+          s.totalTeachers = d.totalTeachers ?? 0;
+          s.totalClasses = d.totalClasses ?? 0;
+          s.unpaidCount = d.unpaidCount ?? 0;
+        }
       } else {
         failed += 1;
       }
       if (attRes?.status === 'fulfilled') {
-        s.totalAbsences = attRes.value.data.totalAbsences ?? 0;
-        s.pendingJustifications = attRes.value.data.unJustified ?? 0;
-      } else {
+        s.totalAbsences = attRes.value.data?.totalAbsences ?? s.totalAbsences ?? 0;
+        s.pendingJustifications = attRes.value.data?.unJustified ?? 0;
+      } else if (!isTeacher) {
         failed += 1;
       }
       if (finRes?.status === 'fulfilled' && finRes.value) {
@@ -212,10 +223,6 @@ export default function DashboardPage() {
         });
       } else if (canViewFinance) {
         failed += 1;
-      }
-      if (cahierRes?.status === 'fulfilled' && cahierRes.value?.data) {
-        const c = cahierRes.value.data;
-        s.totalGrades = c.totalEntries ?? c.total ?? undefined;
       }
       setStats(s);
       if (failed > 0) {

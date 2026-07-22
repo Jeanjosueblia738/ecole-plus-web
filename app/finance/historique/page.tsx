@@ -12,7 +12,7 @@ import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
 import { generatePaymentReceipt } from '@/lib/pdf';
 
-const FILTERS = ['Tous', 'Validé', 'En attente', 'Échoué'] as const;
+const FILTERS = ['Tous', 'Validé', 'En attente'] as const;
 
 export default function FinanceHistoriquePage() {
   const router = useRouter();
@@ -57,7 +57,6 @@ export default function FinanceHistoriquePage() {
     if (filter === 'En attente') {
       list = list.filter((p) => p.status === 'en_attente' || !p.isPaid);
     }
-    if (filter === 'Échoué') list = []; // pas de statut échoué côté API pour l’instant
     return list.sort(
       (a, b) =>
         new Date(b.date || b.paidAt || 0).getTime() -

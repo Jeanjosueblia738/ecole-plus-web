@@ -20,6 +20,7 @@ export default function BudgetPage() {
   const [budgets, setBudgets] = useState<any[]>([]);
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [show, setShow] = useState(false);
   const [form, setForm] = useState({
     label: `Budget ${year}`,
@@ -30,6 +31,7 @@ export default function BudgetPage() {
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await financeApi.listBudgets(year);
       const list = Array.isArray(res.data) ? res.data : [];
@@ -40,6 +42,10 @@ export default function BudgetPage() {
       } else {
         setAnalysis(null);
       }
+    } catch {
+      setBudgets([]);
+      setAnalysis(null);
+      setLoadError('Impossible de charger le budget.');
     } finally {
       setLoading(false);
     }
@@ -83,6 +89,11 @@ export default function BudgetPage() {
               <Plus className="w-4 h-4" /> Nouveau budget
             </button>
           </div>
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
           {show && (
             <form onSubmit={submit} className="bg-white border rounded-xl p-4 grid sm:grid-cols-2 gap-3">
               <input className="border rounded-lg px-3 py-2 text-sm sm:col-span-2" value={form.label}

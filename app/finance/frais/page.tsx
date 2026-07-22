@@ -147,7 +147,7 @@ export default function ConfigurerFraisPage() {
       <div className="flex-1 flex flex-col">
         <Header
           title="Configurer les frais"
-          subtitle={`Scolarité, transport, examens… — ${year}`}
+          subtitle={`Scolarité, transport, évaluations… — ${year}`}
         />
         <main className="flex-1 p-6 space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">

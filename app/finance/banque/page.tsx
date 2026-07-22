@@ -20,6 +20,7 @@ export default function BanquePage() {
   const [txs, setTxs] = useState<any[]>([]);
   const [recs, setRecs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [showAccount, setShowAccount] = useState(false);
   const [showTx, setShowTx] = useState(false);
   const [showRec, setShowRec] = useState(false);
@@ -51,10 +52,16 @@ export default function BanquePage() {
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const list = await loadAccounts();
       const id = selected || list[0]?.id;
       if (id) await loadDetail(id);
+    } catch {
+      setAccounts([]);
+      setTxs([]);
+      setRecs([]);
+      setLoadError('Impossible de charger les données bancaires.');
     } finally {
       setLoading(false);
     }
@@ -96,6 +103,12 @@ export default function BanquePage() {
               </button>
             </div>
           </div>
+
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
 
           {showAccount && (
             <form className="bg-white border rounded-xl p-4 grid sm:grid-cols-3 gap-3" onSubmit={async (e) => {

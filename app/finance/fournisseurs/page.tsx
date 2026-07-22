@@ -14,14 +14,19 @@ export default function FournisseursPage() {
   const router = useRouter();
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [show, setShow] = useState(false);
   const [form, setForm] = useState({ name: '', phone: '', category: '', email: '' });
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await financeApi.listSuppliers(true);
       setRows(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setRows([]);
+      setLoadError('Impossible de charger les fournisseurs.');
     } finally {
       setLoading(false);
     }
@@ -58,6 +63,11 @@ export default function FournisseursPage() {
               <Plus className="w-4 h-4" /> Ajouter
             </button>
           </div>
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
           {show && (
             <form onSubmit={submit} className="bg-white border rounded-xl p-4 grid sm:grid-cols-2 gap-3">
               <input required className="border rounded-lg px-3 py-2 text-sm" placeholder="Nom"

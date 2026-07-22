@@ -76,6 +76,8 @@ export default function RapportsPage() {
     classesApi.getAll(currentSchoolYear()).then(({ data }) => {
       setClasses(data);
       if (data.length > 0) { setSelectedClass(data[0].id); }
+    }).catch(() => {
+      setError('Impossible de charger les classes.');
     });
   }, [router]);
 
