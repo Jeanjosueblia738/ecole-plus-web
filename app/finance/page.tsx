@@ -132,9 +132,7 @@ export default function FinancePage() {
     load();
   }, [router]);
 
-  const pending = payments.filter(
-    (p) => p.status === 'partiel' || p.status === 'en_attente' || !p.isPaid,
-  );
+  const pending = payments.filter((p) => p.status === 'partiel');
   const tauxRaw = String(stats?.tauxRecouvrement ?? '0').replace('%', '');
   const taux = Number(tauxRaw) || 0;
   const heroAmount = isCashierOnly

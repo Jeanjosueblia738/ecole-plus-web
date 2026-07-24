@@ -7,7 +7,8 @@ import { enrollmentsApi } from '@/lib/api';
 
 function InscriptionForm() {
   const searchParams = useSearchParams();
-  const tenantCode = (searchParams.get('code') || 'ECOLE').toUpperCase();
+  const codeParam = searchParams.get('code');
+  const tenantCode = codeParam?.trim() ? codeParam.trim().toUpperCase() : '';
 
   const [form, setForm] = useState({
     firstName: '',
@@ -30,6 +31,10 @@ function InscriptionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!tenantCode) {
+      setError('Lien invalide : le code établissement (?code=) est requis.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -51,6 +56,21 @@ function InscriptionForm() {
       setLoading(false);
     }
   };
+
+  if (!tenantCode) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 max-w-md w-full text-center">
+          <School className="w-14 h-14 text-[#1B3A6B] mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-gray-800 mb-2">Lien incomplet</h1>
+          <p className="text-sm text-gray-600">
+            Le code établissement est obligatoire. Utilisez le lien fourni par votre école
+            (ex.&nbsp;: <span className="font-mono text-xs">/inscription?code=VOTRE-CODE</span>).
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (success) {
     return (

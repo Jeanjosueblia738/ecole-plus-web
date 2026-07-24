@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerApiUrl } from '@/lib/server-api-url';
 
 export const maxDuration = 30;
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://ecole-plus-api-production.up.railway.app/api/v1';
 
 type Ctx = { params: Promise<{ path: string[] }> };
 
 async function forward(req: NextRequest, path: string[], method: string) {
+  let API_URL: string;
+  try {
+    API_URL = getServerApiUrl();
+  } catch (e: any) {
+    return NextResponse.json(
+      { message: e?.message || 'NEXT_PUBLIC_API_URL manquant', statusCode: 500 },
+      { status: 500 },
+    );
+  }
+
   const joined = path.join('/');
   const url = new URL(`${API_URL}/${joined}`);
   req.nextUrl.searchParams.forEach((v, k) => url.searchParams.set(k, v));

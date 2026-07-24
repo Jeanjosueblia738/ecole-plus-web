@@ -162,6 +162,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    const r = String(authStorage.getUser()?.role || '').toUpperCase();
+    if (r === 'PARENT') {
+      router.replace('/parent');
+      return;
+    }
+    // Pas d’espace élève web dédié — éviter le tableau de bord staff
+    if (r === 'STUDENT') {
+      router.replace('/login');
+      return;
+    }
     loadStats();
   }, []);
 
@@ -458,7 +468,7 @@ export default function DashboardPage() {
                 loading={loading}
                 metrics={[
                   { label: 'Classes', value: stats.totalClasses },
-                  { label: 'Séances cahier', value: stats.totalGrades },
+                  { label: 'Notes saisies', value: stats.totalGrades },
                   { label: 'Absences signalées', value: stats.totalAbsences },
                 ]}
               />

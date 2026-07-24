@@ -27,6 +27,7 @@ export default function NouvelElevePage() {
     parentName: '', parentPhone: '', parentEmail: '',
     address: '', photoUrl: '',
   });
+  const [tempId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
@@ -162,7 +163,7 @@ export default function NouvelElevePage() {
                 <PhotoUpload
                   name={form.firstName && form.lastName ? `${form.firstName} ${form.lastName}` : 'Élève'}
                   folder="eleves"
-                  entityId={form.registrationNo || 'new-eleve'}
+                  entityId={tempId}
                   onUpload={(url) => setForm(f => ({ ...f, photoUrl: url }))}
                   size="lg"
                 />

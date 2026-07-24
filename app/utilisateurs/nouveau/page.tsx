@@ -19,6 +19,8 @@ const ROLES = [
   { value: 'ACCOUNTANT', label: 'Comptable' },
   { value: 'CASHIER', label: 'Caissier' },
   { value: 'EDUCATOR', label: 'Éducateur' },
+  { value: 'PARENT', label: 'Parent' },
+  { value: 'STUDENT', label: 'Élève' },
 ];
 
 export default function NouvelUtilisateurPage() {

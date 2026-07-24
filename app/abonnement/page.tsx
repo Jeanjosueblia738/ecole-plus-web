@@ -61,7 +61,8 @@ export default function AbonnementPage() {
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
     if (!hasRole(authStorage.getUser()?.role, can.manageSubscription)) {
-      router.push('/dashboard');
+      const role = String(authStorage.getUser()?.role || '').toUpperCase();
+      router.push(role === 'PARENT' ? '/parent' : '/dashboard');
       return;
     }
     loadSubscription();

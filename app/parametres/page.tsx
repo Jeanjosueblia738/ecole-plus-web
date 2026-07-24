@@ -7,7 +7,7 @@ import { User, School, Smartphone } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { authStorage } from '@/lib/auth';
-import { can, hasRole } from '@/lib/rbac';
+import { can, canAccessPath, hasRole } from '@/lib/rbac';
 
 export default function ParametresPage() {
   const router = useRouter();
@@ -18,6 +18,11 @@ export default function ParametresPage() {
   useEffect(() => {
     if (!authStorage.isLoggedIn()) {
       router.push('/login');
+      return;
+    }
+    if (!canAccessPath(authStorage.getUser()?.role, '/parametres')) {
+      const role = String(authStorage.getUser()?.role || '').toUpperCase();
+      router.push(role === 'PARENT' ? '/parent' : '/dashboard');
     }
   }, [router]);
 

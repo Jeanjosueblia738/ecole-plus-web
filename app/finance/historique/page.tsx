@@ -12,7 +12,7 @@ import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
 import { generatePaymentReceipt } from '@/lib/pdf';
 
-const FILTERS = ['Tous', 'Validé', 'En attente'] as const;
+const FILTERS = ['Tous', 'Validé', 'Partiel', 'Impayé'] as const;
 
 export default function FinanceHistoriquePage() {
   const router = useRouter();
@@ -54,9 +54,8 @@ export default function FinanceHistoriquePage() {
   const filtered = useMemo(() => {
     let list = [...payments];
     if (filter === 'Validé') list = list.filter((p) => p.status === 'valide' || p.isPaid);
-    if (filter === 'En attente') {
-      list = list.filter((p) => p.status === 'en_attente' || !p.isPaid);
-    }
+    if (filter === 'Partiel') list = list.filter((p) => p.status === 'partiel');
+    if (filter === 'Impayé') list = list.filter((p) => p.status === 'impaye');
     return list.sort(
       (a, b) =>
         new Date(b.date || b.paidAt || 0).getTime() -
@@ -139,10 +138,19 @@ export default function FinanceHistoriquePage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((p) => {
-                const valide = p.isPaid || p.status === 'valide';
-                const statusColor = valide
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-amber-50 text-amber-700';
+                const status = p.status === 'valide' || p.isPaid
+                  ? 'valide'
+                  : p.status === 'partiel'
+                    ? 'partiel'
+                    : 'impaye';
+                const statusColor =
+                  status === 'valide'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : status === 'partiel'
+                      ? 'bg-amber-50 text-amber-700'
+                      : 'bg-red-50 text-red-700';
+                const statusLabel =
+                  status === 'valide' ? 'Validé' : status === 'partiel' ? 'Partiel' : 'Impayé';
                 const date = p.date || p.paidAt;
                 return (
                   <div
@@ -158,7 +166,7 @@ export default function FinanceHistoriquePage() {
                         </p>
                       </div>
                       <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${statusColor}`}>
-                        {valide ? 'Validé' : 'En attente'}
+                        {statusLabel}
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-3">

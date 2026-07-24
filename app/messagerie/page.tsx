@@ -10,6 +10,7 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { canAccessPath } from '@/lib/rbac';
 
 interface Message {
   id: string;
@@ -60,6 +61,10 @@ export default function MessageriePage() {
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) { router.push('/login'); return; }
+    if (!canAccessPath(authStorage.getUser()?.role, '/messagerie')) {
+      router.push('/dashboard');
+      return;
+    }
     loadConversations();
     loadRecipients();
   }, []);

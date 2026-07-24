@@ -7,12 +7,19 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { campusApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
-import { canAccessPath } from '@/lib/rbac';
+import { canAccessPath, hasRole, Role } from '@/lib/rbac';
 
 type Tab = 'library' | 'transport' | 'canteen';
 
+/** Aligné sur campus.controller create* (OWNER + DIRECTOR + SECRETARY ; cantine + ACCOUNTANT) */
+const CAMPUS_WRITE: Role[] = ['ADMIN', 'FOUNDER', 'DIRECTOR', 'SECRETARY'];
+const CAMPUS_CANTEEN_WRITE: Role[] = [...CAMPUS_WRITE, 'ACCOUNTANT'];
+
 export default function CampusPage() {
   const router = useRouter();
+  const role = authStorage.getUser()?.role;
+  const canWrite = hasRole(role, CAMPUS_WRITE);
+  const canWriteCanteen = hasRole(role, CAMPUS_CANTEEN_WRITE);
   const [tab, setTab] = useState<Tab>('library');
   const [overview, setOverview] = useState<any>(null);
   const [books, setBooks] = useState<any[]>([]);
@@ -61,7 +68,7 @@ export default function CampusPage() {
 
   const addBook = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!canWrite || !title.trim()) return;
     setSaving(true);
     try {
       await campusApi.createBook({ title: title.trim(), quantity: 1 });
@@ -76,7 +83,7 @@ export default function CampusPage() {
 
   const addRoute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!routeName.trim()) return;
+    if (!canWrite || !routeName.trim()) return;
     setSaving(true);
     try {
       await campusApi.createRoute({ name: routeName.trim() });
@@ -91,7 +98,7 @@ export default function CampusPage() {
 
   const addPlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!planName.trim()) return;
+    if (!canWriteCanteen || !planName.trim()) return;
     setSaving(true);
     try {
       await campusApi.createPlan({
@@ -168,6 +175,7 @@ export default function CampusPage() {
             </div>
           ) : tab === 'library' ? (
             <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+              {canWrite && (
               <form onSubmit={addBook} className="flex gap-2">
                 <input
                   value={title}
@@ -182,6 +190,7 @@ export default function CampusPage() {
                   <Plus className="w-4 h-4" /> Ajouter
                 </button>
               </form>
+              )}
               <ul className="divide-y divide-gray-50">
                 {books.map((b) => (
                   <li
@@ -203,6 +212,7 @@ export default function CampusPage() {
             </div>
           ) : tab === 'transport' ? (
             <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+              {canWrite && (
               <form onSubmit={addRoute} className="flex gap-2">
                 <input
                   value={routeName}
@@ -217,6 +227,7 @@ export default function CampusPage() {
                   <Plus className="w-4 h-4" /> Circuit
                 </button>
               </form>
+              )}
               <ul className="divide-y divide-gray-50">
                 {routes.map((r) => (
                   <li
@@ -239,6 +250,7 @@ export default function CampusPage() {
             </div>
           ) : (
             <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+              {canWriteCanteen && (
               <form onSubmit={addPlan} className="flex flex-wrap gap-2">
                 <input
                   value={planName}
@@ -260,6 +272,7 @@ export default function CampusPage() {
                   <Plus className="w-4 h-4" /> Formule
                 </button>
               </form>
+              )}
               <ul className="divide-y divide-gray-50">
                 {plans.map((p) => (
                   <li

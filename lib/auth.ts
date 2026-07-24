@@ -35,11 +35,21 @@ export const authStorage = {
   getToken: () => null as string | null,
   getUser: (): AuthUser | null => {
     const u = Cookies.get(USER_KEY);
-    return u ? JSON.parse(u) : null;
+    if (!u) return null;
+    try {
+      return JSON.parse(u);
+    } catch {
+      return null;
+    }
   },
   getTenant: (): AuthTenant | null => {
     const t = Cookies.get(TENANT_KEY);
-    return t ? JSON.parse(t) : null;
+    if (!t) return null;
+    try {
+      return JSON.parse(t);
+    } catch {
+      return null;
+    }
   },
   isLoggedIn: () => !!Cookies.get(USER_KEY),
   clear: async () => {

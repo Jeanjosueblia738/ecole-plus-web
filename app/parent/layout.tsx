@@ -1,9 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Home, GraduationCap, BookOpen, ClipboardList, Wallet, LogOut, School,
+  Home, BookOpen, ClipboardList, Wallet, LogOut, School,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 
@@ -24,8 +25,18 @@ export default function ParentLayout({
   const user = authStorage.getUser();
   const tenant = authStorage.getTenant();
 
-  const logout = () => {
-    authStorage.clear();
+  useEffect(() => {
+    if (!authStorage.isLoggedIn()) {
+      router.replace('/login');
+      return;
+    }
+    if (String(authStorage.getUser()?.role || '').toUpperCase() !== 'PARENT') {
+      router.replace('/dashboard');
+    }
+  }, [router]);
+
+  const logout = async () => {
+    await authStorage.clear();
     router.push('/login');
   };
 

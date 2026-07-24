@@ -30,11 +30,20 @@ export default function LoginPage() {
         form.password
       );
       await authStorage.save(data.access_token, data.user, data.tenant);
+      const role = String(data.user?.role || '').toUpperCase();
       if (data.subscriptionRequired) {
-        router.push('/abonnement');
+        // Parents n’ont pas accès à /abonnement — espace parent uniquement
+        if (role === 'PARENT') {
+          router.push('/parent');
+          return;
+        }
+        if (role === 'ADMIN' || role === 'FOUNDER') {
+          router.push('/abonnement');
+          return;
+        }
+        router.push(safeNextPath(null));
         return;
       }
-      const role = String(data.user?.role || '').toUpperCase();
       if (role === 'PARENT') {
         router.push('/parent');
         return;

@@ -37,7 +37,12 @@ export const saAuth = {
   getToken: () => '',
   getUser: (): SaUser | null => {
     const u = Cookies.get(USER_KEY);
-    return u ? JSON.parse(u) : null;
+    if (!u) return null;
+    try {
+      return JSON.parse(u);
+    } catch {
+      return null;
+    }
   },
   isLoggedIn: () => !!Cookies.get(USER_KEY),
   clear: async () => {
