@@ -15,25 +15,26 @@ import {
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 
+const YEARLY_DISCOUNT = 0.3;
+
 const PLANS = [
   {
     key: 'STARTER',
     label: 'Starter',
-    price: 25000,
-    desc: 'Petits établissements',
+    price: 15000,
+    desc: 'Jusqu’à 500 élèves',
     popular: false,
-    features: ["Jusqu'à 200 élèves", '5 enseignants', 'Web + Mobile', 'Notes & Présences'],
+    features: ["Jusqu'à 500 élèves", 'Web + Mobile', 'Notes & Présences', 'Support technique'],
   },
   {
     key: 'PRO',
     label: 'Pro',
-    price: 50000,
-    desc: 'Établissements en croissance',
+    price: 35000,
+    desc: 'Élèves illimités',
     popular: true,
     features: [
-      "Jusqu'à 500 élèves",
-      'Enseignants illimités',
-      'Toutes fonctionnalités',
+      'Élèves illimités',
+      'Toutes fonctions avancées',
       'Bulletins PDF',
       'Support prioritaire',
     ],
@@ -42,10 +43,11 @@ const PLANS = [
     key: 'GROUP',
     label: 'Groupe',
     price: 75000,
-    desc: 'Réseaux / multi-campus',
+    desc: 'Jusqu’à 5 établissements',
     popular: false,
     features: [
-      'Plusieurs établissements',
+      'Jusqu’à 5 écoles',
+      'Pour fondateurs multi-écoles',
       'Pilotage consolidé',
       'Toutes fonctionnalités Pro',
       'Accompagnement dédié',
@@ -57,6 +59,10 @@ type PlanKey = (typeof PLANS)[number]['key'];
 
 const fmt = (n: number) =>
   `${new Intl.NumberFormat('fr-CI').format(n)} FCFA`;
+
+function yearlyPrice(monthly: number) {
+  return Math.round(monthly * 12 * (1 - YEARLY_DISCOUNT));
+}
 
 function OnboardingForm() {
   const router = useRouter();
@@ -203,7 +209,7 @@ function OnboardingForm() {
             <div>
               <h1 className="text-xl font-bold text-gray-900">Choisissez votre forfait</h1>
               <p className="text-sm text-gray-500 mt-1">
-                Facturation après l’essai — vous ne payez rien aujourd’hui.
+                Essai Découverte 30 jours gratuit — facturation ensuite (mensuel ou annuel −30 %).
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -228,6 +234,9 @@ function OnboardingForm() {
                   <p className="text-lg font-bold text-[#1B3A6B]">
                     {fmt(p.price)}
                     <span className="text-xs font-normal text-gray-500">/mois</span>
+                  </p>
+                  <p className="text-xs text-orange-600 font-medium mt-0.5">
+                    ou {fmt(yearlyPrice(p.price))}/an (−30 %)
                   </p>
                   <ul className="mt-3 space-y-1">
                     {p.features.map((f) => (
@@ -259,7 +268,8 @@ function OnboardingForm() {
             <div>
               <h1 className="text-xl font-bold text-gray-900">Votre établissement</h1>
               <p className="text-sm text-gray-500 mt-1">
-                Forfait sélectionné : <strong>{selected.label}</strong> ({fmt(selected.price)}/mois après essai)
+                Forfait sélectionné : <strong>{selected.label}</strong> (
+                {fmt(selected.price)}/mois ou {fmt(yearlyPrice(selected.price))}/an après essai)
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -410,7 +420,7 @@ function OnboardingForm() {
 
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900">
               Après 30 jours, l’accès sera suspendu tant qu’un forfait payant
-              ({selected.label} — {fmt(selected.price)}/mois ou autre) n’aura pas été souscrit.
+              ({selected.label} — mensuel ou annuel −30 %) n’aura pas été souscrit.
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-between">

@@ -12,31 +12,44 @@ import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 
+const YEARLY_DISCOUNT = 0.3;
+
 const PLANS = [
   {
-    key: 'STARTER', label: 'Starter', price: 25000,
+    key: 'STARTER',
+    label: 'Starter',
+    price: 15_000,
     color: 'border-blue-200 bg-blue-50',
     btnColor: 'bg-blue-600 hover:bg-blue-700',
-    features: ["Jusqu'à 200 élèves", '5 enseignants', 'Web + Mobile', 'Notes & Présences', 'Support email'],
+    features: ["Jusqu'à 500 élèves", 'Web + Mobile', 'Notes & Présences', 'Support technique'],
   },
   {
-    key: 'PRO', label: 'Pro', price: 50000,
-    color: 'border-purple-200 bg-purple-50',
-    btnColor: 'bg-purple-600 hover:bg-purple-700',
-    features: ["Jusqu'à 500 élèves", 'Enseignants illimités', 'Web + Mobile', 'Toutes fonctionnalités', 'Support prioritaire', 'Bulletins PDF'],
+    key: 'PRO',
+    label: 'Pro',
+    price: 35_000,
+    color: 'border-orange-200 bg-orange-50',
+    btnColor: 'bg-orange-500 hover:bg-orange-600',
+    features: [
+      'Élèves illimités',
+      'Toutes fonctions avancées',
+      'Web + Mobile',
+      'Bulletins PDF',
+      'Support prioritaire',
+    ],
     popular: true,
   },
   {
-    key: 'GROUP', label: 'Groupe', price: 75000,
+    key: 'GROUP',
+    label: 'Groupe',
+    price: 75_000,
     color: 'border-indigo-200 bg-indigo-50',
     btnColor: 'bg-indigo-600 hover:bg-indigo-700',
-    features: ['Multi-établissements', 'Pilotage consolidé', 'Toutes fonctionnalités Pro', 'Accompagnement dédié'],
-  },
-  {
-    key: 'ENTERPRISE', label: 'Enterprise', price: 0,
-    color: 'border-green-200 bg-green-50',
-    btnColor: 'bg-green-600 hover:bg-green-700',
-    features: ['Élèves illimités', 'Multi-campus', 'API personnalisée', 'Formation incluse', 'Support 24/7'],
+    features: [
+      'Jusqu’à 5 établissements',
+      'Pour fondateurs multi-écoles',
+      'Pilotage consolidé',
+      'Toutes fonctionnalités Pro',
+    ],
   },
 ];
 
@@ -47,11 +60,16 @@ const PAYMENT_METHODS = [
   { key: 'MOOV_MONEY', label: 'Moov Money', emoji: '🟢' },
 ];
 
+function yearlyPrice(monthly: number) {
+  return Math.round(monthly * 12 * (1 - YEARLY_DISCOUNT));
+}
+
 export default function AbonnementPage() {
   const router = useRouter();
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState('');
+  const [billingPeriod, setBillingPeriod] = useState<'MONTH' | 'YEAR'>('MONTH');
   const [paymentMethod, setPaymentMethod] = useState('ORANGE_MONEY');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [paying, setPaying] = useState(false);
@@ -89,6 +107,7 @@ export default function AbonnementPage() {
         plan: selectedPlan,
         paymentMethod,
         phoneNumber: phoneNumber.trim(),
+        billingPeriod,
       });
       setPaymentResult(data);
       setShowPaymentForm(false);
@@ -222,59 +241,128 @@ export default function AbonnementPage() {
 
           {/* Plans */}
           <div>
-            <h2 className="font-bold text-gray-800 text-lg mb-4">Choisir un plan</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              {PLANS.map(p => (
-                <div key={p.key}
-                  onClick={() => { setSelectedPlan(p.key); setShowPaymentForm(p.key !== 'ENTERPRISE'); }}
-                  className={`rounded-xl p-5 border-2 cursor-pointer transition-all ${p.color}
-                    ${selectedPlan === p.key ? 'ring-2 ring-[#1B3A6B] ring-offset-2' : 'hover:shadow-md'}
-                    ${subscription?.tenant?.plan === p.key ? 'opacity-60 cursor-default' : ''}`}>
-                  {p.popular && (
-                    <span className="inline-flex items-center gap-1 bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full mb-2">
-                      <Star className="w-3 h-3" /> Populaire
-                    </span>
-                  )}
-                  <h3 className="font-bold text-gray-800 text-lg">{p.label}</h3>
-                  <p className="text-2xl font-bold text-gray-900 my-2">
-                    {p.price === 0 ? 'Sur devis' : fmt(p.price)}
-                    {p.price > 0 && <span className="text-sm font-normal text-gray-500">/mois</span>}
-                  </p>
-                  <ul className="space-y-1.5 mb-4">
-                    {p.features.map(f => (
-                      <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
-                        <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  {subscription?.tenant?.plan === p.key ? (
-                    <div className="w-full py-2 rounded-xl text-center text-sm font-medium bg-gray-200 text-gray-500">
-                      Plan actuel
-                    </div>
-                  ) : p.key === 'ENTERPRISE' ? (
-                    <a href="mailto:contact@ecoleplus.ci"
-                      className="block w-full py-2 rounded-xl text-center text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-                      Nous contacter
-                    </a>
-                  ) : (
-                    <button onClick={() => { setSelectedPlan(p.key); setShowPaymentForm(true); }}
-                      className={`w-full py-2 rounded-xl text-sm font-medium text-white ${p.btnColor}`}>
-                      {selectedPlan === p.key ? '✓ Sélectionné' : 'Choisir ce plan'}
-                    </button>
-                  )}
-                </div>
-              ))}
+            <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+              <div>
+                <h2 className="font-bold text-gray-800 text-lg">Choisir un plan</h2>
+                <p className="text-sm text-gray-500">Vous payez uniquement ce dont vous avez besoin.</p>
+              </div>
+              <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1">
+                <button
+                  type="button"
+                  onClick={() => setBillingPeriod('MONTH')}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                    billingPeriod === 'MONTH' ? 'bg-[#1B3A6B] text-white' : 'text-gray-600'
+                  }`}
+                >
+                  Mensuel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingPeriod('YEAR')}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+                    billingPeriod === 'YEAR' ? 'bg-orange-500 text-white' : 'text-gray-600'
+                  }`}
+                >
+                  Annuel −30 %
+                </button>
+              </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+              <div className="rounded-xl p-5 border-2 border-sky-200 bg-sky-50">
+                <h3 className="font-bold text-gray-800 text-lg">Découverte</h3>
+                <p className="text-2xl font-bold text-gray-900 my-2">GRATUIT</p>
+                <p className="text-sm text-sky-800 font-medium mb-3">30 jours d’essai</p>
+                <ul className="space-y-1.5">
+                  <li className="flex items-center gap-2 text-xs text-gray-600">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                    Toutes les fonctionnalités incluses
+                  </li>
+                </ul>
+              </div>
+
+              {PLANS.map((p) => {
+                const displayPrice =
+                  billingPeriod === 'YEAR' ? yearlyPrice(p.price) : p.price;
+                const periodLabel = billingPeriod === 'YEAR' ? '/an' : '/mois';
+                return (
+                  <div
+                    key={p.key}
+                    onClick={() => {
+                      setSelectedPlan(p.key);
+                      setShowPaymentForm(true);
+                    }}
+                    className={`rounded-xl p-5 border-2 cursor-pointer transition-all ${p.color}
+                    ${selectedPlan === p.key ? 'ring-2 ring-[#1B3A6B] ring-offset-2' : 'hover:shadow-md'}
+                    ${subscription?.tenant?.plan === p.key ? 'opacity-60' : ''}`}
+                  >
+                    {p.popular && (
+                      <span className="inline-flex items-center gap-1 bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full mb-2">
+                        <Star className="w-3 h-3" /> Recommandé
+                      </span>
+                    )}
+                    <h3 className="font-bold text-gray-800 text-lg">{p.label}</h3>
+                    <p className="text-2xl font-bold text-gray-900 my-2">
+                      {fmt(displayPrice)}
+                      <span className="text-sm font-normal text-gray-500">{periodLabel}</span>
+                    </p>
+                    {billingPeriod === 'YEAR' && (
+                      <p className="text-xs text-orange-700 font-medium mb-2">
+                        soit {fmt(p.price)}/mois − économie {fmt(p.price * 12 - displayPrice)}
+                      </p>
+                    )}
+                    <ul className="space-y-1.5 mb-4">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
+                          <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    {subscription?.tenant?.plan === p.key ? (
+                      <div className="w-full py-2 rounded-xl text-center text-sm font-medium bg-gray-200 text-gray-500">
+                        Plan actuel
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setSelectedPlan(p.key);
+                          setShowPaymentForm(true);
+                        }}
+                        className={`w-full py-2 rounded-xl text-sm font-medium text-white ${p.btnColor}`}
+                      >
+                        {selectedPlan === p.key ? '✓ Sélectionné' : 'Choisir ce plan'}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-500">
+              Tous les forfaits incluent : support technique, mises à jour automatiques, sauvegarde des données.
+            </p>
           </div>
 
           {/* Formulaire paiement */}
           {showPaymentForm && selectedPlan && (
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-[#1B3A6B]" />
                 Paiement Mobile Money — Plan {selectedPlan}
               </h3>
-
+              <p className="text-sm text-gray-600 mb-4">
+                {(() => {
+                  const plan = PLANS.find((p) => p.key === selectedPlan);
+                  if (!plan) return null;
+                  const amount =
+                    billingPeriod === 'YEAR' ? yearlyPrice(plan.price) : plan.price;
+                  return (
+                    <>
+                      Montant : <strong>{fmt(amount)}</strong>
+                      {billingPeriod === 'YEAR' ? ' (annuel, −30 %)' : ' / mois'}
+                    </>
+                  );
+                })()}
+              </p>
               <div className="space-y-4">
                 {/* Opérateur */}
                 <div>
