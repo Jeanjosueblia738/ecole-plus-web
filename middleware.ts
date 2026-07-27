@@ -2,7 +2,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { canAccessPath } from '@/lib/rbac';
 
-const PUBLIC_PATHS = ['/', '/login', '/inscription', '/onboarding', '/super-admin/login'];
+const PUBLIC_PATHS = [
+  '/',
+  '/login',
+  '/inscription',
+  '/onboarding',
+  '/abonnement',
+  '/super-admin/login',
+];
 
 const STAFF_PREFIXES = [
   '/dashboard',
@@ -27,7 +34,6 @@ const STAFF_PREFIXES = [
   '/enseignants',
   '/matieres',
   '/utilisateurs',
-  '/abonnement',
   '/parametres',
   '/parent',
 ];

@@ -6,6 +6,7 @@ import {
   CheckCircle, ArrowRight, Star, Phone, Mail, MapPin,
   BarChart2, Clock, Smartphone, Globe
 } from 'lucide-react';
+import PricingPlans from '@/components/PricingPlans';
 
 export default function LandingPage() {
   return (
@@ -189,76 +190,21 @@ export default function LandingPage() {
       {/* ── Tarifs ────────────────────────────────────────────────── */}
       <section id="tarifs" className="py-20 bg-gray-50">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-14">
+          <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Tarifs simples et transparents</h2>
             <p className="text-gray-500 text-lg">
-              30 jours d&apos;essai gratuit à l&apos;inscription, puis forfait payant obligatoire.
+              Découverte, Starter, Pro et Groupe — mensuel ou annuel (−30&nbsp;%).
+              Aucune inscription requise pour consulter les tarifs.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                plan: 'Starter',
-                price: '25 000',
-                period: '/mois',
-                desc: 'Pour les petits établissements',
-                features: ['Jusqu\'à 200 élèves', '5 enseignants', 'Web + Mobile', 'Notes & Présences', 'Support email'],
-                color: 'border-gray-200',
-                cta: 'Commencer',
-                highlight: false,
-              },
-              {
-                plan: 'Pro',
-                price: '50 000',
-                period: '/mois',
-                desc: 'Pour les établissements en croissance',
-                features: ['Jusqu\'à 500 élèves', 'Enseignants illimités', 'Web + Mobile', 'Toutes les fonctionnalités', 'Support prioritaire', 'Bulletins PDF'],
-                color: 'border-[#1B3A6B]',
-                cta: 'Choisir Pro',
-                highlight: true,
-              },
-              {
-                plan: 'Enterprise',
-                price: 'Sur devis',
-                period: '',
-                desc: 'Pour les grands établissements',
-                features: ['Élèves illimités', 'Multi-campus', 'API personnalisée', 'Formation incluse', 'Support dédié 24/7', 'Déploiement sur site'],
-                color: 'border-gray-200',
-                cta: 'Nous contacter',
-                highlight: false,
-              },
-            ].map((p) => (
-              <div key={p.plan} className={`bg-white rounded-2xl p-8 border-2 ${p.color} ${p.highlight ? 'shadow-xl relative' : 'shadow-sm'}`}>
-                {p.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#1B3A6B] text-white text-xs px-4 py-1 rounded-full font-medium">
-                    Le plus populaire
-                  </div>
-                )}
-                <h3 className="font-bold text-xl text-gray-800 mb-1">{p.plan}</h3>
-                <p className="text-gray-500 text-sm mb-4">{p.desc}</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-gray-900">{p.price}</span>
-                  <span className="text-gray-500 ml-1">{p.period} FCFA</span>
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
-                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href={p.plan === 'Enterprise' ? '#contact' : `/onboarding?plan=${p.plan === 'Starter' ? 'STARTER' : 'PRO'}`}
-                  className={`block w-full py-3 rounded-xl text-center font-medium transition-colors ${
-                    p.highlight
-                      ? 'bg-[#1B3A6B] text-white hover:bg-blue-800'
-                      : 'border-2 border-[#1B3A6B] text-[#1B3A6B] hover:bg-blue-50'
-                  }`}>
-                  {p.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
+          <PricingPlans mode="public" />
+          <p className="text-center text-sm text-gray-500 mt-8">
+            Déjà une école ?{' '}
+            <Link href="/login" className="text-[#1B3A6B] font-medium hover:underline">
+              Se connecter
+            </Link>
+            {' '}pour gérer votre abonnement.
+          </p>
         </div>
       </section>
 

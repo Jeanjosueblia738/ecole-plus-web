@@ -14,55 +14,17 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import {
+  PUBLIC_PLANS,
+  formatXof,
+  yearlyPrice,
+  type PublicPlanKey,
+} from '@/lib/subscription-plans';
 
-const YEARLY_DISCOUNT = 0.3;
+const PLANS = PUBLIC_PLANS;
+const fmt = formatXof;
 
-const PLANS = [
-  {
-    key: 'STARTER',
-    label: 'Starter',
-    price: 15000,
-    desc: 'Jusqu’à 500 élèves',
-    popular: false,
-    features: ["Jusqu'à 500 élèves", 'Web + Mobile', 'Notes & Présences', 'Support technique'],
-  },
-  {
-    key: 'PRO',
-    label: 'Pro',
-    price: 35000,
-    desc: 'Élèves illimités',
-    popular: true,
-    features: [
-      'Élèves illimités',
-      'Toutes fonctions avancées',
-      'Bulletins PDF',
-      'Support prioritaire',
-    ],
-  },
-  {
-    key: 'GROUP',
-    label: 'Groupe',
-    price: 75000,
-    desc: 'Jusqu’à 5 établissements',
-    popular: false,
-    features: [
-      'Jusqu’à 5 écoles',
-      'Pour fondateurs multi-écoles',
-      'Pilotage consolidé',
-      'Toutes fonctionnalités Pro',
-      'Accompagnement dédié',
-    ],
-  },
-] as const;
-
-type PlanKey = (typeof PLANS)[number]['key'];
-
-const fmt = (n: number) =>
-  `${new Intl.NumberFormat('fr-CI').format(n)} FCFA`;
-
-function yearlyPrice(monthly: number) {
-  return Math.round(monthly * 12 * (1 - YEARLY_DISCOUNT));
-}
+type PlanKey = PublicPlanKey;
 
 function OnboardingForm() {
   const router = useRouter();
