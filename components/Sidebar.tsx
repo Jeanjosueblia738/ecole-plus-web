@@ -9,7 +9,7 @@ import {
   FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays,
   CreditCard, FileSpreadsheet, AlertTriangle, Menu, X, NotebookPen,
   Gavel, ClipboardCheck, UserPlus, Wallet, Landmark, Receipt,
-  Building2, PiggyBank, Banknote, Smartphone, Bus, Calculator,
+  Building2, PiggyBank, Banknote, Smartphone, Bus, Calculator, Clock,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
@@ -51,6 +51,7 @@ const navSections: NavSection[] = [
       { href: '/finance/depenses', icon: FileSpreadsheet, label: 'Dépenses' },
       { href: '/finance/fournisseurs', icon: Building2, label: 'Fournisseurs' },
       { href: '/finance/paie', icon: UserCheck, label: 'Paie' },
+      { href: '/finance/paie/suivi', icon: ClipboardList, label: 'Suivi heures' },
       { href: '/finance/budget', icon: PiggyBank, label: 'Budget' },
       { href: '/finance/banque', icon: Landmark, label: 'Banque' },
       { href: '/finance/merchants', icon: Smartphone, label: 'Comptes Mobile Money' },
@@ -73,6 +74,7 @@ const navSections: NavSection[] = [
       { href: '/conseil', icon: Gavel, label: 'Conseil de classe' },
       { href: '/examens', icon: ClipboardCheck, label: 'Évaluations' },
       { href: '/cahier', icon: Pencil, label: 'Cahier de texte' },
+      { href: '/mes-heures', icon: Clock, label: 'Mes heures' },
       { href: '/emploi-du-temps', icon: CalendarDays, label: 'Emploi du temps' },
       { href: '/risques', icon: AlertTriangle, label: 'Risque décrochage' },
       { href: '/rapports', icon: FileSpreadsheet, label: 'Rapports' },

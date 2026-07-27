@@ -4,7 +4,7 @@ import { useEffect, useState, type ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  AlertCircle, ArrowRight, Banknote, Building2, CheckCircle,
+  AlertCircle, ArrowRight, Banknote, Building2, CheckCircle, ClipboardList,
   CreditCard, FileSpreadsheet, FileText, Landmark, Loader2,
   PiggyBank, Receipt, UserCheck, Users, Wallet,
 } from 'lucide-react';
@@ -209,9 +209,16 @@ export default function FinancePage() {
           {
             href: '/finance/paie',
             title: 'Paie',
-            desc: 'Bulletins et retenues',
+            desc: 'Heures, retenues et Wave',
             icon: UserCheck,
             accent: 'bg-cyan-50 text-cyan-700',
+          },
+          {
+            href: '/finance/paie/suivi',
+            title: 'Suivi heures',
+            desc: 'Prévu / fait / retenues',
+            icon: ClipboardList,
+            accent: 'bg-sky-50 text-sky-700',
           },
           {
             href: '/finance/budget',

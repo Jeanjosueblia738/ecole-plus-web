@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, User, BookOpen, Loader2, Key, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, User, BookOpen, Loader2, Key, CheckCircle, XCircle, Wallet } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import { teachersApi, classesApi } from '@/lib/api';
+import { teachersApi, classesApi, financeApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
@@ -40,6 +40,14 @@ export default function EnseignantsPage() {
   const [modalSuccess, setModalSuccess] = useState('');
   const [toggling, setToggling] = useState<string | null>(null);
   const [resetting, setResetting] = useState<string | null>(null);
+  const [payTeacher, setPayTeacher] = useState<any | null>(null);
+  const [payForm, setPayForm] = useState({
+    payMode: 'HOURLY' as 'HOURLY' | 'FIXED',
+    hourlyRateXof: '5000',
+    monthlyBaseXof: '',
+    wavePhone: '',
+  });
+  const [paySaving, setPaySaving] = useState(false);
 
   const year = currentSchoolYear();
 
@@ -332,6 +340,23 @@ export default function EnseignantsPage() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
+                          onClick={() => {
+                            setPayTeacher(t);
+                            setPayForm({
+                              payMode: (t.payMode as 'HOURLY' | 'FIXED') || 'HOURLY',
+                              hourlyRateXof: String(t.hourlyRateXof ?? 5000),
+                              monthlyBaseXof: t.monthlyBaseXof != null ? String(t.monthlyBaseXof) : '',
+                              wavePhone: t.wavePhone || t.phone || '',
+                            });
+                          }}
+                          title="Paie"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                        >
+                          <Wallet className="w-4 h-4" />
+                          Paie
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => openClassesModal(t)}
                           title="Affectations"
                           className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1B3A6B] hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
@@ -479,6 +504,109 @@ export default function EnseignantsPage() {
               >
                 {modalSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                 Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {payTeacher && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-gray-800">Profil paie</p>
+                <p className="text-xs text-gray-500">
+                  {payTeacher.firstName} {payTeacher.lastName}
+                </p>
+              </div>
+              <button type="button" onClick={() => setPayTeacher(null)} className="text-gray-400">
+                ✕
+              </button>
+            </div>
+            <div className="p-6 space-y-3">
+              <label className="block text-sm">
+                <span className="text-gray-600 text-xs">Mode</span>
+                <select
+                  className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+                  value={payForm.payMode}
+                  onChange={(e) =>
+                    setPayForm({
+                      ...payForm,
+                      payMode: e.target.value as 'HOURLY' | 'FIXED',
+                    })
+                  }
+                >
+                  <option value="HOURLY">Horaire (taux × heures prévues)</option>
+                  <option value="FIXED">Salaire mensuel fixe</option>
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="text-gray-600 text-xs">Taux horaire (FCFA) — aussi pour retenues</span>
+                <input
+                  className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+                  value={payForm.hourlyRateXof}
+                  onChange={(e) => setPayForm({ ...payForm, hourlyRateXof: e.target.value })}
+                />
+              </label>
+              {payForm.payMode === 'FIXED' && (
+                <label className="block text-sm">
+                  <span className="text-gray-600 text-xs">Salaire mensuel fixe (FCFA)</span>
+                  <input
+                    className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+                    value={payForm.monthlyBaseXof}
+                    onChange={(e) =>
+                      setPayForm({ ...payForm, monthlyBaseXof: e.target.value })
+                    }
+                  />
+                </label>
+              )}
+              <label className="block text-sm">
+                <span className="text-gray-600 text-xs">N° Wave (réception paie)</span>
+                <input
+                  className="mt-1 w-full border rounded-lg px-3 py-2 text-sm"
+                  value={payForm.wavePhone}
+                  onChange={(e) => setPayForm({ ...payForm, wavePhone: e.target.value })}
+                  placeholder="07 XX XX XX XX"
+                />
+              </label>
+            </div>
+            <div className="px-6 py-4 border-t flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPayTeacher(null)}
+                className="flex-1 border rounded-xl py-2.5 text-sm"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                disabled={paySaving}
+                onClick={async () => {
+                  setPaySaving(true);
+                  try {
+                    const { data } = await financeApi.updateTeacherPayProfile(payTeacher.id, {
+                      payMode: payForm.payMode,
+                      hourlyRateXof: Number(payForm.hourlyRateXof) || 0,
+                      monthlyBaseXof:
+                        payForm.payMode === 'FIXED'
+                          ? Number(payForm.monthlyBaseXof) || 0
+                          : null,
+                      wavePhone: payForm.wavePhone || null,
+                    });
+                    setTeachers((list) =>
+                      list.map((x) => (x.id === payTeacher.id ? { ...x, ...data } : x)),
+                    );
+                    setPayTeacher(null);
+                  } catch (e: any) {
+                    alert(e?.response?.data?.message || 'Enregistrement impossible');
+                  } finally {
+                    setPaySaving(false);
+                  }
+                }}
+                className="flex-1 bg-emerald-600 text-white rounded-xl py-2.5 text-sm font-medium disabled:opacity-50"
+              >
+                {paySaving ? '…' : 'Enregistrer'}
               </button>
             </div>
           </div>

@@ -144,16 +144,34 @@ export default function CahierPage() {
   };
 
   const handleEmargement = async (id: string) => {
-    if (!canValidate) { return; }
+    if (!canValidate && !canWrite) { return; }
+    const raw = window.prompt(
+      'Durée réelle du cours (minutes) — ex. 40 si le cours a duré 40 min :',
+      '60',
+    );
+    if (raw === null) return;
+    const actualMinutes = Math.max(0, Math.round(Number(raw) || 0));
     setEmarging(id);
     try {
-      await cahierApi.emargement(id);
-      setEntries(e => e.map(en => en.id === id ? { ...en, isEmarge: true, emargeAt: new Date().toISOString() } : en));
+      await cahierApi.emargement(id, actualMinutes);
+      setEntries((e) =>
+        e.map((en) =>
+          en.id === id
+            ? {
+                ...en,
+                isEmarge: true,
+                emargeAt: new Date().toISOString(),
+                actualMinutes,
+              }
+            : en,
+        ),
+      );
     } catch (e) {
       console.error(e);
       alert('Émargement impossible. Réessayez.');
+    } finally {
+      setEmarging(null);
     }
-    finally { setEmarging(null); }
   };
 
   const handleDelete = async (id: string) => {
@@ -419,7 +437,7 @@ export default function CahierPage() {
                                 </span>
                               )}
                             </div>
-                          ) : canValidate ? (
+                          ) : canValidate || canWrite ? (
                             <button onClick={() => handleEmargement(entry.id)} disabled={emarging === entry.id}
                               className="flex flex-col items-center gap-1 mx-auto group">
                               <div className="w-8 h-8 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center group-hover:border-blue-400 transition-colors">

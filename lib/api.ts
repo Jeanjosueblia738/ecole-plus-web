@@ -157,6 +157,33 @@ export const financeApi = {
   createPayroll: (data: object) => api.post('/finance/payroll', data),
   payrollStatus: (id: string, status: string) =>
     api.patch(`/finance/payroll/${id}/status`, { status }),
+  generatePayrollFromHours: (data: {
+    year: number;
+    month: number;
+    schoolYear: string;
+    label?: string;
+    notes?: string;
+  }) => api.post('/payroll/generate', data),
+  payPayrollWave: (id: string) => api.post(`/payroll/runs/${id}/pay-wave`),
+  hoursSummary: (year: number, month: number, teacherId?: string) =>
+    api.get('/payroll/hours-summary', { params: { year, month, teacherId } }),
+  listOccurrences: (year: number, month: number, teacherId?: string) =>
+    api.get('/payroll/occurrences', { params: { year, month, teacherId } }),
+  generateOccurrences: (data: { year: number; month: number; schoolYear: string }) =>
+    api.post('/payroll/occurrences/generate', data),
+  updateTeacherPayProfile: (
+    teacherId: string,
+    data: {
+      payMode?: 'HOURLY' | 'FIXED';
+      hourlyRateXof?: number;
+      monthlyBaseXof?: number | null;
+      wavePhone?: string | null;
+    },
+  ) => api.patch(`/payroll/teachers/${teacherId}/profile`, data),
+  clockIn: (id: string) => api.post(`/payroll/occurrences/${id}/clock-in`),
+  clockOut: (id: string) => api.post(`/payroll/occurrences/${id}/clock-out`),
+  excuseOccurrence: (id: string, notes?: string) =>
+    api.patch(`/payroll/occurrences/${id}/excuse`, { notes }),
   listBudgets: (year?: string) => api.get('/finance/budgets', { params: { year } }),
   createBudget: (data: object) => api.post('/finance/budgets', data),
   budgetVsActual: (id: string) => api.get(`/finance/budgets/${id}/vs-actual`),
@@ -237,7 +264,8 @@ export const cahierApi = {
   getStats: () => api.get('/cahier/stats'),
   getOne: (id: string) => api.get(`/cahier/${id}`),
   update: (id: string, data: object) => api.put(`/cahier/${id}`, data),
-  emargement: (id: string) => api.patch(`/cahier/${id}/emargement`),
+  emargement: (id: string, actualMinutes?: number) =>
+    api.patch(`/cahier/${id}/emargement`, actualMinutes != null ? { actualMinutes } : {}),
   delete: (id: string) => api.delete(`/cahier/${id}`),
   getHomework: (classId?: string) =>
     api.get('/cahier/homework', { params: classId ? { classId } : {} }),
