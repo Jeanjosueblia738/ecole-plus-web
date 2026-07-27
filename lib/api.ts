@@ -333,6 +333,16 @@ export const absenceAuthApi = {
   cancel: (id: string) => api.patch(`/absence-auth/${id}/cancel`),
 };
 
+// ── Crédits SMS ────────────────────────────────────────────────────────────
+export const smsApi = {
+  packs: () => api.get('/sms/packs'),
+  balance: () => api.get('/sms/balance'),
+  analytics: () => api.get('/sms/analytics'),
+  purchases: () => api.get('/sms/purchases'),
+  purchase: (data: { packId: string; payerPhone: string }) =>
+    api.post('/sms/purchase', data),
+};
+
 // ── Sync offline ───────────────────────────────────────────────────────────
 export const syncApi = {
   pushOutbox: (ops: { clientOpId: string; type: string; payload?: object }[]) =>
