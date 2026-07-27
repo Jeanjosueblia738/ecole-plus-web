@@ -14,6 +14,7 @@ const ROLE_LABELS: Record<string, string> = {
   ACCOUNTANT: 'Comptable',
   CASHIER: 'Caissier',
   TEACHER: 'Enseignant',
+  RH: 'Ressources humaines',
 };
 
 interface HeaderProps {

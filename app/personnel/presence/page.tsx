@@ -18,6 +18,7 @@ export default function StaffPresencePage() {
     'FOUNDER',
     'DIRECTOR',
     'ACCOUNTANT',
+    'RH',
   ]);
   const canRegenQr = hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR']);
   const [loading, setLoading] = useState(true);
@@ -68,6 +69,7 @@ export default function StaffPresencePage() {
         'CENSOR',
         'SURVEILLANT',
         'EDUCATOR',
+        'RH',
       ])
     ) {
       router.push('/dashboard');

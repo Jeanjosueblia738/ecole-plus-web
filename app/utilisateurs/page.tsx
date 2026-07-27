@@ -31,6 +31,7 @@ const ROLE_LABELS: Record<string, string> = {
   CASHIER: 'Caissier',
   TEACHER: 'Enseignant',
   EDUCATOR: 'Éducateur',
+  RH: 'Ressources humaines',
   PARENT: 'Parent',
   STUDENT: 'Élève',
 };
@@ -46,6 +47,7 @@ const ROLE_COLORS: Record<string, string> = {
   CASHIER: 'bg-emerald-50 text-emerald-700',
   TEACHER: 'bg-yellow-50 text-yellow-700',
   EDUCATOR: 'bg-pink-50 text-pink-700',
+  RH: 'bg-cyan-50 text-cyan-700',
   PARENT: 'bg-gray-50 text-gray-700',
   STUDENT: 'bg-sky-50 text-sky-700',
 };

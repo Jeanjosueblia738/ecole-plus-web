@@ -10,7 +10,7 @@ import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
 
 const STUDENT_VALIDATORS = ['SURVEILLANT', 'EDUCATOR', 'CENSOR'];
-const STAFF_VALIDATORS = ['ADMIN', 'FOUNDER', 'DIRECTOR'];
+const STAFF_VALIDATORS = ['ADMIN', 'FOUNDER', 'DIRECTOR', 'RH'];
 
 function daysInclusive(start: string, end: string) {
   const a = new Date(start);

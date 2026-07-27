@@ -49,7 +49,7 @@ export default function ClassQrPage() {
       router.push('/login');
       return;
     }
-    if (!canAccessPath(role, '/classes/qr') && !hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'])) {
+    if (!canAccessPath(role, '/classes/qr') && !hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'RH'])) {
       router.push('/classes');
       return;
     }

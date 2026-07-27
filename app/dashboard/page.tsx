@@ -47,7 +47,8 @@ function getRoleGroup(role: string) {
 const roleLabels: Record<string, string> = {
   ADMIN: 'Administrateur', FOUNDER: 'Fondateur', DIRECTOR: 'Directeur',
   CENSOR: 'Censeur', SURVEILLANT: 'Surveillant Général', EDUCATOR: 'Éducateur',
-  SECRETARY: 'Secrétaire', ACCOUNTANT: 'Comptable', CASHIER: 'Caissier', TEACHER: 'Enseignant',
+  SECRETARY: 'Secrétaire', ACCOUNTANT: 'Comptable', CASHIER: 'Caissier',
+  TEACHER: 'Enseignant', RH: 'Ressources humaines',
 };
 
 const colorMap: Record<string, { color: string; bgColor: string }> = {

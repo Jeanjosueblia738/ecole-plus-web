@@ -122,6 +122,8 @@ function NavContent({
       ? 'Caissier'
       : role === 'ACCOUNTANT'
         ? 'Comptable'
+        : role === 'RH'
+          ? 'RH'
         : role === 'ADMIN' || role === 'FOUNDER'
           ? 'Admin'
           : role === 'DIRECTOR'

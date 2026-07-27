@@ -18,6 +18,7 @@ const ROLES = [
   { value: 'SECRETARY', label: 'Secrétaire Scolarité' },
   { value: 'ACCOUNTANT', label: 'Comptable' },
   { value: 'CASHIER', label: 'Caissier' },
+  { value: 'RH', label: 'Ressources humaines' },
   { value: 'EDUCATOR', label: 'Éducateur' },
   { value: 'PARENT', label: 'Parent' },
   { value: 'STUDENT', label: 'Élève' },

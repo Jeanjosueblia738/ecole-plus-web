@@ -11,13 +11,14 @@ export type Role =
   | 'CASHIER'
   | 'TEACHER'
   | 'EDUCATOR'
+  | 'RH'
   | 'PARENT'
   | 'STUDENT'
   | 'SUPER_ADMIN';
 
 const ALL_STAFF: Role[] = [
   'ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT',
-  'SECRETARY', 'ACCOUNTANT', 'CASHIER', 'TEACHER', 'EDUCATOR',
+  'SECRETARY', 'ACCOUNTANT', 'CASHIER', 'TEACHER', 'EDUCATOR', 'RH',
 ];
 
 /** Qui voit chaque entrée de navigation */
@@ -25,13 +26,13 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/dashboard': ALL_STAFF,
   '/eleves': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR', 'ACCOUNTANT', 'CASHIER'],
   '/classes': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'],
-  '/classes/qr': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
+  '/classes/qr': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'RH'],
   '/notes': ['TEACHER'],
   '/presences': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'TEACHER', 'EDUCATOR'],
   '/discipline': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'],
   '/autorisations-absence': [
     'ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'EDUCATOR',
-    'SECRETARY', 'ACCOUNTANT', 'CASHIER', 'TEACHER',
+    'SECRETARY', 'ACCOUNTANT', 'CASHIER', 'TEACHER', 'RH',
   ],
   '/sms': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
   '/parent/autorisations-absence': ['PARENT'] as Role[],
@@ -46,9 +47,9 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/finance/depenses': ['ACCOUNTANT'],
   '/finance/fournisseurs': ['ACCOUNTANT'],
   '/finance/paie': ['ACCOUNTANT'],
-  '/finance/paie/suivi': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
-  '/finance/paie/alertes': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'],
-  '/personnel/presence': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'],
+  '/finance/paie/suivi': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'RH'],
+  '/finance/paie/alertes': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR', 'RH'],
+  '/personnel/presence': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR', 'RH'],
   '/mes-heures': ['TEACHER'],
   '/finance/budget': ['ACCOUNTANT'],
   '/finance/banque': ['ACCOUNTANT'],
@@ -62,7 +63,7 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/examens': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'TEACHER', 'SECRETARY', 'SURVEILLANT'],
   '/inscriptions': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'SECRETARY', 'CENSOR'],
   '/messagerie': ALL_STAFF,
-  '/emploi-du-temps': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR'],
+  '/emploi-du-temps': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'SECRETARY', 'TEACHER', 'EDUCATOR', 'RH'],
   '/enseignants': ['ADMIN', 'FOUNDER'],
   '/matieres': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'],
   '/utilisateurs': ['ADMIN', 'FOUNDER'],

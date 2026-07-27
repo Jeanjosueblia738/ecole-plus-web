@@ -50,7 +50,7 @@ export default function AlertesPresencePage() {
     }
     if (
       !canAccessPath(role, '/finance/paie/alertes') &&
-      !hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'])
+      !hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR', 'RH'])
     ) {
       router.push('/dashboard');
       return;
