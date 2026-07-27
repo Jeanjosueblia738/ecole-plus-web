@@ -108,8 +108,8 @@ export default function SuperAdminSmsPage() {
     );
   }, [data, search]);
 
-  const handleLogout = () => {
-    saAuth.logout();
+  const handleLogout = async () => {
+    await saAuth.clear();
     router.push('/super-admin/login');
   };
 
