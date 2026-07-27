@@ -294,7 +294,7 @@ export default function LandingPage() {
             <p>© 2026 ECOLE+. Tous droits réservés.</p>
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
-              <span>Fait avec ❤️ en Côte d'Ivoire</span>
+              <span>Créé avec passion en Côte d'Ivoire</span>
             </div>
           </div>
         </div>
