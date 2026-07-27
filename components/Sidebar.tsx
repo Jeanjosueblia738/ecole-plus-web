@@ -54,6 +54,7 @@ const navSections: NavSection[] = [
       { href: '/finance/paie/suivi', icon: ClipboardList, label: 'Suivi heures' },
       { href: '/finance/paie/alertes', icon: AlertTriangle, label: 'Alertes jour J' },
       { href: '/personnel/presence', icon: UserCheck, label: 'Présence personnel' },
+      { href: '/classes/qr', icon: QrCode, label: 'QR classes (enseignants)' },
       { href: '/finance/budget', icon: PiggyBank, label: 'Budget' },
       { href: '/finance/banque', icon: Landmark, label: 'Banque' },
       { href: '/finance/merchants', icon: Smartphone, label: 'Comptes Mobile Money' },
@@ -66,7 +67,6 @@ const navSections: NavSection[] = [
     items: [
       { href: '/eleves', icon: Users, label: 'Élèves' },
       { href: '/classes', icon: GraduationCap, label: 'Classes' },
-      { href: '/classes/qr', icon: QrCode, label: 'QR présence' },
       { href: '/inscriptions', icon: UserPlus, label: 'Pré-inscriptions' },
       { href: '/notes', icon: BookOpen, label: 'Notes' },
       { href: '/presences', icon: ClipboardList, label: 'Présences' },
