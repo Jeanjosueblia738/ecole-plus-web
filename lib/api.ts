@@ -311,6 +311,28 @@ export const disciplineApi = {
   byStudent: (studentId: string) => api.get(`/discipline/student/${studentId}`),
 };
 
+// ── Autorisations d'absence ────────────────────────────────────────────────
+export const absenceAuthApi = {
+  list: (params?: { status?: string; kind?: string }) =>
+    api.get('/absence-auth', { params }),
+  createStudent: (data: {
+    studentId?: string;
+    startDate: string;
+    endDate: string;
+    reason: string;
+  }) => api.post('/absence-auth/student', data),
+  createStaff: (data: {
+    startDate: string;
+    endDate: string;
+    reason: string;
+  }) => api.post('/absence-auth/staff', data),
+  approve: (id: string, decisionNote?: string) =>
+    api.patch(`/absence-auth/${id}/approve`, { decisionNote }),
+  reject: (id: string, decisionNote?: string) =>
+    api.patch(`/absence-auth/${id}/reject`, { decisionNote }),
+  cancel: (id: string) => api.patch(`/absence-auth/${id}/cancel`),
+};
+
 // ── Sync offline ───────────────────────────────────────────────────────────
 export const syncApi = {
   pushOutbox: (ops: { clientOpId: string; type: string; payload?: object }[]) =>

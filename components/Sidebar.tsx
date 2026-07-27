@@ -68,6 +68,7 @@ const navSections: NavSection[] = [
       { href: '/notes', icon: BookOpen, label: 'Notes' },
       { href: '/presences', icon: ClipboardList, label: 'Présences' },
       { href: '/discipline', icon: ShieldCheck, label: 'Discipline' },
+      { href: '/autorisations-absence', icon: FileText, label: 'Autorisations absence' },
       { href: '/campus', icon: Bus, label: 'Campus' },
       { href: '/bulletins', icon: FileText, label: 'Bulletins' },
       { href: '/devoirs', icon: NotebookPen, label: 'Travail à rendre' },

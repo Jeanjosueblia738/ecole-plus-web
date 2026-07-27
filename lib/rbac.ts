@@ -28,6 +28,11 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/notes': ['TEACHER'],
   '/presences': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'TEACHER', 'EDUCATOR'],
   '/discipline': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'],
+  '/autorisations-absence': [
+    'ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SURVEILLANT', 'EDUCATOR',
+    'SECRETARY', 'ACCOUNTANT', 'CASHIER', 'TEACHER',
+  ],
+  '/parent/autorisations-absence': ['PARENT'] as Role[],
   '/campus': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR', 'SECRETARY', 'SURVEILLANT', 'EDUCATOR'],
   '/comptabilite': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT'],
   '/finance': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CASHIER'],

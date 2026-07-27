@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, BookOpen, ClipboardList, Wallet, GraduationCap } from 'lucide-react';
+import { Loader2, BookOpen, ClipboardList, Wallet, GraduationCap, FileText } from 'lucide-react';
 import { parentApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 
@@ -57,6 +57,11 @@ export default function ParentHomePage() {
           { href: '/parent/notes', icon: BookOpen, label: 'Notes' },
           { href: '/parent/presences', icon: ClipboardList, label: 'Présences' },
           { href: '/parent/finance', icon: Wallet, label: 'Payer les frais' },
+          {
+            href: '/parent/autorisations-absence',
+            icon: FileText,
+            label: 'Autorisation d’absence',
+          },
         ].map((c) => (
           <Link
             key={c.href}
