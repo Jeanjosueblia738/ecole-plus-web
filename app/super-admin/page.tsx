@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import {
   Building2, Users, CheckCircle, XCircle, RefreshCw,
   Search, Eye, ShieldOff, Shield, BarChart2,
-  DollarSign, Clock, LogOut, GraduationCap, Activity, UserCog
+  DollarSign, Clock, LogOut, GraduationCap, Activity, UserCog,
+  MessageSquare,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { saAuth } from '@/lib/sa-auth';
@@ -189,6 +190,10 @@ export default function SuperAdminPage() {
             <button onClick={() => router.push('/super-admin/groups')}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm hover:bg-indigo-700">
               <Building2 className="w-4 h-4" /> Groupes
+            </button>
+            <button onClick={() => router.push('/super-admin/sms')}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl text-sm hover:bg-teal-700">
+              <MessageSquare className="w-4 h-4" /> SMS écoles
             </button>
             <button onClick={() => router.push('/super-admin/merchants')}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm hover:bg-emerald-700">
