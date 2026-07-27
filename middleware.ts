@@ -36,6 +36,7 @@ const STAFF_PREFIXES = [
   '/utilisateurs',
   '/parametres',
   '/parent',
+  '/personnel',
 ];
 
 function readCookieUser(request: NextRequest): { role?: string } | null {

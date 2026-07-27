@@ -182,6 +182,23 @@ export const financeApi = {
   ) => api.patch(`/payroll/teachers/${teacherId}/profile`, data),
   clockIn: (id: string) => api.post(`/payroll/occurrences/${id}/clock-in`),
   clockOut: (id: string) => api.post(`/payroll/occurrences/${id}/clock-out`),
+  listClassQr: (year?: string) =>
+    api.get('/payroll/class-qr', { params: { year } }),
+  getClassQr: (classId: string, roomLabel?: string) =>
+    api.get(`/payroll/class-qr/${classId}`, {
+      params: roomLabel != null ? { roomLabel } : undefined,
+    }),
+  updateClassQr: (
+    classId: string,
+    data: { roomLabel?: string | null; regenerate?: boolean },
+  ) => api.patch(`/payroll/class-qr/${classId}`, data),
+  qrScan: (data: { payload: string; clientTime: string }) =>
+    api.post('/payroll/qr-scan', data),
+  todayAlerts: () => api.get('/payroll/alerts/today'),
+  assignSubstitute: (id: string, substituteTeacherId: string | null) =>
+    api.patch(`/payroll/occurrences/${id}/substitute`, { substituteTeacherId }),
+  reportUncovered: (id: string, note?: string) =>
+    api.post(`/payroll/occurrences/${id}/report-uncovered`, { note }),
   excuseOccurrence: (id: string, notes?: string) =>
     api.patch(`/payroll/occurrences/${id}/excuse`, { notes }),
   listBudgets: (year?: string) => api.get('/finance/budgets', { params: { year } }),
@@ -325,12 +342,24 @@ export const absenceAuthApi = {
     startDate: string;
     endDate: string;
     reason: string;
+    category?: 'SHORT' | 'LEAVE';
   }) => api.post('/absence-auth/staff', data),
   approve: (id: string, decisionNote?: string) =>
     api.patch(`/absence-auth/${id}/approve`, { decisionNote }),
   reject: (id: string, decisionNote?: string) =>
     api.patch(`/absence-auth/${id}/reject`, { decisionNote }),
   cancel: (id: string) => api.patch(`/absence-auth/${id}/cancel`),
+};
+
+export const staffPresenceApi = {
+  campusQr: () => api.get('/staff-presence/campus-qr'),
+  regenerateCampusQr: () => api.patch('/staff-presence/campus-qr/regenerate'),
+  qrScan: (data: { payload: string; clientTime: string }) =>
+    api.post('/staff-presence/qr-scan', data),
+  today: (date?: string) =>
+    api.get('/staff-presence/today', { params: { date } }),
+  list: (params?: { from?: string; to?: string }) =>
+    api.get('/staff-presence', { params }),
 };
 
 // ── Crédits SMS ────────────────────────────────────────────────────────────

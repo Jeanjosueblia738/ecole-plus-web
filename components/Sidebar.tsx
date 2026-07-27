@@ -9,7 +9,7 @@ import {
   FileText, Pencil, UserCheck, ShieldCheck, MessageSquare, CalendarDays,
   CreditCard, FileSpreadsheet, AlertTriangle, Menu, X, NotebookPen,
   Gavel, ClipboardCheck, UserPlus, Wallet, Landmark, Receipt,
-  Building2, PiggyBank, Banknote, Smartphone, Bus, Calculator, Clock,
+  Building2, PiggyBank, Banknote, Smartphone, Bus, Calculator, Clock, QrCode,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
@@ -52,6 +52,8 @@ const navSections: NavSection[] = [
       { href: '/finance/fournisseurs', icon: Building2, label: 'Fournisseurs' },
       { href: '/finance/paie', icon: UserCheck, label: 'Paie' },
       { href: '/finance/paie/suivi', icon: ClipboardList, label: 'Suivi heures' },
+      { href: '/finance/paie/alertes', icon: AlertTriangle, label: 'Alertes jour J' },
+      { href: '/personnel/presence', icon: UserCheck, label: 'Présence personnel' },
       { href: '/finance/budget', icon: PiggyBank, label: 'Budget' },
       { href: '/finance/banque', icon: Landmark, label: 'Banque' },
       { href: '/finance/merchants', icon: Smartphone, label: 'Comptes Mobile Money' },
@@ -64,6 +66,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/eleves', icon: Users, label: 'Élèves' },
       { href: '/classes', icon: GraduationCap, label: 'Classes' },
+      { href: '/classes/qr', icon: QrCode, label: 'QR présence' },
       { href: '/inscriptions', icon: UserPlus, label: 'Pré-inscriptions' },
       { href: '/notes', icon: BookOpen, label: 'Notes' },
       { href: '/presences', icon: ClipboardList, label: 'Présences' },

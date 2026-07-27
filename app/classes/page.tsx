@@ -118,6 +118,14 @@ export default function ClassesPage() {
                 Nouvelle classe
               </a>
             )}
+            {hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT']) && (
+              <a
+                href="/classes/qr"
+                className="flex items-center gap-2 border border-[#1B3A6B] text-[#1B3A6B] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-50 transition-colors"
+              >
+                QR présence
+              </a>
+            )}
           </div>
 
           {loading ? (

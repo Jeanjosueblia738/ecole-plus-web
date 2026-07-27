@@ -36,6 +36,7 @@ export default function AutorisationsAbsencePage() {
     startDate: '',
     endDate: '',
     reason: '',
+    category: 'SHORT' as 'SHORT' | 'LEAVE',
   });
 
   const canValidateStudent = STUDENT_VALIDATORS.includes(role);
@@ -82,14 +83,19 @@ export default function AutorisationsAbsencePage() {
 
   const submitStaff = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (durationPreview != null && (durationPreview < 1 || durationPreview > 3)) {
-      alert('Maximum 3 jours d’absence.');
+    const max = form.category === 'LEAVE' ? 90 : 3;
+    if (durationPreview != null && (durationPreview < 1 || durationPreview > max)) {
+      alert(
+        form.category === 'LEAVE'
+          ? 'Congé RH : maximum 90 jours.'
+          : 'Autorisation courte : maximum 3 jours.',
+      );
       return;
     }
     setBusy('create');
     try {
       await absenceAuthApi.createStaff(form);
-      setForm({ startDate: '', endDate: '', reason: '' });
+      setForm({ startDate: '', endDate: '', reason: '', category: 'SHORT' });
       await load();
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Création impossible');
@@ -111,7 +117,7 @@ export default function AutorisationsAbsencePage() {
       <div className="flex-1 flex flex-col">
         <Header
           title="Autorisations d’absence"
-          subtitle="Max 3 jours · Élèves (vie scolaire) · Personnel (direction)"
+          subtitle="Courte ≤3 j · Congé RH ≤90 j · Élèves (vie scolaire) · Personnel (direction)"
         />
         <main className="flex-1 p-6 space-y-4 max-w-4xl">
           {canRequestStaff && (
@@ -122,6 +128,30 @@ export default function AutorisationsAbsencePage() {
               <p className="sm:col-span-2 text-sm font-semibold text-gray-800">
                 Nouvelle demande (personnel / enseignant)
               </p>
+              <div className="sm:col-span-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, category: 'SHORT' })}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                    form.category === 'SHORT'
+                      ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]'
+                      : 'bg-white text-gray-600'
+                  }`}
+                >
+                  Autorisation courte (≤3 j)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, category: 'LEAVE' })}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                    form.category === 'LEAVE'
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-white text-gray-600'
+                  }`}
+                >
+                  Congé RH (≤90 j)
+                </button>
+              </div>
               <input
                 required
                 type="date"
@@ -148,18 +178,23 @@ export default function AutorisationsAbsencePage() {
               <div className="sm:col-span-2 flex items-center justify-between gap-2">
                 <p
                   className={`text-xs ${
-                    durationPreview != null && durationPreview > 3
+                    durationPreview != null &&
+                    durationPreview > (form.category === 'LEAVE' ? 90 : 3)
                       ? 'text-red-600 font-medium'
                       : 'text-gray-500'
                   }`}
                 >
                   {durationPreview != null
-                    ? `${durationPreview} jour(s) — maximum 3`
-                    : 'Sélectionnez les dates (max 3 jours)'}
+                    ? `${durationPreview} jour(s) — max ${form.category === 'LEAVE' ? 90 : 3}`
+                    : `Sélectionnez les dates (max ${form.category === 'LEAVE' ? 90 : 3} jours)`}
                 </p>
                 <button
                   type="submit"
-                  disabled={busy === 'create' || (durationPreview != null && durationPreview > 3)}
+                  disabled={
+                    busy === 'create' ||
+                    (durationPreview != null &&
+                      durationPreview > (form.category === 'LEAVE' ? 90 : 3))
+                  }
                   className="px-4 py-2 rounded-lg bg-[#1B3A6B] text-white text-sm font-semibold disabled:opacity-50"
                 >
                   {busy === 'create' ? 'Envoi…' : 'Demander'}
@@ -201,6 +236,13 @@ export default function AutorisationsAbsencePage() {
                           {new Date(r.startDate).toLocaleDateString('fr-FR')} →{' '}
                           {new Date(r.endDate).toLocaleDateString('fr-FR')} ·{' '}
                           {r.durationDays} j · {r.requesterRole}
+                          {r.category === 'LEAVE' ? ' · Congé RH' : r.kind === 'STAFF' ? ' · Courte' : ''}
+                          {r.excusedOccurrences
+                            ? ` · ${r.excusedOccurrences} séance(s) excusée(s)`
+                            : Array.isArray(r.excusedOccurrenceIds) &&
+                                r.excusedOccurrenceIds.length > 0
+                              ? ` · ${r.excusedOccurrenceIds.length} séance(s) excusée(s)`
+                              : ''}
                         </p>
                         <p className="text-gray-700 mt-2">{r.reason}</p>
                         {r.decisionNote && (
