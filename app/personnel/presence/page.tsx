@@ -12,26 +12,44 @@ import { canAccessPath, hasRole } from '@/lib/rbac';
 export default function StaffPresencePage() {
   const router = useRouter();
   const role = String(authStorage.getUser()?.role || '').toUpperCase();
+  const canManageQr = hasRole(role, [
+    'ADMIN',
+    'FOUNDER',
+    'DIRECTOR',
+    'ACCOUNTANT',
+  ]);
+  const canRegenQr = hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR']);
   const [loading, setLoading] = useState(true);
   const [qr, setQr] = useState<any>(null);
   const [rows, setRows] = useState<any[]>([]);
   const [error, setError] = useState('');
+  const [qrNote, setQrNote] = useState('');
 
   const load = async () => {
     setLoading(true);
     setError('');
+    setQrNote('');
     try {
-      const [q, t] = await Promise.all([
-        staffPresenceApi.campusQr(),
-        staffPresenceApi.today(),
-      ]);
-      setQr(q.data);
-      setRows(Array.isArray(t.data) ? t.data : []);
+      const todayRes = await staffPresenceApi.today();
+      setRows(Array.isArray(todayRes.data) ? todayRes.data : []);
     } catch {
-      setError('Impossible de charger le pointage personnel.');
-    } finally {
-      setLoading(false);
+      setRows([]);
+      setError('Impossible de charger les pointages du jour.');
     }
+
+    if (canManageQr) {
+      try {
+        const q = await staffPresenceApi.campusQr();
+        setQr(q.data);
+      } catch {
+        setQr(null);
+        setQrNote('QR campus non disponible pour votre rôle.');
+      }
+    } else {
+      setQr(null);
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -54,6 +72,7 @@ export default function StaffPresencePage() {
       return;
     }
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, role]);
 
   const fmt = (v: string | null) =>
@@ -77,6 +96,11 @@ export default function StaffPresencePage() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
               {error}
+            </div>
+          )}
+          {qrNote && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
+              {qrNote}
             </div>
           )}
 
@@ -109,17 +133,23 @@ export default function StaffPresencePage() {
                       >
                         <Printer className="w-4 h-4" /> Imprimer
                       </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!confirm('Régénérer le QR entrée ?')) return;
-                          await staffPresenceApi.regenerateCampusQr();
-                          await load();
-                        }}
-                        className="px-3 py-2 border rounded-xl text-sm"
-                      >
-                        Régénérer
-                      </button>
+                      {canRegenQr && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm('Régénérer le QR entrée ?')) return;
+                            try {
+                              await staffPresenceApi.regenerateCampusQr();
+                              await load();
+                            } catch {
+                              setError('Échec de la régénération du QR.');
+                            }
+                          }}
+                          className="px-3 py-2 border rounded-xl text-sm"
+                        >
+                          Régénérer
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={load}
@@ -141,7 +171,9 @@ export default function StaffPresencePage() {
                 </div>
                 {rows.length === 0 ? (
                   <p className="p-6 text-sm text-gray-400 text-center">
-                    Aucun pointage aujourd’hui
+                    {error
+                      ? 'Liste indisponible'
+                      : 'Aucun pointage aujourd’hui'}
                   </p>
                 ) : (
                   <table className="w-full text-sm">

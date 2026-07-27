@@ -19,9 +19,11 @@ export default function MesHeuresPage() {
   const [occurrences, setOccurrences] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const load = async () => {
     setLoading(true);
+    setError('');
     try {
       const [occ, sum] = await Promise.all([
         financeApi.listOccurrences(year, month),
@@ -32,6 +34,7 @@ export default function MesHeuresPage() {
     } catch {
       setOccurrences([]);
       setSummary(null);
+      setError('Impossible de charger vos heures. Réessayez.');
     } finally {
       setLoading(false);
     }
@@ -61,6 +64,11 @@ export default function MesHeuresPage() {
           subtitle={`${month}/${year} — suivi (pointe via app mobile QR)`}
         />
         <main className="flex-1 p-6 space-y-4 max-w-3xl">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {error}
+            </div>
+          )}
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 items-start">
             <Smartphone className="w-5 h-5 text-[#1B3A6B] flex-shrink-0 mt-0.5" />
             <div className="text-sm text-gray-700">

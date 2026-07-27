@@ -17,8 +17,8 @@ function daysInclusive(start: string, end: string) {
   const b = new Date(end);
   const d =
     Math.floor(
-      (Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) -
-        Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) /
+      (Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate()) -
+        Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate())) /
         86400000,
     ) + 1;
   return d;
@@ -233,9 +233,14 @@ export default function AutorisationsAbsencePage() {
                             : `Personnel — ${r.requesterName}`}
                         </p>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          {new Date(r.startDate).toLocaleDateString('fr-FR')} →{' '}
-                          {new Date(r.endDate).toLocaleDateString('fr-FR')} ·{' '}
-                          {r.durationDays} j · {r.requesterRole}
+                          {new Date(r.startDate).toLocaleDateString('fr-FR', {
+                            timeZone: 'UTC',
+                          })}{' '}
+                          →{' '}
+                          {new Date(r.endDate).toLocaleDateString('fr-FR', {
+                            timeZone: 'UTC',
+                          })}{' '}
+                          · {r.durationDays} j · {r.requesterRole}
                           {r.category === 'LEAVE' ? ' · Congé RH' : r.kind === 'STAFF' ? ' · Courte' : ''}
                           {r.excusedOccurrences
                             ? ` · ${r.excusedOccurrences} séance(s) excusée(s)`
@@ -267,7 +272,14 @@ export default function AutorisationsAbsencePage() {
                           onClick={async () => {
                             setBusy(r.id);
                             try {
-                              await absenceAuthApi.approve(r.id);
+                              const { data } = await absenceAuthApi.approve(r.id);
+                              if (data?.warning) {
+                                alert(data.warning);
+                              } else if (data?.excusedOccurrences != null) {
+                                alert(
+                                  `Approuvé — ${data.excusedOccurrences} séance(s) excusée(s)`,
+                                );
+                              }
                               await load();
                             } catch (e: any) {
                               alert(e?.response?.data?.message || 'Échec');
