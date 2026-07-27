@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Printer, QrCode, RefreshCw } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import QrCodeImage from '@/components/QrCodeImage';
 import { financeApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath, hasRole } from '@/lib/rbac';
@@ -128,7 +129,6 @@ export default function ClassQrPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {items.map((c) => {
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(c.payload)}`;
                 return (
                   <div
                     key={c.classId}
@@ -138,12 +138,10 @@ export default function ClassQrPage() {
                     <p className="text-xs text-gray-500 mb-3">
                       {c.level} · {c.year}
                     </p>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={qrUrl}
+                    <QrCodeImage
+                      value={c.payload}
+                      size={200}
                       alt={`QR ${c.name}`}
-                      width={200}
-                      height={200}
                       className="rounded-lg border border-gray-100"
                     />
                     <p className="text-sm font-medium text-gray-800 mt-3">

@@ -16,18 +16,25 @@ export default function AlertesPresencePage() {
   const [alerts, setAlerts] = useState<any>(null);
   const [error, setError] = useState('');
   const [teachers, setTeachers] = useState<any[]>([]);
+  const [teachersNote, setTeachersNote] = useState('');
   const [busy, setBusy] = useState('');
 
   const load = async () => {
     setLoading(true);
     setError('');
+    setTeachersNote('');
     try {
-      const [{ data }, t] = await Promise.all([
-        financeApi.todayAlerts(),
-        teachersApi.getAll().catch(() => ({ data: [] })),
-      ]);
+      const { data } = await financeApi.todayAlerts();
       setAlerts(data);
-      setTeachers(Array.isArray(t.data) ? t.data : []);
+      try {
+        const t = await teachersApi.getAll();
+        setTeachers(Array.isArray(t.data) ? t.data : []);
+      } catch {
+        setTeachers([]);
+        setTeachersNote(
+          'Liste des remplaçants indisponible — réessayez plus tard.',
+        );
+      }
     } catch {
       setError('Impossible de charger les alertes.');
       setAlerts(null);
@@ -43,7 +50,7 @@ export default function AlertesPresencePage() {
     }
     if (
       !canAccessPath(role, '/finance/paie/alertes') &&
-      !hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT'])
+      !hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'CENSOR', 'SURVEILLANT', 'EDUCATOR'])
     ) {
       router.push('/dashboard');
       return;
@@ -102,6 +109,11 @@ export default function AlertesPresencePage() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
               {error}
+            </div>
+          )}
+          {teachersNote && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-4 py-3 text-sm">
+              {teachersNote}
             </div>
           )}
 

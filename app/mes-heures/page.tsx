@@ -53,7 +53,11 @@ export default function MesHeuresPage() {
     load();
   }, [router]);
 
-  const me = summary?.teachers?.[0];
+  const meId = authStorage.getUser()?.id;
+  const teachers = Array.isArray(summary?.teachers) ? summary.teachers : [];
+  const me =
+    (meId && teachers.find((t: any) => t.teacherId === meId)) ||
+    teachers[0];
 
   return (
     <div className="flex min-h-screen bg-gray-50">

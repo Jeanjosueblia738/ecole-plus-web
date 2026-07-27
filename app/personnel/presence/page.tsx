@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Printer, RefreshCw, Users } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import QrCodeImage from '@/components/QrCodeImage';
 import { staffPresenceApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath, hasRole } from '@/lib/rbac';
@@ -66,6 +67,7 @@ export default function StaffPresencePage() {
         'ACCOUNTANT',
         'CENSOR',
         'SURVEILLANT',
+        'EDUCATOR',
       ])
     ) {
       router.push('/dashboard');
@@ -112,12 +114,10 @@ export default function StaffPresencePage() {
             <>
               {qr && (
                 <div className="bg-white rounded-2xl border p-6 flex flex-col md:flex-row gap-6 items-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qr.payload)}`}
+                  <QrCodeImage
+                    value={qr.payload}
+                    size={200}
                     alt="QR campus"
-                    width={200}
-                    height={200}
                     className="rounded-lg border"
                   />
                   <div className="flex-1 space-y-2">
