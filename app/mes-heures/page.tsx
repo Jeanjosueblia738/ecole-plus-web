@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Loader2, Play, Square } from 'lucide-react';
+import { Clock, Loader2, QrCode, Smartphone } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { financeApi } from '@/lib/api';
@@ -19,7 +19,6 @@ export default function MesHeuresPage() {
   const [occurrences, setOccurrences] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -57,8 +56,24 @@ export default function MesHeuresPage() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Header title="Mes heures" subtitle={`${month}/${year} — pointe & suivi`} />
+        <Header
+          title="Mes heures"
+          subtitle={`${month}/${year} — suivi (pointe via app mobile QR)`}
+        />
         <main className="flex-1 p-6 space-y-4 max-w-3xl">
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 items-start">
+            <Smartphone className="w-5 h-5 text-[#1B3A6B] flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-700">
+              <p className="font-semibold text-[#1B3A6B]">
+                Pointe uniquement via l’app mobile
+              </p>
+              <p className="mt-1">
+                Scannez le QR collé sur le bureau de la classe (1er scan = arrivée,
+                2e = fin). Les heures viennent de l’horloge du téléphone.
+              </p>
+            </div>
+          </div>
+
           {me && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-white border rounded-xl p-3">
@@ -88,7 +103,8 @@ export default function MesHeuresPage() {
             <div className="space-y-2">
               {occurrences.length === 0 && (
                 <p className="text-sm text-gray-500">
-                  Aucune séance ce mois. La direction doit générer les séances depuis l’EDT.
+                  Aucune séance ce mois. La direction doit générer les séances depuis
+                  l’EDT.
                 </p>
               )}
               {occurrences.map((o) => (
@@ -105,48 +121,22 @@ export default function MesHeuresPage() {
                       {new Date(o.date).toLocaleDateString('fr-FR')} · {o.startTime}–
                       {o.endTime} · prévu {o.plannedMinutes} min · {o.status}
                       {o.actualMinutes != null ? ` · fait ${o.actualMinutes} min` : ''}
+                      {o.clockSource ? ` · ${o.clockSource}` : ''}
+                      {o.room ? ` · ${o.room}` : ''}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    {o.status === 'SCHEDULED' && (
-                      <button
-                        type="button"
-                        disabled={busyId === o.id}
-                        onClick={async () => {
-                          setBusyId(o.id);
-                          try {
-                            await financeApi.clockIn(o.id);
-                            await load();
-                          } catch (e: any) {
-                            alert(e?.response?.data?.message || 'Pointe début impossible');
-                          } finally {
-                            setBusyId('');
-                          }
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium"
-                      >
-                        <Play className="w-3.5 h-3.5" /> Début
-                      </button>
+                  <div className="text-xs text-gray-400 flex items-center gap-1">
+                    {(o.status === 'SCHEDULED' || o.status === 'IN_PROGRESS') && (
+                      <>
+                        <QrCode className="w-4 h-4" />
+                        Scanner sur mobile
+                      </>
                     )}
-                    {o.status === 'IN_PROGRESS' && (
-                      <button
-                        type="button"
-                        disabled={busyId === o.id}
-                        onClick={async () => {
-                          setBusyId(o.id);
-                          try {
-                            await financeApi.clockOut(o.id);
-                            await load();
-                          } catch (e: any) {
-                            alert(e?.response?.data?.message || 'Pointe fin impossible');
-                          } finally {
-                            setBusyId('');
-                          }
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-500 text-white text-xs font-medium"
-                      >
-                        <Square className="w-3.5 h-3.5" /> Fin
-                      </button>
+                    {o.status === 'COMPLETED' && (
+                      <span className="text-emerald-600 font-medium">Terminé</span>
+                    )}
+                    {o.status === 'EXCUSED' && (
+                      <span className="text-blue-600 font-medium">Excusé</span>
                     )}
                   </div>
                 </div>
