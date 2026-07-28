@@ -30,6 +30,8 @@ export default function AnneesPage() {
   const [years, setYears] = useState<AcademicYear[]>([]);
   const [loading, setLoading] = useState(true);
   const [label, setLabel] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -68,8 +70,14 @@ export default function AnneesPage() {
     setError('');
     setMessage('');
     try {
-      await academicYearsApi.create({ label: label.trim() || calendarSchoolYear() });
+      await academicYearsApi.create({
+        label: label.trim() || calendarSchoolYear(),
+        ...(startDate ? { startDate } : {}),
+        ...(endDate ? { endDate } : {}),
+      });
       setLabel('');
+      setStartDate('');
+      setEndDate('');
       setMessage('Année créée');
       await load();
     } catch (err: any) {
@@ -184,7 +192,27 @@ export default function AnneesPage() {
                   {creating ? 'Création…' : 'Créer'}
                 </button>
               </div>
-              <p className="text-xs text-gray-500">Format : 2025-2026</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="text-xs text-gray-500">
+                  Début (optionnel)
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs text-gray-500">
+                  Fin (optionnel)
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                </label>
+              </div>
+              <p className="text-xs text-gray-500">Format label : 2025-2026</p>
             </form>
           )}
 

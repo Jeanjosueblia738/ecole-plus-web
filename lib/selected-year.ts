@@ -9,6 +9,12 @@ function calendarFallback(date: Date = new Date()): string {
   return `${y - 1}-${y}`;
 }
 
+export function hasSelectedYearCookie(): boolean {
+  if (typeof window === 'undefined') return false;
+  const selected = Cookies.get(COOKIE);
+  return !!(selected && /^\d{4}-\d{4}$/.test(selected));
+}
+
 export function getSelectedYear(): string {
   if (typeof window === 'undefined') return calendarFallback();
   const selected = Cookies.get(COOKIE);

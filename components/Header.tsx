@@ -4,8 +4,11 @@ import { useEffect, useState } from 'react';
 import { Bell, User } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { academicYearsApi } from '@/lib/api';
-import { getSelectedYear, setSelectedYear } from '@/lib/selected-year';
-import { calendarSchoolYear } from '@/lib/school-year';
+import {
+  getSelectedYear,
+  setSelectedYear,
+  hasSelectedYearCookie,
+} from '@/lib/selected-year';
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrateur',
@@ -38,30 +41,47 @@ export default function Header({ title, subtitle }: HeaderProps) {
     const role = String(user?.role || '').toUpperCase();
     if (!role || role === 'PARENT' || role === 'STUDENT') return;
 
-    academicYearsApi
-      .getAll()
-      .then(({ data }) => {
-        const list = Array.isArray(data) ? data : [];
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const [currentRes, allRes] = await Promise.all([
+          academicYearsApi.getCurrent(),
+          academicYearsApi.getAll(),
+        ]);
+        if (cancelled) return;
+
+        const list = Array.isArray(allRes.data) ? allRes.data : [];
         setYears(list);
-        const current = list.find((y: any) => y.isCurrent)?.label;
+
+        const serverCurrent =
+          (currentRes.data?.label as string | undefined) ||
+          list.find((y: any) => y.isCurrent)?.label;
+
+        const cookieSet = hasSelectedYearCookie();
         const sel = getSelectedYear();
-        if (!list.some((y: any) => y.label === sel) && current) {
-          setSelectedYear(current);
-          setSelected(current);
-        } else if (!list.length) {
-          setSelected(calendarSchoolYear());
+        const selInList = list.some((y: any) => y.label === sel);
+
+        if ((!cookieSet || !selInList) && serverCurrent) {
+          setSelectedYear(serverCurrent);
+          setSelected(serverCurrent);
+        } else {
+          setSelected(sel);
         }
-      })
-      .catch(() => {
+      } catch {
         /* keep calendar fallback */
-      });
+      }
+    })();
 
     const onChange = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
       if (detail) setSelected(detail);
     };
     window.addEventListener('ecole-year-changed', onChange);
-    return () => window.removeEventListener('ecole-year-changed', onChange);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('ecole-year-changed', onChange);
+    };
   }, [user?.role]);
 
   const onYearChange = (label: string) => {
@@ -83,12 +103,15 @@ export default function Header({ title, subtitle }: HeaderProps) {
       </div>
       <div className="flex items-center gap-4">
         {showYearSelect && (
-          <label className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
-            <span className="text-xs uppercase tracking-wide text-gray-400">Année</span>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <span className="hidden sm:inline text-xs uppercase tracking-wide text-gray-400">
+              Année
+            </span>
             <select
               value={selected}
               onChange={(e) => onYearChange(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-800"
+              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-800 max-w-[9.5rem] sm:max-w-none"
+              aria-label="Année scolaire"
             >
               {years.map((y) => (
                 <option key={y.id} value={y.label}>
