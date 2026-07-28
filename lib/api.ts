@@ -71,10 +71,29 @@ export const studentsApi = {
   getAll: (params?: { classId?: string; search?: string }) =>
     api.get('/students', { params }),
   getOne: (id: string) => api.get(`/students/${id}`),
+  getEnrollments: (id: string) => api.get(`/students/${id}/enrollments`),
   getStats: () => api.get('/students/stats'),
   create: (data: object) => api.post('/students', data),
   update: (id: string, data: object) => api.put(`/students/${id}`, data),
   delete: (id: string) => api.delete(`/students/${id}`),
+};
+
+// ── Années scolaires ─────────────────────────────────────────────────────
+export const academicYearsApi = {
+  getAll: () => api.get('/academic-years'),
+  getCurrent: () => api.get('/academic-years/current'),
+  create: (data: { label: string; startDate?: string; endDate?: string }) =>
+    api.post('/academic-years', data),
+  activate: (id: string) => api.patch(`/academic-years/${id}/activate`),
+  archive: (id: string) => api.patch(`/academic-years/${id}/archive`),
+  cloneClasses: (id: string, sourceYearId: string) =>
+    api.post(`/academic-years/${id}/clone-classes`, { sourceYearId }),
+  getEnrollments: (id: string) => api.get(`/academic-years/${id}/enrollments`),
+  passage: (data: {
+    fromYearId: string;
+    toYearId: string;
+    items: { studentId: string; targetClassId: string; decision: string }[];
+  }) => api.post('/academic-years/passage', data),
 };
 
 // ── Espace parent ────────────────────────────────────────────────────────

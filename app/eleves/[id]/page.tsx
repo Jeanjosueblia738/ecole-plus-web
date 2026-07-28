@@ -25,6 +25,7 @@ export default function EleveDetailPage() {
   const [canEdit, setCanEdit] = useState(false);
   const [student, setStudent] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -45,8 +46,18 @@ export default function EleveDetailPage() {
     setReady(true);
     loadStudent();
     loadProgress();
+    loadEnrollments();
     classesApi.getAll(year).then(({ data }) => setClasses(data));
   }, [id, router]);
+
+  const loadEnrollments = async () => {
+    try {
+      const { data } = await studentsApi.getEnrollments(id);
+      setEnrollments(Array.isArray(data) ? data : []);
+    } catch {
+      setEnrollments([]);
+    }
+  };
 
   const loadProgress = async () => {
     setProgressLoading(true);
@@ -275,6 +286,35 @@ export default function EleveDetailPage() {
                     </div>
                   )}
                 </div>
+
+                {enrollments.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+                    <h3 className="font-semibold text-gray-800 mb-3">Historique scolaire</h3>
+                    <ul className="space-y-2">
+                      {enrollments.map((e: any) => (
+                        <li
+                          key={e.id}
+                          className="flex flex-wrap items-center justify-between gap-2 text-sm border-b border-gray-50 pb-2"
+                        >
+                          <div>
+                            <span className="font-medium text-gray-800">
+                              {e.academicYear?.label || '—'}
+                            </span>
+                            <span className="text-gray-500 ml-2">
+                              {e.class?.name || 'Sans classe'}
+                              {e.class?.level ? ` (${e.class.level})` : ''}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {e.status}
+                            {e.decision ? ` · ${e.decision}` : ''}
+                            {e.academicYear?.isCurrent ? ' · courante' : ''}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 {/* Infos parent */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">

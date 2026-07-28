@@ -10,6 +10,7 @@ import {
   CreditCard, FileSpreadsheet, AlertTriangle, Menu, X, NotebookPen,
   Gavel, ClipboardCheck, UserPlus, Wallet, Landmark, Receipt,
   Building2, PiggyBank, Banknote, Smartphone, Bus, Calculator, Clock, QrCode,
+  CalendarRange,
 } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath } from '@/lib/rbac';
@@ -97,6 +98,8 @@ const navSections: NavSection[] = [
     items: [
       { href: '/enseignants', icon: Users, label: 'Enseignants' },
       { href: '/matieres', icon: BookOpen, label: 'Matières' },
+      { href: '/annees', icon: CalendarRange, label: 'Années scolaires' },
+      { href: '/annees/passage', icon: GraduationCap, label: 'Passage élèves' },
       { href: '/utilisateurs', icon: UserCheck, label: 'Utilisateurs' },
       { href: '/sms', icon: Smartphone, label: 'SMS & crédits' },
       { href: '/abonnement', icon: CreditCard, label: 'Abonnement' },

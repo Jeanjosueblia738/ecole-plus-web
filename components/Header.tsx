@@ -1,7 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Bell, User } from 'lucide-react';
 import { authStorage } from '@/lib/auth';
+import { academicYearsApi } from '@/lib/api';
+import { getSelectedYear, setSelectedYear } from '@/lib/selected-year';
+import { calendarSchoolYear } from '@/lib/school-year';
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Administrateur',
@@ -27,6 +31,49 @@ export default function Header({ title, subtitle }: HeaderProps) {
   const roleLabel = user?.role
     ? ROLE_LABELS[user.role] || user.role
     : '';
+  const [years, setYears] = useState<{ id: string; label: string; status: string; isCurrent: boolean }[]>([]);
+  const [selected, setSelected] = useState(getSelectedYear());
+
+  useEffect(() => {
+    const role = String(user?.role || '').toUpperCase();
+    if (!role || role === 'PARENT' || role === 'STUDENT') return;
+
+    academicYearsApi
+      .getAll()
+      .then(({ data }) => {
+        const list = Array.isArray(data) ? data : [];
+        setYears(list);
+        const current = list.find((y: any) => y.isCurrent)?.label;
+        const sel = getSelectedYear();
+        if (!list.some((y: any) => y.label === sel) && current) {
+          setSelectedYear(current);
+          setSelected(current);
+        } else if (!list.length) {
+          setSelected(calendarSchoolYear());
+        }
+      })
+      .catch(() => {
+        /* keep calendar fallback */
+      });
+
+    const onChange = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (detail) setSelected(detail);
+    };
+    window.addEventListener('ecole-year-changed', onChange);
+    return () => window.removeEventListener('ecole-year-changed', onChange);
+  }, [user?.role]);
+
+  const onYearChange = (label: string) => {
+    setSelectedYear(label);
+    setSelected(label);
+    window.location.reload();
+  };
+
+  const showYearSelect =
+    years.length > 0 &&
+    user?.role &&
+    !['PARENT', 'STUDENT'].includes(String(user.role).toUpperCase());
 
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between lg:pl-6 pl-14">
@@ -35,6 +82,24 @@ export default function Header({ title, subtitle }: HeaderProps) {
         {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-4">
+        {showYearSelect && (
+          <label className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
+            <span className="text-xs uppercase tracking-wide text-gray-400">Année</span>
+            <select
+              value={selected}
+              onChange={(e) => onYearChange(e.target.value)}
+              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-800"
+            >
+              {years.map((y) => (
+                <option key={y.id} value={y.label}>
+                  {y.label}
+                  {y.isCurrent ? ' (courante)' : ''}
+                  {y.status === 'ARCHIVED' ? ' — archive' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <button
           type="button"
           className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"

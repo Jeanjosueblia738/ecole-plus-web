@@ -68,6 +68,8 @@ export const NAV_ACCESS: Record<string, Role[]> = {
   '/matieres': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'CENSOR'],
   '/utilisateurs': ['ADMIN', 'FOUNDER'],
   '/abonnement': ['ADMIN', 'FOUNDER'],
+  '/annees': ['ADMIN', 'FOUNDER'],
+  '/annees/passage': ['ADMIN', 'FOUNDER', 'DIRECTOR', 'SECRETARY'],
   '/parametres': ALL_STAFF,
   '/parent': ['PARENT'] as Role[],
   '/parent/notes': ['PARENT'] as Role[],
@@ -113,6 +115,8 @@ export const can = {
   managePaymentMerchants: ['ADMIN', 'FOUNDER'] as Role[],
   /** Écriture journal OHADA — comptable seul */
   writeOhada: ['ACCOUNTANT'] as Role[],
+  manageAcademicYears: ['ADMIN', 'FOUNDER'] as Role[],
+  studentPassage: ['ADMIN', 'FOUNDER', 'DIRECTOR', 'SECRETARY'] as Role[],
 };
 
 export function hasRole(role: string | undefined | null, allowed: readonly Role[]): boolean {

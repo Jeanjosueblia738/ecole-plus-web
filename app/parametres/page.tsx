@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, School, Smartphone } from 'lucide-react';
+import { User, School, Smartphone, CalendarRange, GraduationCap } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { authStorage } from '@/lib/auth';
@@ -14,6 +14,8 @@ export default function ParametresPage() {
   const user = authStorage.getUser();
   const tenant = authStorage.getTenant();
   const canMerchants = hasRole(user?.role, can.managePaymentMerchants);
+  const canYears = hasRole(user?.role, can.manageAcademicYears);
+  const canPassage = hasRole(user?.role, can.studentPassage);
 
   useEffect(() => {
     if (!authStorage.isLoggedIn()) {
@@ -79,6 +81,32 @@ export default function ParametresPage() {
               </div>
             </div>
           </div>
+
+          {(canYears || canPassage) && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4 space-y-3">
+              <h2 className="font-semibold text-gray-800 flex items-center gap-2">
+                <CalendarRange className="w-5 h-5 text-blue-600" />
+                Années scolaires
+              </h2>
+              {canYears && (
+                <Link
+                  href="/annees"
+                  className="block text-sm text-[#1B3A6B] hover:underline"
+                >
+                  Gérer les années (créer, activer, archiver, cloner classes) →
+                </Link>
+              )}
+              {canPassage && (
+                <Link
+                  href="/annees/passage"
+                  className="flex items-center gap-2 text-sm text-[#1B3A6B] hover:underline"
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  Passage / réinscription des élèves →
+                </Link>
+              )}
+            </div>
+          )}
 
           {canMerchants && (
             <Link
