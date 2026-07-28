@@ -81,7 +81,7 @@ export default function MesHeuresPage() {
               </p>
               <p className="mt-1">
                 Scannez le QR collé sur le bureau de la classe (1er scan = arrivée,
-                2e = fin). Les heures viennent de l’horloge du téléphone.
+                2e = fin). Les heures sont en GMT Côte d’Ivoire (heure serveur).
               </p>
             </div>
           </div>

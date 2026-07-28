@@ -90,7 +90,7 @@ export default function ClassQrPage() {
         <main className="flex-1 p-6 space-y-4">
           <div className="flex flex-wrap gap-3 items-center justify-between print:hidden">
             <p className="text-sm text-gray-600 max-w-2xl">
-              L’heure d’arrivée et de fin sont prises sur l’horloge du téléphone au moment du scan.
+              L’heure d’arrivée et de fin sont prises en GMT Côte d’Ivoire (heure serveur), pas sur l’horloge du téléphone.
               1er scan = arrivée · 2e scan = fin de cours.
             </p>
             <div className="flex gap-2">
