@@ -10,7 +10,7 @@ import api from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 
-/** TEACHER retiré : créer via /enseignants (profil + matières). */
+/** Comptes staff uniquement — Parent/Élève via inscriptions / accès codes. */
 const ROLES = [
   { value: 'DIRECTOR', label: 'Directeur / Proviseur' },
   { value: 'CENSOR', label: 'Censeur / Directeur des études' },
@@ -20,8 +20,6 @@ const ROLES = [
   { value: 'CASHIER', label: 'Caissier' },
   { value: 'RH', label: 'Ressources humaines' },
   { value: 'EDUCATOR', label: 'Éducateur' },
-  { value: 'PARENT', label: 'Parent' },
-  { value: 'STUDENT', label: 'Élève' },
 ];
 
 export default function NouvelUtilisateurPage() {

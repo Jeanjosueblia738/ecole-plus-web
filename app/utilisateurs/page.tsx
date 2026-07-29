@@ -208,8 +208,8 @@ export default function UtilisateursPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLORS[user.role] || 'bg-gray-50 text-gray-600'}`}>
-                        {ROLE_LABELS[user.role] || user.role}
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${ROLE_COLORS[String(user.role).toUpperCase()] || 'bg-gray-50 text-gray-600'}`}>
+                        {ROLE_LABELS[String(user.role).toUpperCase()] || user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
