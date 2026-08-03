@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { canAccessPath } from '@/lib/rbac';
 
 const PUBLIC_PATHS = [
   '/',
@@ -11,7 +10,8 @@ const PUBLIC_PATHS = [
   '/super-admin/login',
 ];
 
-const STAFF_PREFIXES = [
+/** Toute page app authentifiée (token JWT httpOnly requis). */
+const AUTH_PREFIXES = [
   '/dashboard',
   '/eleves',
   '/classes',
@@ -37,21 +37,11 @@ const STAFF_PREFIXES = [
   '/parametres',
   '/parent',
   '/personnel',
+  '/annees',
+  '/sms',
+  '/mes-heures',
+  '/autorisations-absence',
 ];
-
-function readCookieUser(request: NextRequest): { role?: string } | null {
-  const raw = request.cookies.get('ecole_user')?.value;
-  if (!raw) return null;
-  try {
-    return JSON.parse(decodeURIComponent(raw));
-  } catch {
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
-}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -77,28 +67,19 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isStaffRoute = STAFF_PREFIXES.some(
+  const needsAuth = AUTH_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
 
-  if (isStaffRoute) {
+  if (needsAuth) {
     const token = request.cookies.get('ecole_token')?.value;
     if (!token) {
       const login = new URL('/login', request.url);
       login.searchParams.set('next', pathname);
       return NextResponse.redirect(login);
     }
-
-    const user = readCookieUser(request);
-    const role = user?.role;
-    if (role && !canAccessPath(role, pathname)) {
-      const dest =
-        String(role).toUpperCase() === 'PARENT' ? '/parent' : '/dashboard';
-      // Évite une boucle si déjà sur la destination
-      if (pathname !== dest && !pathname.startsWith(`${dest}/`)) {
-        return NextResponse.redirect(new URL(dest, request.url));
-      }
-    }
+    // Ne pas faire confiance au cookie ecole_user (forgeable) pour le RBAC edge :
+    // le filtrage par rôle reste côté pages + API JWT.
   }
 
   return NextResponse.next();

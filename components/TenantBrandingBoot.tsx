@@ -19,18 +19,20 @@ export default function TenantBrandingBoot() {
     const key = 'ecole_brand_refresh';
     const last = sessionStorage.getItem(key);
     const now = Date.now();
-    // Au plus une fois par onglet / 5 min
     if (last && now - Number(last) < 5 * 60 * 1000) return;
     ran.current = true;
-    sessionStorage.setItem(key, String(now));
 
     tenantsApi
       .getMe()
       .then(({ data }) => {
-        if (data?.id) authStorage.setTenant(data);
+        if (data?.id) {
+          authStorage.setTenant(data);
+          sessionStorage.setItem(key, String(now));
+        }
       })
       .catch(() => {
-        /* garder cookie ; 401 géré par l’interceptor api */
+        /* garder cookie ; ne pas poser le timestamp → retry au prochain mount */
+        ran.current = false;
       });
   }, []);
 

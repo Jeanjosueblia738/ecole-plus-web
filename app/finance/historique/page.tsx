@@ -75,8 +75,12 @@ export default function FinanceHistoriquePage() {
   const download = async (p: any) => {
     const receiptNo = p.receiptNo || `REC-${String(p.id).slice(0, 8)}`;
     try {
-      const { data } = await financeApi.downloadReceiptPdf(receiptNo);
-      const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/pdf' });
+      const { data, status } = await financeApi.downloadReceiptPdf(receiptNo);
+      const blob =
+        data instanceof Blob ? data : new Blob([data], { type: 'application/pdf' });
+      if (status >= 400 || blob.size < 100) throw new Error('PDF serveur invalide');
+      const head = await blob.slice(0, 4).text();
+      if (!head.startsWith('%PDF')) throw new Error('Contenu non-PDF');
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -84,29 +88,40 @@ export default function FinanceHistoriquePage() {
       a.click();
       URL.revokeObjectURL(url);
       return;
-    } catch {
-      /* fallback client */
+    } catch (e: any) {
+      const status = e?.response?.status;
+      if (status && status !== 404) {
+        alert(
+          e?.response?.data?.message ||
+            'Impossible de télécharger le reçu serveur. Réessayez.',
+        );
+        return;
+      }
     }
     const tenant = authStorage.getTenant();
     const brand = brandFromTenant(tenant);
-    void generatePaymentReceipt({
-      schoolName: brand.schoolName,
-      schoolCity: brand.schoolCity,
-      schoolPhone: brand.schoolPhone || undefined,
-      schoolAddress: brand.schoolAddress || undefined,
-      logoUrl: brand.logoUrl || undefined,
-      docFooterLine: brand.docFooterLine || undefined,
-      motto: brand.motto || undefined,
-      receiptNo,
-      studentName: p.studentName,
-      matricule: '',
-      className: p.className,
-      feeLabel: p.feeLabel,
-      amountPaid: p.montant,
-      amountDue: p.montantDu,
-      paymentMode: p.paymentMode,
-      paidAt: p.paidAt || p.date,
-    });
+    try {
+      await generatePaymentReceipt({
+        schoolName: brand.schoolName,
+        schoolCity: brand.schoolCity,
+        schoolPhone: brand.schoolPhone || undefined,
+        schoolAddress: brand.schoolAddress || undefined,
+        logoUrl: brand.logoUrl || undefined,
+        docFooterLine: brand.docFooterLine || undefined,
+        motto: brand.motto || undefined,
+        receiptNo,
+        studentName: p.studentName,
+        matricule: p.matricule || '',
+        className: p.className,
+        feeLabel: p.feeLabel,
+        amountPaid: p.montant,
+        amountDue: p.montantDu,
+        paymentMode: p.paymentMode,
+        paidAt: p.paidAt || p.date,
+      });
+    } catch {
+      alert('Génération du reçu impossible.');
+    }
   };
 
   return (

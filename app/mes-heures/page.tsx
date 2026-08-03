@@ -55,9 +55,7 @@ export default function MesHeuresPage() {
 
   const meId = authStorage.getUser()?.id;
   const teachers = Array.isArray(summary?.teachers) ? summary.teachers : [];
-  const me =
-    (meId && teachers.find((t: any) => t.teacherId === meId)) ||
-    teachers[0];
+  const me = meId ? teachers.find((t: any) => t.teacherId === meId) : undefined;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -105,6 +103,12 @@ export default function MesHeuresPage() {
                 <p className="font-bold text-red-600">{fmt(me.estimatedDeductionXof)}</p>
               </div>
             </div>
+          )}
+          {!loading && !error && !me && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+              Impossible d’identifier votre fiche enseignant. Reconnectez-vous
+              via le profil Enseignant.
+            </p>
           )}
 
           {loading ? (
