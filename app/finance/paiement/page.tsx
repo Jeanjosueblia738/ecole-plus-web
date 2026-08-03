@@ -131,9 +131,23 @@ export default function FinancePaiementPage() {
     }
   };
 
-  const downloadReceipt = () => {
+  const downloadReceipt = async () => {
     const r = success?.receipt;
     if (!r) return;
+    const receiptNo = r.receiptNo || success.receiptNo;
+    try {
+      const { data } = await financeApi.downloadReceiptPdf(receiptNo);
+      const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `recu_${receiptNo}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return;
+    } catch {
+      /* fallback client */
+    }
     const tenant = authStorage.getTenant();
     const brand = brandFromTenant(tenant);
     void generatePaymentReceipt({
@@ -144,7 +158,7 @@ export default function FinancePaiementPage() {
       logoUrl: brand.logoUrl || undefined,
       docFooterLine: brand.docFooterLine || undefined,
       motto: brand.motto || undefined,
-      receiptNo: r.receiptNo || success.receiptNo,
+      receiptNo,
       studentName: r.student,
       matricule: r.matricule,
       className: r.className,

@@ -168,6 +168,11 @@ export const financeApi = {
   previewAlerts: () => api.get('/finance/alerts/preview'),
   processAlerts: () => api.post('/finance/alerts/process'),
   listPayments: (year?: string) => api.get('/finance/payments', { params: { year } }),
+  /** Reçu PDF généré côté API (branding école). */
+  downloadReceiptPdf: (receiptNo: string) =>
+    api.get(`/finance/receipts/${encodeURIComponent(receiptNo)}/pdf`, {
+      responseType: 'blob',
+    }),
 
   // Caisse
   cashCurrent: () => api.get('/finance/cash/current'),

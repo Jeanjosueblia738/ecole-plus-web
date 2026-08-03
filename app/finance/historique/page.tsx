@@ -72,7 +72,21 @@ export default function FinanceHistoriquePage() {
     return 'Espèces';
   };
 
-  const download = (p: any) => {
+  const download = async (p: any) => {
+    const receiptNo = p.receiptNo || `REC-${String(p.id).slice(0, 8)}`;
+    try {
+      const { data } = await financeApi.downloadReceiptPdf(receiptNo);
+      const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `recu_${receiptNo}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return;
+    } catch {
+      /* fallback client */
+    }
     const tenant = authStorage.getTenant();
     const brand = brandFromTenant(tenant);
     void generatePaymentReceipt({
@@ -83,7 +97,7 @@ export default function FinanceHistoriquePage() {
       logoUrl: brand.logoUrl || undefined,
       docFooterLine: brand.docFooterLine || undefined,
       motto: brand.motto || undefined,
-      receiptNo: p.receiptNo || `REC-${String(p.id).slice(0, 8)}`,
+      receiptNo,
       studentName: p.studentName,
       matricule: '',
       className: p.className,

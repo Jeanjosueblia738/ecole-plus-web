@@ -54,8 +54,26 @@ async function forward(req: NextRequest, path: string[], method: string) {
 
   try {
     const upstream = await fetch(url.toString(), init);
-    const text = await upstream.text();
     const contentType = upstream.headers.get('Content-Type') || '';
+    const isBinary =
+      contentType.includes('application/pdf') ||
+      contentType.includes('application/octet-stream') ||
+      contentType.startsWith('image/');
+
+    if (isBinary) {
+      const buf = await upstream.arrayBuffer();
+      const headers: Record<string, string> = {
+        'Content-Type': contentType || 'application/octet-stream',
+      };
+      const disposition = upstream.headers.get('Content-Disposition');
+      if (disposition) headers['Content-Disposition'] = disposition;
+      return new NextResponse(buf, {
+        status: upstream.status,
+        headers,
+      });
+    }
+
+    const text = await upstream.text();
 
     // Railway / proxy HTML errors → JSON lisible côté UI
     if (
