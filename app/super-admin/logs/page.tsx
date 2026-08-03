@@ -82,7 +82,7 @@ export default function LogsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
             <GraduationCap className="w-5 h-5 text-white" />
@@ -108,7 +108,7 @@ export default function LogsPage() {
       <main className="max-w-5xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-[#1B3A6B]" /> Journal d'activité
+            <Activity className="w-5 h-5 text-brand" /> Journal d'activité
           </h1>
           <p className="text-sm text-gray-500">{logs.length} entrée(s)</p>
         </div>
@@ -117,18 +117,18 @@ export default function LogsPage() {
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex gap-3 flex-wrap items-center">
           <Filter className="w-4 h-4 text-gray-400" />
           <select value={filterAction} onChange={e => setFilterAction(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+            className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
             <option value="">Toutes les actions</option>
             {ACTIONS.map(a => <option key={a} value={a}>{ACTION_LABELS[a] ?? a}</option>)}
           </select>
           <select value={filterDays} onChange={e => setFilterDays(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+            className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
             <option value="7">7 derniers jours</option>
             <option value="30">30 derniers jours</option>
             <option value="90">90 derniers jours</option>
           </select>
           <button onClick={loadLogs}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+            className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm hover:bg-brand-dark">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Filtrer
           </button>
         </div>
@@ -137,7 +137,7 @@ export default function LogsPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-16">
-              <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+              <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full" />
             </div>
           ) : loadError ? (
             <div className="text-center py-16 text-red-600">
@@ -156,10 +156,10 @@ export default function LogsPage() {
               {logs.map(log => (
                 <div key={log.id} className="px-6 py-4 flex items-start gap-4 hover:bg-gray-50">
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1B3A6B]/10 flex-shrink-0 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand/10 flex-shrink-0 flex items-center justify-center">
                     {log.superAdmin?.photoUrl
                       ? <img src={log.superAdmin.photoUrl} alt="" className="w-full h-full object-cover" />
-                      : <User className="w-5 h-5 text-[#1B3A6B]" />}
+                      : <User className="w-5 h-5 text-brand" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

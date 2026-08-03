@@ -39,7 +39,7 @@ export default function ParentNotesPage() {
   if (loading) {
     return (
       <div className="py-16 flex justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }

@@ -1,26 +1,34 @@
 @import "tailwindcss";
 
+/* Palette ECOLE+ — source de vérité partagée avec mobile (app_colors.dart) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ecole-primary: #1b3a6b;
+  --ecole-primary-light: #2e5a9e;
+  --ecole-primary-dark: #152d54;
+  --ecole-success: #16a34a;
+  --ecole-danger: #dc2626;
+  --ecole-warning: #f59e0b;
+  --ecole-info: #2563eb;
+  --ecole-text: #111827;
+  --ecole-text-muted: #6b7280;
+  --ecole-border: #e5e7eb;
+  --ecole-bg: #f9fafb;
+  --background: #f9fafb;
+  --foreground: #111827;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--ecole-primary);
+  --color-brand-light: var(--ecole-primary-light);
+  --color-brand-dark: var(--ecole-primary-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--ecole-bg);
+  color: var(--ecole-text);
   font-family: Arial, Helvetica, sans-serif;
 }

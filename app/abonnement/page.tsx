@@ -32,21 +32,21 @@ function PublicAbonnementView() {
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#1B3A6B] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-[#1B3A6B]">ECOLE+</span>
+          <span className="text-lg font-bold text-brand">ECOLE+</span>
         </Link>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-sm text-gray-600 hover:text-[#1B3A6B] font-medium"
+            className="text-sm text-gray-600 hover:text-brand font-medium"
           >
             Se connecter
           </Link>
           <Link
             href="/onboarding"
-            className="bg-[#1B3A6B] text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-800"
+            className="bg-brand text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-brand-dark"
           >
             Créer mon école
           </Link>
@@ -186,7 +186,7 @@ export default function AbonnementPage() {
   if (!authReady || (loading && !isGuest)) {
     return (
       <div className="flex min-h-screen bg-gray-50 items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -340,7 +340,7 @@ export default function AbonnementPage() {
                   onClick={() => setBillingPeriod('MONTH')}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                     billingPeriod === 'MONTH'
-                      ? 'bg-[#1B3A6B] text-white'
+                      ? 'bg-brand text-white'
                       : 'text-gray-600'
                   }`}
                 >
@@ -390,7 +390,7 @@ export default function AbonnementPage() {
                           : 'border-blue-200 bg-blue-50'
                     } ${
                       selectedPlan === p.key
-                        ? 'ring-2 ring-[#1B3A6B] ring-offset-2'
+                        ? 'ring-2 ring-brand ring-offset-2'
                         : 'hover:shadow-md'
                     } ${subscription?.tenant?.plan === p.key ? 'opacity-60' : ''}`}
                   >
@@ -449,7 +449,7 @@ export default function AbonnementPage() {
           {showPaymentForm && selectedPlan && selected && (
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <h3 className="font-bold text-gray-800 mb-1 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-[#1B3A6B]" />
+                <CreditCard className="w-5 h-5 text-brand" />
                 Paiement Mobile Money — Plan {selected.label}
               </h3>
               <p className="text-sm text-gray-600 mb-4">
@@ -476,7 +476,7 @@ export default function AbonnementPage() {
                         onClick={() => setPaymentMethod(m.key)}
                         className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${
                           paymentMethod === m.key
-                            ? 'border-[#1B3A6B] bg-blue-50 text-[#1B3A6B]'
+                            ? 'border-brand bg-blue-50 text-brand'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
@@ -497,7 +497,7 @@ export default function AbonnementPage() {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="+225 07 00 00 00"
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand"
                     />
                   </div>
                 </div>
@@ -537,7 +537,7 @@ export default function AbonnementPage() {
                     type="button"
                     onClick={handlePay}
                     disabled={paying || !phoneNumber.trim()}
-                    className="flex-1 bg-[#1B3A6B] text-white py-3 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center justify-center gap-2"
+                    className="flex-1 bg-brand text-white py-3 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40 flex items-center justify-center gap-2"
                   >
                     {paying ? (
                       <>

@@ -132,7 +132,7 @@ export default function RisquesPage() {
               </select>
             </div>
             <button onClick={load} disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50">
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-50">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Actualiser
             </button>
@@ -145,7 +145,7 @@ export default function RisquesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-3 bg-white rounded-xl border border-gray-100 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-50 flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#1B3A6B]" />
+                <Users className="w-4 h-4 text-brand" />
                 <h2 className="text-sm font-semibold text-gray-800">
                   Élèves à risque ({data?.students?.length ?? 0})
                 </h2>

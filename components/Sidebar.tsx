@@ -253,12 +253,12 @@ export default function Sidebar() {
         type="button"
         aria-label="Ouvrir le menu"
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-40 p-2.5 rounded-xl bg-[#1B3A6B] text-white shadow-lg"
+        className="lg:hidden fixed top-3 left-3 z-40 p-2.5 rounded-xl bg-brand text-white shadow-lg"
       >
         <Menu className="w-5 h-5" />
       </button>
 
-      <aside className="hidden lg:flex w-64 min-h-screen bg-[#1B3A6B] text-white flex-col flex-shrink-0">
+      <aside className="hidden lg:flex w-64 min-h-screen bg-brand text-white flex-col flex-shrink-0">
         <NavContent />
       </aside>
 
@@ -270,7 +270,7 @@ export default function Sidebar() {
             className="absolute inset-0 bg-black/40"
             onClick={() => setOpen(false)}
           />
-          <aside className="relative w-72 max-w-[85vw] h-full bg-[#1B3A6B] text-white flex flex-col shadow-xl">
+          <aside className="relative w-72 max-w-[85vw] h-full bg-brand text-white flex flex-col shadow-xl">
             <button
               type="button"
               aria-label="Fermer"

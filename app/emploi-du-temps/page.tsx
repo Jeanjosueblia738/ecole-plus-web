@@ -187,11 +187,11 @@ export default function EmploiDuTempsPage() {
                 {/* Toggle vue */}
                 <div className="flex bg-gray-100 rounded-xl p-1">
                   <button onClick={() => { setViewMode('class'); setSelectedTeacher(''); }}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'class' ? 'bg-white text-[#1B3A6B] shadow-sm' : 'text-gray-500'}`}>
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'class' ? 'bg-white text-brand shadow-sm' : 'text-gray-500'}`}>
                     Par classe
                   </button>
                   <button onClick={() => { setViewMode('teacher'); setSelectedClass(''); }}
-                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'teacher' ? 'bg-white text-[#1B3A6B] shadow-sm' : 'text-gray-500'}`}>
+                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${viewMode === 'teacher' ? 'bg-white text-brand shadow-sm' : 'text-gray-500'}`}>
                     Par enseignant
                   </button>
                 </div>
@@ -199,7 +199,7 @@ export default function EmploiDuTempsPage() {
                 {/* Sélecteur classe */}
                 {viewMode === 'class' && (
                   <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] min-w-40">
+                    className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand min-w-40">
                     <option value="">Choisir une classe</option>
                     {classes.map(c => <option key={c.id} value={c.id}>{c.name} — {c.level}</option>)}
                   </select>
@@ -208,7 +208,7 @@ export default function EmploiDuTempsPage() {
                 {/* Sélecteur enseignant */}
                 {viewMode === 'teacher' && (
                   <select value={selectedTeacher} onChange={e => setSelectedTeacher(e.target.value)}
-                    className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] min-w-48">
+                    className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand min-w-48">
                     <option value="">Choisir un enseignant</option>
                     {teachers.map(t => <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>)}
                   </select>
@@ -222,7 +222,7 @@ export default function EmploiDuTempsPage() {
 
               {canWrite && (
                 <button onClick={() => setShowForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+                  className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm hover:bg-brand-dark">
                   <Plus className="w-4 h-4" /> Ajouter un créneau
                 </button>
               )}
@@ -240,7 +240,7 @@ export default function EmploiDuTempsPage() {
             </div>
           ) : loading ? (
             <div className="bg-white rounded-xl p-12 shadow-sm border border-gray-100 text-center">
-              <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full mx-auto" />
+              <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full mx-auto" />
             </div>
           ) : totalSlots === 0 ? (
             <div className="bg-white rounded-xl p-12 shadow-sm border border-gray-100 text-center">
@@ -248,7 +248,7 @@ export default function EmploiDuTempsPage() {
               <p className="text-gray-400">Aucun créneau configuré</p>
               {canWrite && (
                 <button onClick={() => setShowForm(true)}
-                  className="mt-4 bg-[#1B3A6B] text-white px-6 py-2 rounded-xl text-sm hover:bg-blue-800">
+                  className="mt-4 bg-brand text-white px-6 py-2 rounded-xl text-sm hover:bg-brand-dark">
                   Ajouter un créneau
                 </button>
               )}
@@ -257,7 +257,7 @@ export default function EmploiDuTempsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               {DAYS.map(day => (
                 <div key={day} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                  <div className="bg-[#1B3A6B] px-4 py-3">
+                  <div className="bg-brand px-4 py-3">
                     <h3 className="text-white font-semibold text-sm">{DAY_LABELS[day]}</h3>
                     <p className="text-blue-200 text-xs">{(byDay[day] ?? []).length} créneau(x)</p>
                   </div>
@@ -325,7 +325,7 @@ export default function EmploiDuTempsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Classe *</label>
                   <select value={form.classId} onChange={e => setForm(f => ({ ...f, classId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                     <option value="">Choisir</option>
                     {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
@@ -333,7 +333,7 @@ export default function EmploiDuTempsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Enseignant</label>
                   <select value={form.teacherId} onChange={e => setForm(f => ({ ...f, teacherId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                     <option value="">Aucun</option>
                     {teachers.map(t => <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>)}
                   </select>
@@ -343,32 +343,32 @@ export default function EmploiDuTempsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Matière *</label>
                 <input value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
                   placeholder="ex: Mathématiques"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Jour *</label>
                   <select value={form.day} onChange={e => setForm(f => ({ ...f, day: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                     {DAYS.map(d => <option key={d} value={d}>{DAY_LABELS[d]}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Début *</label>
                   <input type="time" value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Fin *</label>
                   <input type="time" value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Salle</label>
                 <input value={form.room} onChange={e => setForm(f => ({ ...f, room: e.target.value }))}
                   placeholder="ex: Salle A1"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowForm(false)}
@@ -376,7 +376,7 @@ export default function EmploiDuTempsPage() {
                   Annuler
                 </button>
                 <button onClick={handleSave} disabled={saving || !form.classId || !form.subject}
-                  className="flex-1 bg-[#1B3A6B] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40">
+                  className="flex-1 bg-brand text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40">
                   {saving ? 'Enregistrement...' : 'Enregistrer'}
                 </button>
               </div>

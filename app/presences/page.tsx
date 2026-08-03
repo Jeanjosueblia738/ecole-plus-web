@@ -291,7 +291,7 @@ export default function PresencesPage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className={`px-6 py-3 rounded-xl font-medium text-white transition-colors ${saved ? 'bg-green-600' : 'bg-[#1B3A6B] hover:bg-blue-800'} disabled:opacity-50`}
+                className={`px-6 py-3 rounded-xl font-medium text-white transition-colors ${saved ? 'bg-green-600' : 'bg-brand hover:bg-brand-dark'} disabled:opacity-50`}
               >
                 {saving ? 'Enregistrement...' : saved ? '✓ Appel enregistré' : 'Enregistrer l\'appel'}
               </button>

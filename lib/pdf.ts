@@ -1,5 +1,13 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { brand } from './brand';
+
+/** RGB marque (= `brand.primary` / `#1B3A6B`) pour jsPDF. */
+const BRAND_RGB: [number, number, number] = [
+  parseInt(brand.primary.slice(1, 3), 16),
+  parseInt(brand.primary.slice(3, 5), 16),
+  parseInt(brand.primary.slice(5, 7), 16),
+];
 
 export interface BulletinGrade {
   subject: string;
@@ -992,7 +1000,7 @@ export async function generateReleveNotes(data: ReleveNotesData): Promise<void> 
       l.appreciation,
     ]),
     styles: { fontSize: 9, cellPadding: 2 },
-    headStyles: { fillColor: [27, 58, 107], textColor: 255 },
+    headStyles: { fillColor: BRAND_RGB, textColor: 255 },
     theme: 'grid',
   });
 
@@ -1049,7 +1057,7 @@ export async function generatePaymentReceipt(data: PaymentReceiptData): Promise<
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
-  doc.setTextColor(27, 58, 107);
+  doc.setTextColor(...BRAND_RGB);
   doc.text(data.schoolName || 'Établissement', textX, y + 4);
   y += 8;
   doc.setFont('helvetica', 'normal');
@@ -1066,7 +1074,7 @@ export async function generatePaymentReceipt(data: PaymentReceiptData): Promise<
     doc.text(data.schoolAddress, textX, y, { maxWidth: 110 });
     y += 5;
   }
-  doc.setDrawColor(27, 58, 107);
+  doc.setDrawColor(...BRAND_RGB);
   doc.line(margin, y, 136, y);
   y += 8;
 

@@ -307,7 +307,7 @@ export default function PassagePage() {
                 type="button"
                 disabled={submitting}
                 onClick={submit}
-                className="px-5 py-2.5 bg-[#1B3A6B] text-white rounded-lg text-sm font-medium disabled:opacity-60"
+                className="px-5 py-2.5 bg-brand text-white rounded-lg text-sm font-medium disabled:opacity-60"
               >
                 {submitting ? 'Traitement…' : 'Valider le passage'}
               </button>

@@ -71,7 +71,7 @@ function Kpi({ title, value, icon, colorKey, loading }: {
 function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-2">
-      <span className="text-[#1B3A6B]">{icon}</span>
+      <span className="text-brand">{icon}</span>
       <h2 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">{title}</h2>
     </div>
   );
@@ -82,7 +82,7 @@ function QuickActions({ actions }: { actions: { label: string; href: string; var
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
       <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-        <Shield className="w-4 h-4 text-[#1B3A6B]" /> Actions rapides
+        <Shield className="w-4 h-4 text-brand" /> Actions rapides
       </h3>
       <div className="flex gap-3 flex-wrap">
         {actions.map(a => {
@@ -91,7 +91,7 @@ function QuickActions({ actions }: { actions: { label: string; href: string; var
             <button key={a.label} onClick={() => router.push(a.href)}
               className={`flex items-center gap-2 flex-1 min-w-36 py-3 px-4 rounded-xl text-sm font-medium transition-colors ${
                 a.variant === 'primary'
-                  ? 'bg-[#1B3A6B] text-white hover:bg-blue-800'
+                  ? 'bg-brand text-white hover:bg-brand-dark'
                   : 'border border-gray-200 text-gray-700 hover:bg-gray-50'
               }`}>
               {Icon && <Icon className="w-4 h-4" />}
@@ -120,7 +120,7 @@ function RoleHero({
   loading: boolean;
 }) {
   const tones: Record<string, string> = {
-    navy: 'bg-[#1B3A6B]',
+    navy: 'bg-brand',
     indigo: 'bg-indigo-800',
     slate: 'bg-slate-800',
     teal: 'bg-teal-800',

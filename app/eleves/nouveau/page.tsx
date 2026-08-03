@@ -94,7 +94,7 @@ export default function NouvelElevePage() {
               </div>
 
               <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
-                <div className="flex items-center gap-2 text-[#1B3A6B] font-semibold">
+                <div className="flex items-center gap-2 text-brand font-semibold">
                   <Key className="w-5 h-5" /> Codes d&apos;accès mobile
                 </div>
                 {[
@@ -128,7 +128,7 @@ export default function NouvelElevePage() {
                   Voir le dossier
                 </button>
                 <button onClick={() => router.push('/eleves')}
-                  className="px-5 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
+                  className="px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark">
                   Retour à la liste
                 </button>
               </div>
@@ -175,28 +175,28 @@ export default function NouvelElevePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
                     <input value={form.firstName} onChange={e => set('firstName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
                     <input value={form.lastName} onChange={e => set('lastName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Matricule *</label>
                     <input value={form.registrationNo} onChange={e => set('registrationNo', e.target.value)}
                       placeholder="ex: 2025001"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
                     <input type="date" value={form.dateOfBirth} onChange={e => set('dateOfBirth', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Genre *</label>
                     <select value={form.gender} onChange={e => set('gender', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                       <option value="MALE">Garçon</option>
                       <option value="FEMALE">Fille</option>
                     </select>
@@ -205,7 +205,7 @@ export default function NouvelElevePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Niveau précédent</label>
                     <input value={form.niveauPrecedent} onChange={e => set('niveauPrecedent', e.target.value)}
                       placeholder="ex: 5ème"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Statut *</label>
@@ -214,7 +214,7 @@ export default function NouvelElevePage() {
                       set('statut', v);
                       if (v === 'NON_AFFECTE') set('classId', '');
                     }}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                       <option value="AFFECTE">Affecté</option>
                       <option value="NON_AFFECTE">Non affecté</option>
                     </select>
@@ -225,7 +225,7 @@ export default function NouvelElevePage() {
                     </label>
                     <select value={form.classId} onChange={e => set('classId', e.target.value)}
                       disabled={form.statut === 'NON_AFFECTE'}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B] disabled:bg-gray-100">
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand disabled:bg-gray-100">
                       <option value="">Choisir une classe</option>
                       {classes.map(c => <option key={c.id} value={c.id}>{c.name} — {c.level}</option>)}
                     </select>
@@ -234,7 +234,7 @@ export default function NouvelElevePage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
                     <input value={form.address} onChange={e => set('address', e.target.value)}
                       placeholder="Quartier, commune..."
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                 </div>
               </div>
@@ -245,19 +245,19 @@ export default function NouvelElevePage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nom du parent</label>
                     <input value={form.parentName} onChange={e => set('parentName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
                     <input value={form.parentPhone} onChange={e => set('parentPhone', e.target.value)}
                       placeholder="+225 07 00 00 00"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                   <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email parent (requis pour le compte mobile parent)</label>
                     <input type="email" value={form.parentEmail} onChange={e => set('parentEmail', e.target.value)}
                       placeholder="parent@email.com"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                   </div>
                 </div>
               </div>
@@ -268,7 +268,7 @@ export default function NouvelElevePage() {
                   Annuler
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50">
+                  className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-50">
                   {saving
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Enregistrement...</>
                     : <><Save className="w-4 h-4" /> Inscrire</>}

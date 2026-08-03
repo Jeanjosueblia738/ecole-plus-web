@@ -122,7 +122,7 @@ export default function SuperAdminMerchantsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <GraduationCap className="w-6 h-6" />
           <span className="font-bold text-lg">ECOLE+</span>
@@ -159,7 +159,7 @@ export default function SuperAdminMerchantsPage() {
           </button>
           <div>
             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-[#1B3A6B]" />
+              <Smartphone className="w-5 h-5 text-brand" />
               Encaissement abonnements écoles
             </h1>
             <p className="text-sm text-gray-500 mt-1">
@@ -189,7 +189,7 @@ export default function SuperAdminMerchantsPage() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+            <Loader2 className="w-8 h-8 animate-spin text-brand" />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -280,7 +280,7 @@ export default function SuperAdminMerchantsPage() {
                   <button
                     onClick={() => save(m.provider)}
                     disabled={saving === m.provider}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white bg-[#1B3A6B] hover:bg-blue-800 disabled:opacity-60"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white bg-brand hover:bg-brand-dark disabled:opacity-60"
                   >
                     {saving === m.provider ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

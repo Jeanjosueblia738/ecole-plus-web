@@ -305,7 +305,7 @@ export default function NotesPage() {
                         <td className="px-6 py-3 text-sm text-gray-400">{idx + 1}</td>
                         <td className="px-6 py-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full overflow-hidden bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
+                            <div className="w-9 h-9 rounded-full overflow-hidden bg-brand flex items-center justify-center flex-shrink-0">
                               {s.photoUrl ? (
                                 <img src={s.photoUrl} alt="" className="w-full h-full object-cover" />
                               ) : (
@@ -393,7 +393,7 @@ export default function NotesPage() {
                 className={`flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-white transition-all shadow-sm
                   ${saved ? 'bg-green-600' :
                   filledCount === 0 || hasErrors ? 'bg-gray-300 cursor-not-allowed' :
-                  'bg-[#1B3A6B] hover:bg-blue-800'}`}
+                  'bg-brand hover:bg-brand-dark'}`}
               >
                 {saving ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />Enregistrement...</>

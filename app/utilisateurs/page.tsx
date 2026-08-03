@@ -153,7 +153,7 @@ export default function UtilisateursPage() {
           {/* Bouton créer */}
           <div className="flex justify-end mb-6">
             <a href="/utilisateurs/nouveau"
-              className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+              className="flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors">
               <Plus className="w-4 h-4" />
               Créer un compte
             </a>
@@ -193,7 +193,7 @@ export default function UtilisateursPage() {
                   <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${!user.isActive ? 'opacity-60' : ''}`}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-[#1B3A6B] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        <div className="w-9 h-9 bg-brand rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                           {user.firstName[0]}{user.lastName[0]}
                         </div>
                         <div>

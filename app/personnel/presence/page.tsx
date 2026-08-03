@@ -131,7 +131,7 @@ export default function StaffPresencePage() {
                       <button
                         type="button"
                         onClick={() => window.print()}
-                        className="flex items-center gap-2 px-3 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm"
+                        className="flex items-center gap-2 px-3 py-2 bg-brand text-white rounded-xl text-sm"
                       >
                         <Printer className="w-4 h-4" /> Imprimer
                       </button>
@@ -166,7 +166,7 @@ export default function StaffPresencePage() {
 
               <div className="bg-white rounded-xl border overflow-hidden">
                 <div className="px-4 py-3 border-b flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#1B3A6B]" />
+                  <Users className="w-4 h-4 text-brand" />
                   <h3 className="font-semibold text-sm">
                     Pointages du jour ({rows.length})
                   </h3>

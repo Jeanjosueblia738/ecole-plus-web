@@ -169,7 +169,7 @@ export default function EleveDetailPage() {
               </button>
               {canEdit && !editing && student && (
                 <button onClick={() => setEditing(true)}
-                  className="px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
+                  className="px-4 py-2 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark">
                   Modifier
                 </button>
               )}
@@ -181,7 +181,7 @@ export default function EleveDetailPage() {
                 <p className="text-lg font-medium text-gray-700">Élève introuvable</p>
                 <p className="text-sm text-gray-400 mt-1">Ce dossier n&apos;existe pas ou a été supprimé.</p>
                 <button onClick={() => router.push('/eleves')}
-                  className="mt-4 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800">
+                  className="mt-4 px-4 py-2 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark">
                   Retour à la liste
                 </button>
               </div>
@@ -248,13 +248,13 @@ export default function EleveDetailPage() {
                         <div key={key}>
                           <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                           <input value={form[key]} onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                         </div>
                       ))}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Genre</label>
                         <select value={form.gender} onChange={e => setForm((f: any) => ({ ...f, gender: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                          className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                           <option value="MALE">Garçon</option>
                           <option value="FEMALE">Fille</option>
                         </select>
@@ -262,7 +262,7 @@ export default function EleveDetailPage() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Classe</label>
                         <select value={form.classId} onChange={e => setForm((f: any) => ({ ...f, classId: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                          className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                           {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
@@ -331,7 +331,7 @@ export default function EleveDetailPage() {
                         <div key={key}>
                           <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                           <input value={form[key]} onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                         </div>
                       ))}
                     </div>
@@ -362,7 +362,7 @@ export default function EleveDetailPage() {
                 {/* Progression pédagogique */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-[#1B3A6B]" />
+                    <TrendingUp className="w-5 h-5 text-brand" />
                     Progression
                   </h3>
                   {progressLoading ? (
@@ -376,7 +376,7 @@ export default function EleveDetailPage() {
                       <div className="flex flex-wrap gap-4">
                         <div className="bg-blue-50 rounded-xl px-4 py-3">
                           <p className="text-xs text-blue-600">Moyenne générale</p>
-                          <p className="text-xl font-bold text-[#1B3A6B]">
+                          <p className="text-xl font-bold text-brand">
                             {progress.overall != null ? `${progress.overall}/20` : '—'}
                           </p>
                         </div>
@@ -442,7 +442,7 @@ export default function EleveDetailPage() {
                 {/* Documents PDF */}
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Download className="w-5 h-5 text-[#1B3A6B]" />
+                    <Download className="w-5 h-5 text-brand" />
                     Documents PDF
                   </h3>
                   <div className="flex flex-wrap gap-3 items-end">
@@ -474,7 +474,7 @@ export default function EleveDetailPage() {
                         type="button"
                         onClick={downloadReleve}
                         disabled={pdfLoading}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-50"
                       >
                         {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                         Relevé de notes
@@ -491,7 +491,7 @@ export default function EleveDetailPage() {
                       Annuler
                     </button>
                     <button onClick={handleSave} disabled={saving}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50">
+                      className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-50">
                       {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Enregistrement...</> : <><Save className="w-4 h-4" /> Enregistrer</>}
                     </button>
                   </div>

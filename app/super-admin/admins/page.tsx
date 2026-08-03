@@ -136,7 +136,7 @@ export default function SuperAdminsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
             <GraduationCap className="w-5 h-5 text-white" />
@@ -176,13 +176,13 @@ export default function SuperAdminsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[#1B3A6B]" /> Super Administrateurs
+              <Shield className="w-5 h-5 text-brand" /> Super Administrateurs
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">{admins.length} compte(s)</p>
           </div>
           {isOwner && (
             <button onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm hover:bg-brand-dark">
               <Plus className="w-4 h-4" /> Nouveau super admin
             </button>
           )}
@@ -192,7 +192,7 @@ export default function SuperAdminsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {loading ? (
             <div className="col-span-2 flex justify-center py-12">
-              <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+              <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full" />
             </div>
           ) : loadError ? (
             <div className="col-span-2 bg-red-50 border border-red-200 rounded-xl p-8 text-center text-red-700">
@@ -209,10 +209,10 @@ export default function SuperAdminsPage() {
             <div key={admin.id} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
               <div className="flex items-start gap-4">
                 {/* Photo */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#1B3A6B]/10 flex-shrink-0 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-brand/10 flex-shrink-0 flex items-center justify-center">
                   {admin.photoUrl
                     ? <img src={admin.photoUrl} alt={admin.firstName} className="w-full h-full object-cover" />
-                    : <User className="w-7 h-7 text-[#1B3A6B]" />}
+                    : <User className="w-7 h-7 text-brand" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -280,29 +280,29 @@ export default function SuperAdminsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
                   <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
                   <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                 <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe *</label>
                 <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   placeholder="Min. 6 caractères"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rôle *</label>
                 <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                   <option value="VIEWER">VIEWER — Lecture seule</option>
                   <option value="OWNER">OWNER — Contrôle total</option>
                 </select>
@@ -316,7 +316,7 @@ export default function SuperAdminsPage() {
                   Annuler
                 </button>
                 <button onClick={handleCreate} disabled={saving}
-                  className="flex-1 bg-[#1B3A6B] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center justify-center gap-2">
+                  className="flex-1 bg-brand text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40 flex items-center justify-center gap-2">
                   {saving && <RefreshCw className="w-4 h-4 animate-spin" />}
                   Créer
                 </button>
@@ -341,7 +341,7 @@ export default function SuperAdminsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
                   placeholder="Min. 6 caractères"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
               <div className="flex gap-3">
                 <button onClick={() => { setShowPasswordModal(null); setNewPassword(''); setError(''); }}
@@ -349,7 +349,7 @@ export default function SuperAdminsPage() {
                   Annuler
                 </button>
                 <button onClick={() => handleUpdatePassword(showPasswordModal)} disabled={passwordSaving}
-                  className="flex-1 bg-[#1B3A6B] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center justify-center gap-2">
+                  className="flex-1 bg-brand text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40 flex items-center justify-center gap-2">
                   {passwordSaving && <RefreshCw className="w-4 h-4 animate-spin" />}
                   Enregistrer
                 </button>

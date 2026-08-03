@@ -94,7 +94,7 @@ export default function SmsDashboardPage() {
                 </div>
                 <div className="bg-white border rounded-xl p-4">
                   <p className="text-xs text-gray-500">SMS achetés</p>
-                  <p className="text-2xl font-bold text-[#1B3A6B]">
+                  <p className="text-2xl font-bold text-brand">
                     {fmt(bal?.purchased ?? 0)}
                   </p>
                 </div>
@@ -169,7 +169,7 @@ export default function SmsDashboardPage() {
                               setBusy('');
                             }
                           }}
-                          className="mt-auto px-3 py-2 rounded-lg bg-[#1B3A6B] text-white text-sm font-medium disabled:opacity-50"
+                          className="mt-auto px-3 py-2 rounded-lg bg-brand text-white text-sm font-medium disabled:opacity-50"
                         >
                           {busy === p.id ? '…' : 'Acheter'}
                         </button>

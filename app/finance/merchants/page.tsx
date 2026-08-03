@@ -138,7 +138,7 @@ export default function FinanceMerchantsPage() {
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,7 +148,7 @@ export default function FinanceMerchantsPage() {
                   <div key={m.provider} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                        <Smartphone className="w-4 h-4 text-[#1B3A6B]" />
+                        <Smartphone className="w-4 h-4 text-brand" />
                         {m.label}
                       </h3>
                       <label className="flex items-center gap-2 text-sm">
@@ -232,7 +232,7 @@ export default function FinanceMerchantsPage() {
                     <button
                       onClick={() => save(m.provider)}
                       disabled={saving === m.provider}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white bg-[#1B3A6B] hover:bg-blue-800 disabled:opacity-60"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white bg-brand hover:bg-brand-dark disabled:opacity-60"
                     >
                       {saving === m.provider ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

@@ -134,7 +134,7 @@ export default function AutorisationsAbsencePage() {
                   onClick={() => setForm({ ...form, category: 'SHORT' })}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border ${
                     form.category === 'SHORT'
-                      ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]'
+                      ? 'bg-brand text-white border-brand'
                       : 'bg-white text-gray-600'
                   }`}
                 >
@@ -195,7 +195,7 @@ export default function AutorisationsAbsencePage() {
                     (durationPreview != null &&
                       durationPreview > (form.category === 'LEAVE' ? 90 : 3))
                   }
-                  className="px-4 py-2 rounded-lg bg-[#1B3A6B] text-white text-sm font-semibold disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold disabled:opacity-50"
                 >
                   {busy === 'create' ? 'Envoi…' : 'Demander'}
                 </button>

@@ -109,7 +109,7 @@ export default function ComptabilitePage() {
 
           {loading ? (
             <div className="py-16 flex justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : (
             <>
@@ -167,7 +167,7 @@ export default function ComptabilitePage() {
                   </div>
                   <button
                     disabled={saving}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium disabled:opacity-60"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-medium disabled:opacity-60"
                   >
                     {saving ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -191,7 +191,7 @@ export default function ComptabilitePage() {
                         className="px-5 py-2.5 text-sm flex justify-between"
                       >
                         <span>
-                          <span className="font-mono text-[#1B3A6B]">
+                          <span className="font-mono text-brand">
                             {a.code}
                           </span>{' '}
                           {a.name}

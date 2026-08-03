@@ -44,7 +44,7 @@ function ModuleCard({ m }: { m: Mod }) {
           <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{m.desc}</p>
         </div>
       </div>
-      <div className="mt-3 flex items-center text-xs font-medium text-[#1B3A6B] opacity-70 group-hover:opacity-100">
+      <div className="mt-3 flex items-center text-xs font-medium text-brand opacity-70 group-hover:opacity-100">
         Ouvrir <ArrowRight className="w-3.5 h-3.5 ml-1" />
       </div>
     </Link>
@@ -186,7 +186,7 @@ export default function FinancePage() {
                 ? `${fees.length} type(s) configuré(s)`
                 : 'Tarifs et affectation aux classes',
             icon: CreditCard,
-            accent: 'bg-blue-50 text-[#1B3A6B]',
+            accent: 'bg-blue-50 text-brand',
           } as Mod,
         ]
       : []),
@@ -261,7 +261,7 @@ export default function FinancePage() {
           )}
 
           {/* Hero situation */}
-          <section className="rounded-2xl bg-[#1B3A6B] text-white overflow-hidden shadow-sm">
+          <section className="rounded-2xl bg-brand text-white overflow-hidden shadow-sm">
             <div className="p-6 md:p-7">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>

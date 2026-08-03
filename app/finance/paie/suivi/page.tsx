@@ -98,7 +98,7 @@ export default function SuiviHeuresPage() {
                 type="button"
                 onClick={generate}
                 disabled={busy}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-[#1B3A6B] text-white text-sm"
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-brand text-white text-sm"
               >
                 <RefreshCw className={`w-4 h-4 ${busy ? 'animate-spin' : ''}`} />
                 Générer séances (EDT)

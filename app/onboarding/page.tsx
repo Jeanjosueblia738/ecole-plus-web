@@ -136,9 +136,9 @@ function OnboardingForm() {
   return (
     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
       <div className="bg-blue-50 border-b border-blue-100 px-6 py-4 flex items-start gap-3">
-        <Shield className="w-5 h-5 text-[#1B3A6B] mt-0.5 flex-shrink-0" />
+        <Shield className="w-5 h-5 text-brand mt-0.5 flex-shrink-0" />
         <div>
-          <p className="font-semibold text-[#1B3A6B] text-sm">
+          <p className="font-semibold text-brand text-sm">
             Essai gratuit 30 jours inclus
           </p>
           <p className="text-xs text-gray-600 mt-0.5">
@@ -153,7 +153,7 @@ function OnboardingForm() {
           <div
             key={s}
             className={`h-1.5 flex-1 rounded-full ${
-              step >= s ? 'bg-[#1B3A6B]' : 'bg-gray-200'
+              step >= s ? 'bg-brand' : 'bg-gray-200'
             }`}
           />
         ))}
@@ -182,18 +182,18 @@ function OnboardingForm() {
                   onClick={() => setPlan(p.key)}
                   className={`text-left rounded-xl border-2 p-4 transition-all ${
                     plan === p.key
-                      ? 'border-[#1B3A6B] ring-2 ring-[#1B3A6B]/20 bg-blue-50/50'
+                      ? 'border-brand ring-2 ring-brand/20 bg-blue-50/50'
                       : 'border-gray-200 hover:border-blue-200'
                   }`}
                 >
                   {p.popular && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-[#1B3A6B] text-white px-2 py-0.5 rounded-full mb-2">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-brand text-white px-2 py-0.5 rounded-full mb-2">
                       <Star className="w-3 h-3" /> Populaire
                     </span>
                   )}
                   <p className="font-bold text-gray-900">{p.label}</p>
                   <p className="text-xs text-gray-500 mb-2">{p.desc}</p>
-                  <p className="text-lg font-bold text-[#1B3A6B]">
+                  <p className="text-lg font-bold text-brand">
                     {fmt(p.price)}
                     <span className="text-xs font-normal text-gray-500">/mois</span>
                   </p>
@@ -217,7 +217,7 @@ function OnboardingForm() {
                 setError('');
                 setStep(2);
               }}
-              className="w-full md:w-auto ml-auto flex items-center justify-center gap-2 bg-[#1B3A6B] text-white px-6 py-3 rounded-xl font-medium hover:bg-blue-800"
+              className="w-full md:w-auto ml-auto flex items-center justify-center gap-2 bg-brand text-white px-6 py-3 rounded-xl font-medium hover:bg-brand-dark"
             >
               Continuer avec {selected.label}
               <ArrowRight className="w-4 h-4" />
@@ -310,7 +310,7 @@ function OnboardingForm() {
                   setError('');
                   if (validateStep2()) setStep(3);
                 }}
-                className="flex items-center justify-center gap-2 bg-[#1B3A6B] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800"
+                className="flex items-center justify-center gap-2 bg-brand text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark"
               >
                 Continuer
                 <ArrowRight className="w-4 h-4" />
@@ -399,7 +399,7 @@ function OnboardingForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 bg-[#1B3A6B] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-60"
+                className="flex items-center justify-center gap-2 bg-brand text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-60"
               >
                 {loading ? (
                   <>
@@ -422,7 +422,7 @@ function OnboardingForm() {
 
 export default function OnboardingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1B3A6B] via-[#1e4080] to-[#2563EB]">
+    <div className="min-h-screen bg-gradient-to-br from-brand via-brand-dark to-brand-light">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <Link href="/" className="flex items-center gap-2 text-white/90 hover:text-white">
@@ -441,7 +441,7 @@ export default function OnboardingPage() {
         <Suspense
           fallback={
             <div className="bg-white rounded-2xl p-16 flex justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           }
         >

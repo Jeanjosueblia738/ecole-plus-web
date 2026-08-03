@@ -268,7 +268,7 @@ export default function DisciplinePage() {
                       classId: filterClass || f.classId,
                     }));
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800"
+                  className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark"
                 >
                   <Plus className="w-4 h-4" /> Nouvelle sanction
                 </button>
@@ -277,7 +277,7 @@ export default function DisciplinePage() {
 
             {loading ? (
               <div className="py-16 flex justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+                <Loader2 className="w-8 h-8 animate-spin text-brand" />
               </div>
             ) : rows.length === 0 ? (
               <div className="py-16 text-center text-gray-400 text-sm">
@@ -580,7 +580,7 @@ export default function DisciplinePage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium disabled:opacity-60"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-medium disabled:opacity-60"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

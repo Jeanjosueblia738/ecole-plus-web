@@ -88,7 +88,7 @@ export default function ClassesPage() {
                 onClick={() => setYearFilter('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   yearFilter === 'all'
-                    ? 'bg-[#1B3A6B] text-white'
+                    ? 'bg-brand text-white'
                     : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -101,7 +101,7 @@ export default function ClassesPage() {
                   onClick={() => setYearFilter(y)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     yearFilter === y
-                      ? 'bg-[#1B3A6B] text-white'
+                      ? 'bg-brand text-white'
                       : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
                   }`}
                 >
@@ -112,7 +112,7 @@ export default function ClassesPage() {
             {canCreate && (
               <a
                 href="/classes/nouvelle"
-                className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors"
+                className="flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Nouvelle classe
@@ -121,7 +121,7 @@ export default function ClassesPage() {
             {hasRole(role, ['ADMIN', 'FOUNDER', 'DIRECTOR', 'ACCOUNTANT', 'RH']) && (
               <a
                 href="/classes/qr"
-                className="flex items-center gap-2 border border-[#1B3A6B] text-[#1B3A6B] px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-50 transition-colors"
+                className="flex items-center gap-2 border border-brand text-brand px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-50 transition-colors"
                 title="QR à coller sur le bureau — pointe enseignant (pas les élèves)"
               >
                 QR enseignants

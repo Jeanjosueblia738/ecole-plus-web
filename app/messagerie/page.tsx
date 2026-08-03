@@ -210,10 +210,10 @@ export default function MessageriePage() {
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input value={search} onChange={e => setSearch(e.target.value)}
                     placeholder="Rechercher..."
-                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
                 <button onClick={() => setShowNewConv(true)}
-                  className="w-9 h-9 bg-[#1B3A6B] text-white rounded-xl flex items-center justify-center hover:bg-blue-800 flex-shrink-0">
+                  className="w-9 h-9 bg-brand text-white rounded-xl flex items-center justify-center hover:bg-brand-dark flex-shrink-0">
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
@@ -229,18 +229,18 @@ export default function MessageriePage() {
                   <MessageSquare className="w-10 h-10 mx-auto mb-3 text-gray-200" />
                   <p className="text-gray-400 text-sm">Aucune conversation</p>
                   <button onClick={() => setShowNewConv(true)}
-                    className="mt-3 text-[#1B3A6B] text-sm font-medium hover:underline">
+                    className="mt-3 text-brand text-sm font-medium hover:underline">
                     Nouveau message
                   </button>
                 </div>
               ) : filteredConvs.map(conv => (
                 <button key={conv.id} onClick={() => selectConversation(conv)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedConv?.id === conv.id ? 'bg-blue-50 border-l-2 border-l-[#1B3A6B]' : ''}`}>
+                  className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedConv?.id === conv.id ? 'bg-blue-50 border-l-2 border-l-brand' : ''}`}>
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-9 h-9 bg-brand/10 rounded-full flex items-center justify-center flex-shrink-0">
                       {conv.type === 'GROUP' || conv.type === 'BROADCAST'
-                        ? <Users className="w-4 h-4 text-[#1B3A6B]" />
-                        : <MessageSquare className="w-4 h-4 text-[#1B3A6B]" />}
+                        ? <Users className="w-4 h-4 text-brand" />
+                        : <MessageSquare className="w-4 h-4 text-brand" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -275,7 +275,7 @@ export default function MessageriePage() {
                   <p className="text-lg font-medium">Sélectionnez une conversation</p>
                   <p className="text-sm mt-1">ou créez-en une nouvelle</p>
                   <button onClick={() => setShowNewConv(true)}
-                    className="mt-4 bg-[#1B3A6B] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800">
+                    className="mt-4 bg-brand text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark">
                     Nouveau message
                   </button>
                 </div>
@@ -287,8 +287,8 @@ export default function MessageriePage() {
                   <button onClick={() => setSelectedConv(null)} className="md:hidden text-gray-400">
                     <ChevronLeft className="w-5 h-5" />
                   </button>
-                  <div className="w-9 h-9 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-[#1B3A6B]" />
+                  <div className="w-9 h-9 bg-brand/10 rounded-full flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-brand" />
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-800">{selectedConv.subject || 'Message direct'}</p>
@@ -311,7 +311,7 @@ export default function MessageriePage() {
                             <span className="text-xs text-gray-400 px-1">{msg.senderName}</span>
                           )}
                           <div className={`px-4 py-2.5 rounded-2xl text-sm ${isMe
-                            ? 'bg-[#1B3A6B] text-white rounded-br-sm'
+                            ? 'bg-brand text-white rounded-br-sm'
                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm shadow-sm'}`}>
                             {msg.content}
                           </div>
@@ -332,11 +332,11 @@ export default function MessageriePage() {
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                       placeholder="Écrivez votre message... (Entrée pour envoyer)"
                       rows={1}
-                      className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]"
+                      className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand"
                       style={{ minHeight: '42px', maxHeight: '120px' }}
                     />
                     <button onClick={sendMessage} disabled={sending || !newMessage.trim()}
-                      className="w-10 h-10 bg-[#1B3A6B] text-white rounded-xl flex items-center justify-center hover:bg-blue-800 disabled:opacity-40 flex-shrink-0">
+                      className="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center hover:bg-brand-dark disabled:opacity-40 flex-shrink-0">
                       {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     </button>
                   </div>
@@ -377,13 +377,13 @@ export default function MessageriePage() {
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input value={recipientSearch} onChange={e => setRecipientSearch(e.target.value)}
                     placeholder="Rechercher un utilisateur..."
-                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
                 <div className="max-h-36 overflow-y-auto border border-gray-100 rounded-xl divide-y divide-gray-50">
                   {allRecipients.map(r => (
                     <button key={r.id} onClick={() => toggleRecipient(r)}
                       className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 transition-colors ${selectedRecipients.find(x => x.id === r.id) ? 'bg-blue-50' : ''}`}>
-                      <div className="w-7 h-7 bg-[#1B3A6B]/10 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-[#1B3A6B]">
+                      <div className="w-7 h-7 bg-brand/10 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-brand">
                         {r.firstName[0]}{r.lastName[0]}
                       </div>
                       <div>
@@ -403,7 +403,7 @@ export default function MessageriePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sujet</label>
                 <input value={subject} onChange={e => setSubject(e.target.value)}
                   placeholder="Objet du message (optionnel)"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
 
               {/* Message */}
@@ -412,7 +412,7 @@ export default function MessageriePage() {
                 <textarea value={firstMsg} onChange={e => setFirstMsg(e.target.value)}
                   placeholder="Votre message..."
                   rows={4}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
 
               <div className="flex gap-3">
@@ -422,7 +422,7 @@ export default function MessageriePage() {
                 </button>
                 <button onClick={createConversation}
                   disabled={sending || selectedRecipients.length === 0 || !firstMsg.trim()}
-                  className="flex-1 bg-[#1B3A6B] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center justify-center gap-2">
+                  className="flex-1 bg-brand text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40 flex items-center justify-center gap-2">
                   {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Envoyer
                 </button>

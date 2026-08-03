@@ -140,7 +140,7 @@ export default function CampusPage() {
                 key={s.label}
                 className="bg-white border border-gray-100 rounded-xl p-4"
               >
-                <s.icon className="w-4 h-4 text-[#1B3A6B] mb-2" />
+                <s.icon className="w-4 h-4 text-brand mb-2" />
                 <p className="text-xs text-gray-500">{s.label}</p>
                 <p className="text-xl font-semibold">{s.value}</p>
               </div>
@@ -160,7 +160,7 @@ export default function CampusPage() {
                 onClick={() => setTab(id)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium ${
                   tab === id
-                    ? 'bg-[#1B3A6B] text-white'
+                    ? 'bg-brand text-white'
                     : 'bg-white border border-gray-200 text-gray-600'
                 }`}
               >
@@ -171,7 +171,7 @@ export default function CampusPage() {
 
           {loading ? (
             <div className="py-16 flex justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : tab === 'library' ? (
             <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
@@ -185,7 +185,7 @@ export default function CampusPage() {
                 />
                 <button
                   disabled={saving}
-                  className="flex items-center gap-1 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm"
+                  className="flex items-center gap-1 px-4 py-2.5 bg-brand text-white rounded-xl text-sm"
                 >
                   <Plus className="w-4 h-4" /> Ajouter
                 </button>
@@ -222,7 +222,7 @@ export default function CampusPage() {
                 />
                 <button
                   disabled={saving}
-                  className="flex items-center gap-1 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm"
+                  className="flex items-center gap-1 px-4 py-2.5 bg-brand text-white rounded-xl text-sm"
                 >
                   <Plus className="w-4 h-4" /> Circuit
                 </button>
@@ -267,7 +267,7 @@ export default function CampusPage() {
                 />
                 <button
                   disabled={saving}
-                  className="flex items-center gap-1 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm"
+                  className="flex items-center gap-1 px-4 py-2.5 bg-brand text-white rounded-xl text-sm"
                 >
                   <Plus className="w-4 h-4" /> Formule
                 </button>

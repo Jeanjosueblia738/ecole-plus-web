@@ -16,24 +16,24 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#1B3A6B] rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-[#1B3A6B] tracking-wide">ECOLE+</span>
+            <span className="text-xl font-bold text-brand tracking-wide">ECOLE+</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-gray-600">
-            <a href="#fonctionnalites" className="hover:text-[#1B3A6B] transition-colors">Fonctionnalités</a>
-            <a href="#roles" className="hover:text-[#1B3A6B] transition-colors">Profils</a>
-            <a href="#tarifs" className="hover:text-[#1B3A6B] transition-colors">Tarifs</a>
-            <a href="#contact" className="hover:text-[#1B3A6B] transition-colors">Contact</a>
+            <a href="#fonctionnalites" className="hover:text-brand transition-colors">Fonctionnalités</a>
+            <a href="#roles" className="hover:text-brand transition-colors">Profils</a>
+            <a href="#tarifs" className="hover:text-brand transition-colors">Tarifs</a>
+            <a href="#contact" className="hover:text-brand transition-colors">Contact</a>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login"
-              className="text-gray-600 text-sm font-medium hover:text-[#1B3A6B] transition-colors">
+              className="text-gray-600 text-sm font-medium hover:text-brand transition-colors">
               Se connecter
             </Link>
             <Link href="/onboarding"
-              className="bg-[#1B3A6B] text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+              className="bg-brand text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors">
               Commencer gratuitement
             </Link>
           </div>
@@ -41,7 +41,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
-      <section className="pt-24 pb-20 bg-gradient-to-br from-[#1B3A6B] via-[#1e4080] to-[#2563EB] text-white">
+      <section className="pt-24 pb-20 bg-gradient-to-br from-brand via-brand-dark to-brand-light text-white">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm mb-6 border border-white/20">
             <Star className="w-4 h-4 text-yellow-300" />
@@ -57,7 +57,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/login"
-              className="bg-white text-[#1B3A6B] px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center">
+              className="bg-white text-brand px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center">
               Accéder à la plateforme
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -147,7 +147,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Mobile App ────────────────────────────────────────────── */}
-      <section className="py-20 bg-gradient-to-br from-[#1B3A6B] to-[#2563EB] text-white">
+      <section className="py-20 bg-gradient-to-br from-brand to-brand-light text-white">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
@@ -200,7 +200,7 @@ export default function LandingPage() {
           <PricingPlans mode="public" />
           <p className="text-center text-sm text-gray-500 mt-8">
             Déjà une école ?{' '}
-            <Link href="/login" className="text-[#1B3A6B] font-medium hover:underline">
+            <Link href="/login" className="text-brand font-medium hover:underline">
               Se connecter
             </Link>
             {' '}pour gérer votre abonnement.
@@ -209,7 +209,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────────── */}
-      <section className="py-20 bg-[#1B3A6B] text-white text-center">
+      <section className="py-20 bg-brand text-white text-center">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Prêt à moderniser votre établissement ?
@@ -219,7 +219,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/login"
-              className="bg-white text-[#1B3A6B] px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center">
+              className="bg-white text-brand px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center">
               Accéder à la plateforme
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -247,10 +247,10 @@ export default function LandingPage() {
             ].map((c) => (
               <div key={c.title} className="text-center p-8 bg-gray-50 rounded-xl border border-gray-100">
                 <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <c.icon className="w-7 h-7 text-[#1B3A6B]" />
+                  <c.icon className="w-7 h-7 text-brand" />
                 </div>
                 <h3 className="font-bold text-gray-800 text-lg mb-1">{c.title}</h3>
-                <p className="text-[#1B3A6B] font-medium">{c.info}</p>
+                <p className="text-brand font-medium">{c.info}</p>
                 <p className="text-gray-400 text-sm mt-1">{c.sub}</p>
               </div>
             ))}
@@ -264,7 +264,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-[#1B3A6B] rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                   <GraduationCap className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-bold tracking-wide">ECOLE+</span>

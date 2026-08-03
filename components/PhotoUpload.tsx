@@ -70,7 +70,7 @@ export default function PhotoUpload({
     <div className="flex flex-col items-center gap-2">
       <div className={`relative ${dim} cursor-pointer group`} onClick={() => inputRef.current?.click()}>
         {/* Avatar ou initiales */}
-        <div className={`${dim} rounded-full overflow-hidden bg-[#1B3A6B] flex items-center justify-center border-4 border-white shadow-lg`}>
+        <div className={`${dim} rounded-full overflow-hidden bg-brand flex items-center justify-center border-4 border-white shadow-lg`}>
           {preview ? (
             <img src={preview} alt="Photo" className="w-full h-full object-cover" />
           ) : (

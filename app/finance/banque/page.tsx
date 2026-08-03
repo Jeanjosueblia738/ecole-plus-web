@@ -94,7 +94,7 @@ export default function BanquePage() {
                 <Plus className="w-4 h-4" /> Compte
               </button>
               <button onClick={() => setShowTx(true)} disabled={!selected}
-                className="px-3 py-2 rounded-xl bg-[#1B3A6B] text-white text-sm font-semibold disabled:opacity-40">
+                className="px-3 py-2 rounded-xl bg-brand text-white text-sm font-semibold disabled:opacity-40">
                 Mouvement
               </button>
               <button onClick={() => setShowRec(true)} disabled={!selected}
@@ -217,7 +217,7 @@ export default function BanquePage() {
                       {!t.isReconciled && (
                         <button
                           type="button"
-                          className="text-xs text-[#1B3A6B] font-medium underline"
+                          className="text-xs text-brand font-medium underline"
                           onClick={async () => {
                             await financeApi.markBankReconciled([t.id]);
                             await loadDetail(selected);

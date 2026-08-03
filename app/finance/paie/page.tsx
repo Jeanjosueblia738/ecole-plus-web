@@ -110,7 +110,7 @@ export default function PaiePage() {
               <Link href="/finance" className="inline-flex items-center gap-1 text-gray-500">
                 <ArrowLeft className="w-4 h-4" /> Finance
               </Link>
-              <Link href="/finance/paie/suivi" className="text-[#1B3A6B] font-medium">
+              <Link href="/finance/paie/suivi" className="text-brand font-medium">
                 Suivi des heures →
               </Link>
             </div>
@@ -155,7 +155,7 @@ export default function PaiePage() {
               type="button"
               disabled={busy === 'gen'}
               onClick={generateFromHours}
-              className="px-4 py-2 rounded-lg bg-[#1B3A6B] text-white text-sm font-semibold disabled:opacity-60"
+              className="px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold disabled:opacity-60"
             >
               {busy === 'gen' ? 'Génération…' : 'Générer brouillon'}
             </button>
@@ -251,7 +251,7 @@ export default function PaiePage() {
                           bulletin(s)
                         </p>
                       </div>
-                      <p className="font-bold text-[#1B3A6B]">{fmt(total)}</p>
+                      <p className="font-bold text-brand">{fmt(total)}</p>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {r.status === 'DRAFT' && (

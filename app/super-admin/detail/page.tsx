@@ -119,7 +119,7 @@ function TenantDetailContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
             <GraduationCap className="w-5 h-5 text-white" />
@@ -155,22 +155,22 @@ function TenantDetailContent() {
         )}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+            <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full" />
           </div>
         ) : !tenant ? (
           <div className="bg-white rounded-xl p-12 text-center text-gray-400">
             <Building2 className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p>{loadFailed ? (error || 'Erreur de chargement') : 'Établissement introuvable'}</p>
             <button onClick={() => router.push('/super-admin')}
-              className="mt-4 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm">Retour</button>
+              className="mt-4 px-4 py-2 bg-brand text-white rounded-xl text-sm">Retour</button>
           </div>
         ) : (
           <>
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-[#1B3A6B]/10 rounded-xl flex items-center justify-center">
-                    <Building2 className="w-7 h-7 text-[#1B3A6B]" />
+                  <div className="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center">
+                    <Building2 className="w-7 h-7 text-brand" />
                   </div>
                   <div>
                     <h1 className="text-xl font-bold text-gray-800">{tenant.name}</h1>
@@ -203,7 +203,7 @@ function TenantDetailContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-[#1B3A6B]" /> Coordonnées
+                  <Building2 className="w-4 h-4 text-brand" /> Coordonnées
                 </h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
@@ -236,7 +236,7 @@ function TenantDetailContent() {
 
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#1B3A6B]" /> Statistiques
+                  <Users className="w-4 h-4 text-brand" /> Statistiques
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-blue-50 rounded-xl p-4">
@@ -256,7 +256,7 @@ function TenantDetailContent() {
             {tenant.subscription && (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-[#1B3A6B]" /> Abonnement
+                  <DollarSign className="w-4 h-4 text-brand" /> Abonnement
                 </h2>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
@@ -279,11 +279,11 @@ function TenantDetailContent() {
               <h2 className="font-semibold text-gray-800 mb-4">Changer de plan</h2>
               <div className="flex gap-3 items-center">
                 <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                   {PLANS.map(p => <option key={p} value={p}>{PLAN_LABELS[p] ?? p}</option>)}
                 </select>
                 <button onClick={upgradePlan} disabled={upgrading || selectedPlan === tenant.plan}
-                  className="px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center gap-2">
+                  className="px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40 flex items-center gap-2">
                   {upgrading && <RefreshCw className="w-4 h-4 animate-spin" />} Appliquer
                 </button>
               </div>
@@ -299,7 +299,7 @@ export default function TenantDetailPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full" />
       </div>
     }>
       <TenantDetailContent />

@@ -61,7 +61,7 @@ function InscriptionForm() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 max-w-md w-full text-center">
-          <School className="w-14 h-14 text-[#1B3A6B] mx-auto mb-4" />
+          <School className="w-14 h-14 text-brand mx-auto mb-4" />
           <h1 className="text-xl font-bold text-gray-800 mb-2">Lien incomplet</h1>
           <p className="text-sm text-gray-600">
             Le code établissement est obligatoire. Utilisez le lien fourni par votre école
@@ -91,12 +91,12 @@ function InscriptionForm() {
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-xl mx-auto">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-[#1B3A6B] rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-4">
             <School className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Pré-inscription</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Établissement : <span className="font-mono font-semibold text-[#1B3A6B]">{tenantCode}</span>
+            Établissement : <span className="font-mono font-semibold text-brand">{tenantCode}</span>
           </p>
         </div>
 
@@ -110,12 +110,12 @@ function InscriptionForm() {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Prénom *</label>
               <input required value={form.firstName} onChange={(e) => set('firstName', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Nom *</label>
               <input required value={form.lastName} onChange={(e) => set('lastName', e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Genre</label>
@@ -173,7 +173,7 @@ function InscriptionForm() {
           </div>
 
           <button type="submit" disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-[#1B3A6B] text-white py-3 rounded-xl font-medium hover:bg-blue-800 disabled:opacity-50">
+            className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-xl font-medium hover:bg-brand-dark disabled:opacity-50">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Envoyer la demande'}
           </button>
         </form>
@@ -186,7 +186,7 @@ export default function InscriptionPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     }>
       <InscriptionForm />

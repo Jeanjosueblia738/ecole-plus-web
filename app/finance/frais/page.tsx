@@ -153,7 +153,7 @@ export default function ConfigurerFraisPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link
               href="/finance"
-              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#1B3A6B]"
+              className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-brand"
             >
               <ArrowLeft className="w-4 h-4" /> Retour Finance
             </Link>
@@ -164,7 +164,7 @@ export default function ConfigurerFraisPage() {
                   setShowForm(!showForm);
                   setError('');
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800"
+                className="flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark"
               >
                 <Plus className="w-4 h-4" />
                 Nouveau frais
@@ -201,7 +201,7 @@ export default function ConfigurerFraisPage() {
               className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4 max-w-xl"
             >
               <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                <Settings2 className="w-5 h-5 text-[#1B3A6B]" />
+                <Settings2 className="w-5 h-5 text-brand" />
                 Ajouter un frais
               </h2>
               <p className="text-xs text-gray-500">Année scolaire : {year}</p>
@@ -290,7 +290,7 @@ export default function ConfigurerFraisPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-medium disabled:opacity-50"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                   Ajouter
@@ -309,7 +309,7 @@ export default function ConfigurerFraisPage() {
 
             {loading ? (
               <div className="p-12 flex justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+                <Loader2 className="w-8 h-8 animate-spin text-brand" />
               </div>
             ) : fees.length === 0 ? (
               <div className="p-12 text-center text-gray-400">
@@ -379,7 +379,7 @@ export default function ConfigurerFraisPage() {
                             type="button"
                             disabled={assigning === fee.id}
                             onClick={() => handleAssign(fee.id)}
-                            className="flex items-center gap-2 px-3 py-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl text-sm font-medium hover:bg-blue-50 disabled:opacity-50"
+                            className="flex items-center gap-2 px-3 py-2 border border-brand text-brand rounded-xl text-sm font-medium hover:bg-blue-50 disabled:opacity-50"
                           >
                             {assigning === fee.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />

@@ -279,7 +279,7 @@ export default function ParametresPage() {
                     type="button"
                     onClick={() => void saveBranding()}
                     disabled={saving || !tenant?.id}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-[#152d54] disabled:opacity-60"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-60"
                   >
                     {saving ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -302,7 +302,7 @@ export default function ParametresPage() {
               {canYears && (
                 <Link
                   href="/annees"
-                  className="block text-sm text-[#1B3A6B] hover:underline"
+                  className="block text-sm text-brand hover:underline"
                 >
                   Gérer les années (créer, activer, archiver, cloner classes) →
                 </Link>
@@ -310,7 +310,7 @@ export default function ParametresPage() {
               {canPassage && (
                 <Link
                   href="/annees/passage"
-                  className="flex items-center gap-2 text-sm text-[#1B3A6B] hover:underline"
+                  className="flex items-center gap-2 text-sm text-brand hover:underline"
                 >
                   <GraduationCap className="w-4 h-4" />
                   Passage / réinscription des élèves →

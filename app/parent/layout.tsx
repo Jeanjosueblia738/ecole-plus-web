@@ -42,7 +42,7 @@ export default function ParentLayout({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-[#1B3A6B] text-white">
+      <header className="bg-brand text-white">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <School className="w-7 h-7 shrink-0" />
@@ -76,7 +76,7 @@ export default function ParentLayout({
                 href={item.href}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm whitespace-nowrap ${
                   active
-                    ? 'bg-white text-[#1B3A6B] font-medium'
+                    ? 'bg-white text-brand font-medium'
                     : 'text-blue-100 hover:bg-white/10'
                 }`}
               >

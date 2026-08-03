@@ -104,7 +104,7 @@ export default function ClassQrPage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex items-center gap-2 px-3 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800"
+                className="flex items-center gap-2 px-3 py-2 bg-brand text-white rounded-xl text-sm hover:bg-brand-dark"
               >
                 <Printer className="w-4 h-4" /> Imprimer
               </button>
@@ -119,7 +119,7 @@ export default function ClassQrPage() {
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-16 text-gray-400">

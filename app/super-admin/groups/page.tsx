@@ -64,7 +64,7 @@ export default function SchoolGroupsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <GraduationCap className="w-6 h-6" />
           <span className="font-bold text-lg">ECOLE+</span>
@@ -97,7 +97,7 @@ export default function SchoolGroupsPage() {
               <RefreshCw className="w-4 h-4" />
             </button>
             <button onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm hover:bg-brand-dark">
               <Plus className="w-4 h-4" /> Nouveau groupe
             </button>
           </div>
@@ -140,7 +140,7 @@ export default function SchoolGroupsPage() {
 
         {loading ? (
           <div className="flex justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+            <Loader2 className="w-8 h-8 animate-spin text-brand" />
           </div>
         ) : groups.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-100 p-12 text-center text-gray-400">

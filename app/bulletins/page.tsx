@@ -260,7 +260,7 @@ export default function BulletinsPage() {
               <button
                 onClick={generateAll}
                 disabled={generatingAll || students.length === 0}
-                className="flex items-center gap-2 bg-[#1B3A6B] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors disabled:opacity-50"
               >
                 {generatingAll ? (
                   <>
@@ -324,7 +324,7 @@ export default function BulletinsPage() {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full overflow-hidden bg-[#1B3A6B] flex items-center justify-center flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full overflow-hidden bg-brand flex items-center justify-center flex-shrink-0">
                             {s.photoUrl ? (
                               <img src={s.photoUrl} alt="" className="w-full h-full object-cover" />
                             ) : (

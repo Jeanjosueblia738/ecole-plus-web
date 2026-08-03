@@ -71,7 +71,7 @@ export default function CreateTenantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center gap-4 shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center gap-4 shadow-md">
         <button
           onClick={() => router.push('/super-admin')}
           className="p-2 rounded-lg hover:bg-white/10"
@@ -86,7 +86,7 @@ export default function CreateTenantPage() {
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-[#1B3A6B]" />
+              <Building2 className="w-5 h-5 text-brand" />
             </div>
             <div>
               <h1 className="font-semibold text-gray-800">Créer un établissement</h1>
@@ -173,7 +173,7 @@ export default function CreateTenantPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-900 disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-xl text-sm font-medium hover:bg-blue-900 disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Créer l&apos;établissement

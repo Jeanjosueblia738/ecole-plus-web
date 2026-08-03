@@ -269,7 +269,7 @@ export default function EnseignantsPage() {
           )}
           <div className="flex justify-end mb-6">
             <a href="/enseignants/nouveau"
-              className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+              className="flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors">
               <Plus className="w-4 h-4" />
               Ajouter un enseignant
             </a>
@@ -359,7 +359,7 @@ export default function EnseignantsPage() {
                           type="button"
                           onClick={() => openClassesModal(t)}
                           title="Affectations"
-                          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1B3A6B] hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors"
                         >
                           <BookOpen className="w-4 h-4" />
                           Affectations
@@ -443,7 +443,7 @@ export default function EnseignantsPage() {
                             type="checkbox"
                             checked={selected}
                             onChange={() => toggleClass(c.id)}
-                            className="w-4 h-4 rounded border-gray-300 text-[#1B3A6B] focus:ring-[#1B3A6B]"
+                            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
                           />
                           <div>
                             <p className="text-sm font-medium text-gray-800">{c.name}</p>
@@ -463,7 +463,7 @@ export default function EnseignantsPage() {
                                     onClick={() => toggleSubject(c.id, s)}
                                     className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
                                       active
-                                        ? 'bg-[#1B3A6B] text-white'
+                                        ? 'bg-brand text-white'
                                         : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300'
                                     }`}
                                   >
@@ -500,7 +500,7 @@ export default function EnseignantsPage() {
                 type="button"
                 onClick={saveClasses}
                 disabled={modalSaving || modalLoading}
-                className="flex-1 bg-[#1B3A6B] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40 flex items-center justify-center gap-2"
+                className="flex-1 bg-brand text-white py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {modalSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                 Enregistrer

@@ -85,7 +85,7 @@ export default function BudgetPage() {
               <ArrowLeft className="w-4 h-4" /> Finance
             </Link>
             <button onClick={() => setShow(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1B3A6B] text-white text-sm font-semibold">
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold">
               <Plus className="w-4 h-4" /> Nouveau budget
             </button>
           </div>
@@ -125,7 +125,7 @@ export default function BudgetPage() {
                 </div>
                 <div className="bg-white border rounded-xl p-4">
                   <p className="text-xs text-gray-500">Écart</p>
-                  <p className="font-bold text-[#1B3A6B]">{fmt(analysis.summary?.varianceTotal)}</p>
+                  <p className="font-bold text-brand">{fmt(analysis.summary?.varianceTotal)}</p>
                 </div>
               </div>
               <div className="bg-white border rounded-xl divide-y">

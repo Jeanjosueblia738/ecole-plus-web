@@ -131,7 +131,7 @@ export default function Header({ title, subtitle }: HeaderProps) {
           <Bell className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#1B3A6B] rounded-full flex items-center justify-center">
+          <div className="w-9 h-9 bg-brand rounded-full flex items-center justify-center">
             <User className="w-5 h-5 text-white" />
           </div>
           <div className="hidden md:block">

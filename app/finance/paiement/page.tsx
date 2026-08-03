@@ -195,14 +195,14 @@ export default function FinancePaiementPage() {
         <main className="flex-1 p-6 max-w-xl">
           <Link
             href="/finance"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#1B3A6B] mb-4"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-brand mb-4"
           >
             <ArrowLeft className="w-4 h-4" /> Retour Finance
           </Link>
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : success ? (
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
@@ -223,7 +223,7 @@ export default function FinancePaiementPage() {
                 <button
                   type="button"
                   onClick={downloadReceipt}
-                  className="px-4 py-2 border border-[#1B3A6B] text-[#1B3A6B] rounded-xl text-sm font-medium"
+                  className="px-4 py-2 border border-brand text-brand rounded-xl text-sm font-medium"
                 >
                   Télécharger reçu PDF
                 </button>
@@ -236,7 +236,7 @@ export default function FinancePaiementPage() {
                     setChequeNo('');
                     setMethod('especes');
                   }}
-                  className="px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium"
+                  className="px-4 py-2 bg-brand text-white rounded-xl text-sm font-medium"
                 >
                   Nouveau paiement
                 </button>
@@ -309,7 +309,7 @@ export default function FinancePaiementPage() {
                       onClick={() => setMethod(m.value)}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm text-left transition-colors ${
                         method === m.value
-                          ? 'border-[#1B3A6B] bg-blue-50 text-[#1B3A6B] font-semibold'
+                          ? 'border-brand bg-blue-50 text-brand font-semibold'
                           : 'border-gray-200 bg-white text-gray-700'
                       }`}
                     >
@@ -347,7 +347,7 @@ export default function FinancePaiementPage() {
                         onClick={() => setMmOp(op.value)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
                           mmOp === op.value
-                            ? 'bg-[#1B3A6B] text-white border-[#1B3A6B]'
+                            ? 'bg-brand text-white border-brand'
                             : 'bg-white text-gray-700 border-gray-200'
                         }`}
                       >
@@ -386,7 +386,7 @@ export default function FinancePaiementPage() {
               <button
                 type="submit"
                 disabled={paying}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#1B3A6B] text-white rounded-xl text-sm font-bold disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-xl text-sm font-bold disabled:opacity-50"
               >
                 {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 {method === 'mobile_money'

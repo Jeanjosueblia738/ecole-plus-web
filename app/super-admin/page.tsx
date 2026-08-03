@@ -97,7 +97,7 @@ export default function SuperAdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
             <GraduationCap className="w-5 h-5 text-white" />
@@ -161,15 +161,15 @@ export default function SuperAdminPage() {
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
                   placeholder="Nom, code MENA, ville..."
-                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]" />
+                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
               </div>
               <select value={filterPlan} onChange={e => setFilterPlan(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                 <option value="ALL">Tous les plans</option>
                 {Object.entries(PLAN_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
               <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                className="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                 <option value="ALL">Tous statuts</option>
                 <option value="ACTIVE">Actifs</option>
                 <option value="SUSPENDED">Suspendus</option>
@@ -204,7 +204,7 @@ export default function SuperAdminPage() {
               <UserCog className="w-4 h-4" /> Super Admins
             </button>
             <button onClick={() => router.push('/super-admin/logs')}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1B3A6B] text-white rounded-xl text-sm hover:bg-blue-800">
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm hover:bg-brand-dark">
               <Activity className="w-4 h-4" /> Logs
             </button>
           </div>
@@ -218,7 +218,7 @@ export default function SuperAdminPage() {
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <div className="animate-spin w-8 h-8 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+              <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full" />
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
@@ -243,7 +243,7 @@ export default function SuperAdminPage() {
                         <p className="text-xs text-gray-400">{t.email}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-mono text-sm font-bold text-[#1B3A6B]">{t.code}</span>
+                        <span className="font-mono text-sm font-bold text-brand">{t.code}</span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{t.city ?? '—'}</td>
                       <td className="px-4 py-3">
@@ -270,7 +270,7 @@ export default function SuperAdminPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button onClick={() => router.push(`/super-admin/detail?id=${t.id}`)}
-                            className="p-1.5 text-gray-400 hover:text-[#1B3A6B] hover:bg-blue-50 rounded-lg transition-colors" title="Voir détails">
+                            className="p-1.5 text-gray-400 hover:text-brand hover:bg-blue-50 rounded-lg transition-colors" title="Voir détails">
                             <Eye className="w-4 h-4" />
                           </button>
                           <button onClick={() => toggleStatus(t.id, t.isActive)} disabled={actionLoading === t.id}
@@ -297,7 +297,7 @@ export default function SuperAdminPage() {
               <div className="flex gap-1">
                 {Array.from({ length: Math.min(meta.pages, 5) }, (_, i) => i + 1).map(p => (
                   <button key={p} onClick={() => setPage(p)}
-                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-[#1B3A6B] text-white' : 'border border-gray-200 hover:bg-gray-50'}`}>
+                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-brand text-white' : 'border border-gray-200 hover:bg-gray-50'}`}>
                     {p}
                   </button>
                 ))}

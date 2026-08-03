@@ -67,7 +67,7 @@ export default function ParentAutorisationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-[#1B3A6B] text-white px-4 py-4">
+      <header className="bg-brand text-white px-4 py-4">
         <Link
           href="/parent"
           className="inline-flex items-center gap-1 text-sm text-blue-100 mb-2"
@@ -155,7 +155,7 @@ export default function ParentAutorisationsPage() {
           <button
             type="submit"
             disabled={busy || (durationPreview != null && durationPreview > 3)}
-            className="w-full py-2.5 rounded-xl bg-[#1B3A6B] text-white text-sm font-semibold disabled:opacity-50"
+            className="w-full py-2.5 rounded-xl bg-brand text-white text-sm font-semibold disabled:opacity-50"
           >
             {busy ? 'Envoi…' : 'Envoyer la demande'}
           </button>

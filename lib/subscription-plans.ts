@@ -38,8 +38,8 @@ export const PUBLIC_PLANS: PublicPlan[] = [
       'Support prioritaire',
     ],
     popular: true,
-    color: 'border-[#1B3A6B]',
-    btnColor: 'bg-[#1B3A6B] hover:bg-blue-800',
+    color: 'border-brand',
+    btnColor: 'bg-brand hover:bg-brand-dark',
   },
   {
     key: 'GROUP',

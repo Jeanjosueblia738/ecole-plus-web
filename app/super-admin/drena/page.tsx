@@ -45,7 +45,7 @@ export default function DrenaDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-[#1B3A6B] text-white px-6 h-16 flex items-center justify-between shadow-md">
+      <nav className="bg-brand text-white px-6 h-16 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <GraduationCap className="w-6 h-6" />
           <span className="font-bold text-lg">ECOLE+</span>
@@ -88,7 +88,7 @@ export default function DrenaDashboardPage() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin w-10 h-10 border-4 border-[#1B3A6B] border-t-transparent rounded-full" />
+            <div className="animate-spin w-10 h-10 border-4 border-brand border-t-transparent rounded-full" />
           </div>
         ) : (
           <>
@@ -160,7 +160,7 @@ export default function DrenaDashboardPage() {
                         <tr key={e.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm font-medium text-gray-800">{e.name}</td>
                           <td className="px-4 py-3 text-sm text-gray-600">{e.city ?? '—'}</td>
-                          <td className="px-4 py-3 text-sm font-mono text-[#1B3A6B]">{e.code}</td>
+                          <td className="px-4 py-3 text-sm font-mono text-brand">{e.code}</td>
                           <td className="px-4 py-3 text-sm">{e.students ?? 0}</td>
                           <td className="px-4 py-3 text-sm">
                             {e.absenceRate30d != null ? `${e.absenceRate30d} %` : '—'}

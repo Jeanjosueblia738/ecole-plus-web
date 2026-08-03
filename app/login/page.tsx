@@ -63,7 +63,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1B3A6B] to-[#2563EB] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-brand to-brand-light flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -141,7 +141,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1B3A6B] hover:bg-[#2563EB] text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-brand hover:bg-brand-dark text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Connexion...</>

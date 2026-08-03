@@ -132,7 +132,7 @@ export default function FinanceHistoriquePage() {
         <main className="flex-1 p-6 max-w-3xl">
           <Link
             href="/finance"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#1B3A6B] mb-4"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-brand mb-4"
           >
             <ArrowLeft className="w-4 h-4" /> Retour Finance
           </Link>
@@ -145,7 +145,7 @@ export default function FinanceHistoriquePage() {
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
                   filter === f
-                    ? 'bg-[#1B3A6B]/10 text-[#1B3A6B] border-[#1B3A6B]/30 font-bold'
+                    ? 'bg-brand/10 text-brand border-brand/30 font-bold'
                     : 'bg-white text-gray-500 border-gray-200'
                 }`}
               >
@@ -166,7 +166,7 @@ export default function FinanceHistoriquePage() {
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-8 h-8 animate-spin text-brand" />
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 text-gray-400">Aucun paiement</div>
@@ -216,7 +216,7 @@ export default function FinanceHistoriquePage() {
                     <button
                       type="button"
                       onClick={() => download(p)}
-                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#1B3A6B]"
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-brand"
                     >
                       <FileText className="w-3.5 h-3.5" /> Reçu
                     </button>

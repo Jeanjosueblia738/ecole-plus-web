@@ -133,7 +133,7 @@ export default function ParentFinanceInner() {
   if (loading) {
     return (
       <div className="py-16 flex justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -193,7 +193,7 @@ export default function ParentFinanceInner() {
                     }}
                     className={`w-full text-left px-3 py-2.5 rounded-xl border text-sm ${
                       feeId === id
-                        ? 'border-[#1B3A6B] bg-blue-50'
+                        ? 'border-brand bg-blue-50'
                         : 'border-gray-100'
                     }`}
                   >
@@ -212,7 +212,7 @@ export default function ParentFinanceInner() {
 
         <form onSubmit={pay} className="space-y-3 border-t border-gray-100 pt-4">
           <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
-            <Smartphone className="w-4 h-4 text-[#1B3A6B]" />
+            <Smartphone className="w-4 h-4 text-brand" />
             Payer par Mobile Money
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -247,7 +247,7 @@ export default function ParentFinanceInner() {
           <button
             type="submit"
             disabled={paying || !feeId}
-            className="w-full sm:w-auto px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium disabled:opacity-60"
+            className="w-full sm:w-auto px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium disabled:opacity-60"
           >
             {paying ? (
               <span className="inline-flex items-center gap-2">

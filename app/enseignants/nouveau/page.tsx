@@ -311,7 +311,7 @@ export default function NouvelEnseignantPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-50"
               >
                 {saving ? (
                   <>

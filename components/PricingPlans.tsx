@@ -41,7 +41,7 @@ export default function PricingPlans({
             type="button"
             onClick={() => setBillingPeriod('MONTH')}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-              billingPeriod === 'MONTH' ? 'bg-[#1B3A6B] text-white' : 'text-gray-600'
+              billingPeriod === 'MONTH' ? 'bg-brand text-white' : 'text-gray-600'
             }`}
           >
             Mensuel
@@ -96,10 +96,10 @@ export default function PricingPlans({
               key={p.key}
               className={`bg-white rounded-2xl p-6 border-2 ${p.color} ${
                 p.popular ? 'shadow-xl relative' : 'shadow-sm'
-              } ${isSelected ? 'ring-2 ring-[#1B3A6B] ring-offset-2' : ''}`}
+              } ${isSelected ? 'ring-2 ring-brand ring-offset-2' : ''}`}
             >
               {p.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#1B3A6B] text-white text-xs px-4 py-1 rounded-full font-medium inline-flex items-center gap-1">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand text-white text-xs px-4 py-1 rounded-full font-medium inline-flex items-center gap-1">
                   <Star className="w-3 h-3" /> Recommandé
                 </div>
               )}

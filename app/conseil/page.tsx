@@ -149,14 +149,14 @@ export default function ConseilPage() {
           <div className="flex items-center gap-4 mb-6 flex-wrap">
             <div className="relative">
               <select value={classId} onChange={(e) => setClassId(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand">
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
             <div className="relative">
               <select value={trimestre} onChange={(e) => setTrimestre(e.target.value)}
-                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand">
                 <option value="T1">1er Trimestre</option>
                 <option value="T2">2ème Trimestre</option>
                 <option value="T3">3ème Trimestre</option>
@@ -168,7 +168,7 @@ export default function ConseilPage() {
                 type="button"
                 onClick={saveAll}
                 disabled={saving}
-                className="ml-auto flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-50"
+                className="ml-auto flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Enregistrer ({dirtyCount})

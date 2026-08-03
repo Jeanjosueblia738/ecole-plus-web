@@ -272,14 +272,14 @@ export default function RapportsPage() {
           {/* Panneau de configuration */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <BarChart2 className="w-5 h-5 text-[#1B3A6B]" /> Paramètres du rapport
+              <BarChart2 className="w-5 h-5 text-brand" /> Paramètres du rapport
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Type de rapport */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type de rapport</label>
                 <select value={reportType} onChange={e => { setReportType(e.target.value as any); setGenerated(false); }}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                   {canSeeList && <option value="liste">📋 Liste nominative</option>}
                   {canSeeTrimestriel && <option value="trimestriel">📊 Rapport trimestriel</option>}
                   {canSeeAnnuel && <option value="annuel">📈 Rapport annuel</option>}
@@ -290,7 +290,7 @@ export default function RapportsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Classe</label>
                 <select value={selectedClass} onChange={e => { setSelectedClass(e.target.value); setGenerated(false); }}
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                   {classes.map(c => <option key={c.id} value={c.id}>{c.name} — {c.level}</option>)}
                 </select>
               </div>
@@ -300,7 +300,7 @@ export default function RapportsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Trimestre</label>
                   <select value={selectedTrimestre} onChange={e => { setSelectedTrimestre(e.target.value); setGenerated(false); }}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1B3A6B]">
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand">
                     {TRIMESTERS.map(t => <option key={t} value={t}>{TRIMESTER_LABELS[t]}</option>)}
                   </select>
                 </div>
@@ -309,7 +309,7 @@ export default function RapportsPage() {
               {/* Boutons */}
               <div className={`flex gap-2 items-end ${reportType !== 'trimestriel' ? 'md:col-start-4' : ''}`}>
                 <button onClick={generateReport} disabled={loading || !selectedClass}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-40">
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-40">
                   {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <BarChart2 className="w-4 h-4" />}
                   {loading ? 'Génération...' : 'Générer'}
                 </button>
@@ -397,7 +397,7 @@ export default function RapportsPage() {
                           {reportType !== 'liste' && (
                             <td className="px-4 py-3 text-sm font-bold text-gray-600">#{r.rang}</td>
                           )}
-                          <td className="px-4 py-3 text-sm font-mono text-[#1B3A6B]">{r.student.registrationNo}</td>
+                          <td className="px-4 py-3 text-sm font-mono text-brand">{r.student.registrationNo}</td>
                           <td className="px-4 py-3">
                             <p className="font-semibold text-gray-800 text-sm">{r.student.lastName} {r.student.firstName}</p>
                           </td>

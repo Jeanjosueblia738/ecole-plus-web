@@ -72,9 +72,9 @@ export default function MesHeuresPage() {
             </div>
           )}
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3 items-start">
-            <Smartphone className="w-5 h-5 text-[#1B3A6B] flex-shrink-0 mt-0.5" />
+            <Smartphone className="w-5 h-5 text-brand flex-shrink-0 mt-0.5" />
             <div className="text-sm text-gray-700">
-              <p className="font-semibold text-[#1B3A6B]">
+              <p className="font-semibold text-brand">
                 Pointe uniquement via l’app mobile
               </p>
               <p className="mt-1">
@@ -130,7 +130,7 @@ export default function MesHeuresPage() {
                 >
                   <div>
                     <p className="font-medium text-gray-800 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-[#1B3A6B]" />
+                      <Clock className="w-4 h-4 text-brand" />
                       {o.subject} · {o.class?.name}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">

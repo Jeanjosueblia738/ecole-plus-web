@@ -32,7 +32,7 @@ export default function ParentHomePage() {
   if (loading) {
     return (
       <div className="py-20 flex justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function ParentHomePage() {
             href={c.href}
             className="bg-white border border-gray-100 rounded-xl p-4 hover:border-blue-200 flex items-center gap-3"
           >
-            <c.icon className="w-5 h-5 text-[#1B3A6B]" />
+            <c.icon className="w-5 h-5 text-brand" />
             <span className="font-medium text-gray-800">{c.label}</span>
           </Link>
         ))}
@@ -76,7 +76,7 @@ export default function ParentHomePage() {
 
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 font-semibold text-sm flex items-center gap-2">
-          <GraduationCap className="w-4 h-4 text-[#1B3A6B]" />
+          <GraduationCap className="w-4 h-4 text-brand" />
           Mes enfants ({children.length})
         </div>
         {children.length === 0 ? (
@@ -98,7 +98,7 @@ export default function ParentHomePage() {
                 </div>
                 <Link
                   href={`/parent/finance?studentId=${c.id}`}
-                  className="text-sm text-[#1B3A6B] font-medium self-center"
+                  className="text-sm text-brand font-medium self-center"
                 >
                   Payer →
                 </Link>

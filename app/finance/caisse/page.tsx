@@ -106,7 +106,7 @@ export default function CaissePage() {
       <div className="flex-1 flex flex-col">
         <Header title="Caisse" subtitle="Ouverture et clôture journalière" />
         <main className="flex-1 p-6 space-y-6 max-w-3xl">
-          <Link href="/finance" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-[#1B3A6B]">
+          <Link href="/finance" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-brand">
             <ArrowLeft className="w-4 h-4" /> Finance
           </Link>
 
@@ -118,7 +118,7 @@ export default function CaissePage() {
 
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-[#1B3A6B]" />
+              <Loader2 className="w-6 h-6 animate-spin text-brand" />
             </div>
           ) : current ? (
             <div className="bg-white rounded-xl border border-emerald-100 p-5 space-y-4">

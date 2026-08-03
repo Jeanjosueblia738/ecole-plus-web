@@ -107,7 +107,7 @@ export default function ElevesPage() {
             </div>
             {canCreate && (
               <a href="/eleves/nouveau"
-                className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+                className="flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors">
                 <Plus className="w-4 h-4" /> Ajouter un élève
               </a>
             )}

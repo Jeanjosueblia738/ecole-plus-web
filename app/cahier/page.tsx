@@ -251,7 +251,7 @@ export default function CahierPage() {
                 type="checkbox"
                 checked={devoirsOnly}
                 onChange={(e) => setDevoirsOnly(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-[#1B3A6B]"
+                className="w-4 h-4 rounded border-gray-300 text-brand"
               />
               Travaux à rendre uniquement
             </label>
@@ -259,7 +259,7 @@ export default function CahierPage() {
               <span className="text-sm text-gray-500">{displayedEntries.length} séance(s)</span>
               {canWrite && (
                 <button onClick={() => setShowForm(!showForm)}
-                  className="flex items-center gap-2 bg-[#1B3A6B] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-800 transition-colors">
+                  className="flex items-center gap-2 bg-brand text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors">
                   <Plus className="w-4 h-4" />
                   Nouvelle séance
                 </button>
@@ -351,7 +351,7 @@ export default function CahierPage() {
                   </button>
                   <button type="submit" disabled={saving}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-colors
-                      ${saved ? 'bg-green-600' : 'bg-[#1B3A6B] hover:bg-blue-800'} disabled:opacity-50`}>
+                      ${saved ? 'bg-green-600' : 'bg-brand hover:bg-brand-dark'} disabled:opacity-50`}>
                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Enregistrement...</>
                       : saved ? <><CheckCircle className="w-4 h-4" />Enregistré !</>
                       : <><Save className="w-4 h-4" />Enregistrer</>}
@@ -377,7 +377,7 @@ export default function CahierPage() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[900px]">
                   <thead>
-                    <tr className="bg-[#1B3A6B] text-white">
+                    <tr className="bg-brand text-white">
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-32">Date</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase">Plan du cours</th>
                       <th className="text-left px-4 py-3 text-xs font-semibold uppercase w-48">Prochain cours</th>

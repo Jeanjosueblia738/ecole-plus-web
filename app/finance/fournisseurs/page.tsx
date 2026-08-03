@@ -59,7 +59,7 @@ export default function FournisseursPage() {
               <ArrowLeft className="w-4 h-4" /> Finance
             </Link>
             <button onClick={() => setShow(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1B3A6B] text-white text-sm font-semibold">
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand text-white text-sm font-semibold">
               <Plus className="w-4 h-4" /> Ajouter
             </button>
           </div>
@@ -100,7 +100,7 @@ export default function FournisseursPage() {
                   </div>
                   <button
                     type="button"
-                    className="text-xs font-medium text-[#1B3A6B] border rounded-lg px-3 py-1.5"
+                    className="text-xs font-medium text-brand border rounded-lg px-3 py-1.5"
                     onClick={async () => {
                       await financeApi.updateSupplier(r.id, { isActive: !r.isActive });
                       await load();

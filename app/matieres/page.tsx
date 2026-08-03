@@ -186,7 +186,7 @@ export default function MatieresPage() {
               className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4"
             >
               <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-[#1B3A6B]" /> Nouvelle matière
+                <Plus className="w-4 h-4 text-brand" /> Nouvelle matière
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
@@ -213,7 +213,7 @@ export default function MatieresPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1B3A6B] text-white rounded-xl text-sm font-medium hover:bg-blue-800 disabled:opacity-60"
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-60"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -228,7 +228,7 @@ export default function MatieresPage() {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
               <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#1B3A6B]" />
+                <BookOpen className="w-4 h-4 text-brand" />
                 Catalogue ({rows.length})
               </h2>
               <div className="flex items-center gap-3">
@@ -252,7 +252,7 @@ export default function MatieresPage() {
 
             {loading ? (
               <div className="py-16 flex justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#1B3A6B]" />
+                <Loader2 className="w-8 h-8 animate-spin text-brand" />
               </div>
             ) : rows.length === 0 ? (
               <div className="py-16 text-center text-gray-400 text-sm">
@@ -303,7 +303,7 @@ export default function MatieresPage() {
                             className="w-24 px-2 py-1.5 border border-gray-200 rounded-lg text-sm"
                           />
                         ) : (
-                          <span className="font-semibold text-[#1B3A6B]">
+                          <span className="font-semibold text-brand">
                             ×{row.coefficient}
                           </span>
                         )}
