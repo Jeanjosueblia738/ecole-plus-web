@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import { classesApi, studentsApi, gradesApi, conseilApi } from '@/lib/api';
 import { currentSchoolYear } from '@/lib/school-year';
 import { authStorage } from '@/lib/auth';
-import { generateBulletin } from '@/lib/pdf';
+import { generateBulletin, brandFromTenant } from '@/lib/pdf';
 import { can, hasRole } from '@/lib/rbac';
 
 export default function BulletinsPage() {
@@ -126,11 +126,10 @@ export default function BulletinsPage() {
       const idx = sorted.findIndex(([id]) => id === student.id);
       rang = idx >= 0 ? idx + 1 : undefined;
     }
+    const brand = brandFromTenant(tenant);
     const payload: Record<string, unknown> = {
-      schoolName: tenant?.name || 'Etablissement',
-      schoolCity: tenant?.city || 'Abidjan',
-      schoolCode: tenant?.code || '',
-      schoolStatus: '—',
+      ...brand,
+      schoolStatus: brand.schoolStatus || '—',
       studentName: `${student.lastName} ${student.firstName}`.trim(),
       studentRegistration: student.registrationNo,
       className: selectedClassName,
@@ -168,7 +167,7 @@ export default function BulletinsPage() {
     try {
       const stats = await loadClassStats();
       const data = await loadGrades(student.id);
-      generateBulletin(buildPayload(student, data, stats));
+      await generateBulletin(buildPayload(student, data, stats));
       setDone((d) => [...d, student.id]);
     } catch (e) {
       console.error(e);
@@ -186,7 +185,7 @@ export default function BulletinsPage() {
       for (const student of students) {
         try {
           const data = await loadGrades(student.id);
-          generateBulletin(buildPayload(student, data, stats));
+          await generateBulletin(buildPayload(student, data, stats));
           setDone((d) => [...d, student.id]);
           await new Promise((r) => setTimeout(r, 400));
         } catch (e) {

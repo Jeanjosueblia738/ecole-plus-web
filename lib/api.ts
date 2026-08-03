@@ -50,6 +50,15 @@ export interface AuthTenant {
   name: string;
   city: string;
   plan: string;
+  phone?: string | null;
+  address?: string | null;
+  logoUrl?: string | null;
+  docHeaderLine?: string | null;
+  docFooterLine?: string | null;
+  motto?: string | null;
+  directorName?: string | null;
+  schoolStatus?: string | null;
+  drena?: string | null;
 }
 
 export interface LoginResponse {
@@ -64,6 +73,12 @@ export interface LoginResponse {
 export const authApi = {
   login: (tenantCode: string, email: string, password: string) =>
     api.post<LoginResponse>('/auth/login', { tenantCode, email, password }),
+};
+
+export const tenantsApi = {
+  getMe: () => api.get<AuthTenant>('/tenants/me'),
+  updateMe: (data: Partial<AuthTenant>) =>
+    api.patch<AuthTenant>('/tenants/me', data),
 };
 
 // ── Students ─────────────────────────────────────────────────────────────

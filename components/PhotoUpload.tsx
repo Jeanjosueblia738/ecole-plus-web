@@ -7,7 +7,7 @@ import { uploadAvatar } from '@/lib/supabase';
 interface PhotoUploadProps {
   currentUrl?: string;
   name?: string;
-  folder: 'eleves' | 'enseignants';
+  folder: 'eleves' | 'enseignants' | 'ecoles';
   entityId: string;
   onUpload: (url: string) => void;
   size?: 'sm' | 'lg';

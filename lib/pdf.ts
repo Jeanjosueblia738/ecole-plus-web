@@ -16,6 +16,9 @@ export interface BulletinData {
   schoolAddress?: string;
   schoolStatus?: string; // Public / Privé
   drena?: string;
+  logoUrl?: string;
+  docHeaderLine?: string;
+  docFooterLine?: string;
   studentName: string;
   studentRegistration: string;
   className: string;
@@ -206,10 +209,175 @@ function genderLabel(g?: string) {
   return g;
 }
 
+/** Identité documentaire (tenant) pour en-têtes / pieds PDF */
+export type SchoolBrand = {
+  schoolName: string;
+  schoolCity: string;
+  schoolCode: string;
+  schoolPhone?: string | null;
+  schoolAddress?: string | null;
+  logoUrl?: string | null;
+  docHeaderLine?: string | null;
+  docFooterLine?: string | null;
+  motto?: string | null;
+  directorName?: string | null;
+  schoolStatus?: string | null;
+  drena?: string | null;
+};
+
+export function brandFromTenant(tenant: {
+  name?: string | null;
+  city?: string | null;
+  code?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  logoUrl?: string | null;
+  docHeaderLine?: string | null;
+  docFooterLine?: string | null;
+  motto?: string | null;
+  directorName?: string | null;
+  schoolStatus?: string | null;
+  drena?: string | null;
+} | null | undefined): SchoolBrand {
+  return {
+    schoolName: tenant?.name || 'Établissement',
+    schoolCity: tenant?.city || '',
+    schoolCode: tenant?.code || '',
+    schoolPhone: tenant?.phone ?? null,
+    schoolAddress: tenant?.address ?? null,
+    logoUrl: tenant?.logoUrl ?? null,
+    docHeaderLine: tenant?.docHeaderLine ?? null,
+    docFooterLine: tenant?.docFooterLine ?? null,
+    motto: tenant?.motto ?? null,
+    directorName: tenant?.directorName ?? null,
+    schoolStatus: tenant?.schoolStatus ?? null,
+    drena: tenant?.drena ?? null,
+  };
+}
+
+async function fetchLogoDataUrl(url?: string | null): Promise<string | null> {
+  if (!url || !/^https:\/\//i.test(url)) return null;
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function logoFormat(dataUrl: string): 'PNG' | 'JPEG' | 'WEBP' {
+  if (dataUrl.includes('image/png')) return 'PNG';
+  if (dataUrl.includes('image/webp')) return 'WEBP';
+  return 'JPEG';
+}
+
+/**
+ * En-tête documents (attestation, certificat, relevé) : logo + lignes identité.
+ * Retourne la position Y après le titre.
+ */
+export async function drawSchoolHeader(
+  doc: jsPDF,
+  brand: SchoolBrand,
+  title: string,
+): Promise<number> {
+  const pageW = 210;
+  const margin = 15;
+  let y = 12;
+  const logoData = await fetchLogoDataUrl(brand.logoUrl);
+
+  if (logoData) {
+    try {
+      doc.addImage(logoData, logoFormat(logoData), margin, y - 2, 18, 18);
+    } catch {
+      /* logo illisible */
+    }
+  }
+
+  const textX = logoData ? margin + 22 : pageW / 2;
+  const align = logoData ? 'left' : 'center';
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(20);
+  const header =
+    brand.docHeaderLine ||
+    'MINISTÈRE DE L\'ÉDUCATION NATIONALE ET DE L\'ALPHABÉTISATION';
+  doc.text(header, textX, y, { align, maxWidth: pageW - textX - margin });
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text(
+    brand.drena || `DRENA DE ${(brand.schoolCity || '').toUpperCase() || '—'}`,
+    textX,
+    y,
+    { align },
+  );
+  y += 7;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text((brand.schoolName || 'ÉTABLISSEMENT').toUpperCase(), textX, y, { align });
+  y += 5;
+  if (brand.motto) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    doc.setTextColor(80);
+    doc.text(brand.motto, textX, y, { align });
+    y += 4;
+    doc.setTextColor(20);
+  }
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  const contactBits = [
+    brand.schoolAddress,
+    brand.schoolCity,
+    brand.schoolPhone ? `Tél. ${brand.schoolPhone}` : null,
+  ].filter(Boolean);
+  if (contactBits.length) {
+    doc.text(contactBits.join(' — '), textX, y, { align, maxWidth: pageW - textX - margin });
+    y += 4;
+  }
+  doc.text(`Code MENA : ${brand.schoolCode || '—'}`, textX, y, { align });
+  if (brand.schoolStatus) {
+    y += 4;
+    doc.text(`Statut : ${brand.schoolStatus}`, textX, y, { align });
+  }
+  y += 8;
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageW - margin, y);
+  y += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text(title, pageW / 2, y, { align: 'center' });
+  return y + 10;
+}
+
+export function drawSchoolFooter(doc: jsPDF, brand: SchoolBrand) {
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(100);
+  const line =
+    brand.docFooterLine ||
+    brand.motto ||
+    'Document généré par ECOLE+';
+  doc.text(line, pageW / 2, pageH - 8, { align: 'center', maxWidth: pageW - 24 });
+  doc.setFontSize(5.5);
+  doc.text('Document ECOLE+', pageW / 2, pageH - 4, { align: 'center' });
+}
+
 /**
  * Bulletin trimestriel style MEN / lycée ivoirien (specimen type Bangolo).
  */
-export function generateBulletin(data: BulletinData): void {
+export async function generateBulletin(data: BulletinData): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = 210;
   const pageH = 297;
@@ -220,15 +388,26 @@ export function generateBulletin(data: BulletinData): void {
   const black: [number, number, number] = [20, 20, 20];
   const gray: [number, number, number] = [80, 80, 80];
 
+  const logoData = await fetchLogoDataUrl(data.logoUrl);
+  const logoW = 16;
+  if (logoData) {
+    try {
+      doc.addImage(logoData, logoFormat(logoData), margin, y, logoW, logoW);
+    } catch {
+      /* ignore */
+    }
+  }
+
   // ── En-tête MEN ──────────────────────────────────────────
   doc.setTextColor(...black);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.text(
-    'MINISTÈRE DE L\'ÉDUCATION NATIONALE ET DE L\'ALPHABÉTISATION',
+    data.docHeaderLine ||
+      'MINISTÈRE DE L\'ÉDUCATION NATIONALE ET DE L\'ALPHABÉTISATION',
     pageW / 2,
-    y,
-    { align: 'center' },
+    y + (logoData ? 2 : 0),
+    { align: 'center', maxWidth: contentW - (logoData ? logoW + 4 : 0) },
   );
   y += 4;
   doc.setFont('helvetica', 'normal');
@@ -236,10 +415,10 @@ export function generateBulletin(data: BulletinData): void {
   doc.text(
     data.drena || `DRENA DE ${(data.schoolCity || '').toUpperCase() || '—'}`,
     pageW / 2,
-    y,
+    y + (logoData ? 2 : 0),
     { align: 'center' },
   );
-  y += 6;
+  y += logoData ? 10 : 6;
 
   // Ligne école / code
   const leftX = margin;
@@ -260,6 +439,12 @@ export function generateBulletin(data: BulletinData): void {
   y += 4;
   doc.setFontSize(7.5);
   doc.setTextColor(...gray);
+  if (data.motto) {
+    doc.setFont('helvetica', 'italic');
+    doc.text(data.motto, leftX, y);
+    y += 3.5;
+    doc.setFont('helvetica', 'normal');
+  }
   if (data.schoolAddress) doc.text(data.schoolAddress, leftX, y);
   y += 3.5;
   const contact = [
@@ -643,7 +828,9 @@ export function generateBulletin(data: BulletinData): void {
   doc.setFontSize(6);
   doc.setTextColor(...gray);
   doc.text(
-    data.motto || 'L\'excellence, notre ambition — Document généré par ECOLE+',
+    data.docFooterLine ||
+      data.motto ||
+      'L\'excellence, notre ambition — Document généré par ECOLE+',
     pageW / 2,
     pageH - 6,
     { align: 'center' },
@@ -659,6 +846,12 @@ export interface SchoolDocData {
   schoolCode: string;
   schoolAddress?: string;
   schoolPhone?: string;
+  logoUrl?: string;
+  docHeaderLine?: string;
+  docFooterLine?: string;
+  motto?: string;
+  schoolStatus?: string;
+  drena?: string;
   directorName?: string;
   studentName: string;
   studentRegistration: string;
@@ -670,38 +863,28 @@ export interface SchoolDocData {
   parentName?: string;
 }
 
-function schoolDocHeader(doc: jsPDF, data: SchoolDocData, title: string) {
-  const pageW = 210;
-  let y = 15;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('MINISTÈRE DE L\'ÉDUCATION NATIONALE ET DE L\'ALPHABÉTISATION', pageW / 2, y, { align: 'center' });
-  y += 5;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.text(`DRENA DE ${(data.schoolCity || '').toUpperCase() || '—'}`, pageW / 2, y, { align: 'center' });
-  y += 8;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text((data.schoolName || 'ÉTABLISSEMENT').toUpperCase(), pageW / 2, y, { align: 'center' });
-  y += 5;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  if (data.schoolAddress) doc.text(data.schoolAddress, pageW / 2, y, { align: 'center' });
-  y += 4;
-  doc.text(`Code MENA : ${data.schoolCode || '—'}`, pageW / 2, y, { align: 'center' });
-  y += 10;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text(title, pageW / 2, y, { align: 'center' });
-  return y + 12;
+function asBrand(data: SchoolDocData): SchoolBrand {
+  return {
+    schoolName: data.schoolName,
+    schoolCity: data.schoolCity,
+    schoolCode: data.schoolCode,
+    schoolAddress: data.schoolAddress,
+    schoolPhone: data.schoolPhone,
+    logoUrl: data.logoUrl,
+    docHeaderLine: data.docHeaderLine,
+    docFooterLine: data.docFooterLine,
+    motto: data.motto,
+    directorName: data.directorName,
+    schoolStatus: data.schoolStatus,
+    drena: data.drena,
+  };
 }
 
 /** Attestation de scolarité (inscription en cours). */
-export function generateAttestationScolarite(data: SchoolDocData): void {
+export async function generateAttestationScolarite(data: SchoolDocData): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 20;
-  let y = schoolDocHeader(doc, data, 'ATTESTATION DE SCOLARITÉ');
+  let y = await drawSchoolHeader(doc, asBrand(data), 'ATTESTATION DE SCOLARITÉ');
   const city = data.schoolCity || '—';
   const today = new Date().toLocaleDateString('fr-FR');
 
@@ -736,14 +919,15 @@ export function generateAttestationScolarite(data: SchoolDocData): void {
     doc.setFont('helvetica', 'normal');
     doc.text(data.directorName, 140, y + 10);
   }
+  drawSchoolFooter(doc, asBrand(data));
   doc.save(`attestation_${data.studentRegistration || 'eleve'}.pdf`);
 }
 
 /** Certificat de scolarité (fin d'année / radiation). */
-export function generateCertificatScolarite(data: SchoolDocData & { purpose?: string }): void {
+export async function generateCertificatScolarite(data: SchoolDocData & { purpose?: string }): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 20;
-  let y = schoolDocHeader(doc, data, 'CERTIFICAT DE SCOLARITÉ');
+  let y = await drawSchoolHeader(doc, asBrand(data), 'CERTIFICAT DE SCOLARITÉ');
   const city = data.schoolCity || '—';
   const today = new Date().toLocaleDateString('fr-FR');
 
@@ -770,6 +954,7 @@ export function generateCertificatScolarite(data: SchoolDocData & { purpose?: st
     doc.setFont('helvetica', 'normal');
     doc.text(data.directorName, 140, y + 10);
   }
+  drawSchoolFooter(doc, asBrand(data));
   doc.save(`certificat_${data.studentRegistration || 'eleve'}.pdf`);
 }
 
@@ -780,10 +965,10 @@ export interface ReleveNotesData extends SchoolDocData {
 }
 
 /** Relevé de notes trimestriel (simplifié). */
-export function generateReleveNotes(data: ReleveNotesData): void {
+export async function generateReleveNotes(data: ReleveNotesData): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const margin = 15;
-  let y = schoolDocHeader(doc, data, `RELEVÉ DE NOTES — ${trimestreLabel(data.trimestre)}`);
+  let y = await drawSchoolHeader(doc, asBrand(data), `RELEVÉ DE NOTES — ${trimestreLabel(data.trimestre)}`);
   y += 2;
 
   doc.setFont('helvetica', 'normal');
@@ -820,6 +1005,7 @@ export function generateReleveNotes(data: ReleveNotesData): void {
   doc.setFontSize(9);
   const city = data.schoolCity || '—';
   doc.text(`Fait à ${city}, le ${new Date().toLocaleDateString('fr-FR')}`, margin, y);
+  drawSchoolFooter(doc, asBrand(data));
 
   doc.save(`releve_${data.studentRegistration || 'eleve'}_${data.trimestre}.pdf`);
 }
@@ -827,6 +1013,11 @@ export function generateReleveNotes(data: ReleveNotesData): void {
 export interface PaymentReceiptData {
   schoolName: string;
   schoolCity?: string;
+  schoolPhone?: string;
+  schoolAddress?: string;
+  logoUrl?: string;
+  docFooterLine?: string;
+  motto?: string;
   receiptNo: string;
   studentName: string;
   matricule?: string;
@@ -839,23 +1030,40 @@ export interface PaymentReceiptData {
 }
 
 /** Reçu de paiement (aligné mobile). */
-export function generatePaymentReceipt(data: PaymentReceiptData): void {
+export async function generatePaymentReceipt(data: PaymentReceiptData): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a5' });
   const margin = 12;
-  let y = 16;
+  let y = 14;
   const fmt = (n: number) =>
     new Intl.NumberFormat('fr-CI').format(n || 0) + ' FCFA';
+
+  const logoData = await fetchLogoDataUrl(data.logoUrl);
+  if (logoData) {
+    try {
+      doc.addImage(logoData, logoFormat(logoData), margin, y - 2, 14, 14);
+    } catch {
+      /* ignore */
+    }
+  }
+  const textX = logoData ? margin + 18 : margin;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(27, 58, 107);
-  doc.text(data.schoolName || 'ECOLE+', margin, y);
-  y += 6;
+  doc.text(data.schoolName || 'Établissement', textX, y + 4);
+  y += 8;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(80);
-  if (data.schoolCity) {
-    doc.text(data.schoolCity, margin, y);
+  const sub = [data.schoolCity, data.schoolPhone ? `Tél. ${data.schoolPhone}` : null]
+    .filter(Boolean)
+    .join(' — ');
+  if (sub) {
+    doc.text(sub, textX, y);
+    y += 5;
+  }
+  if (data.schoolAddress) {
+    doc.text(data.schoolAddress, textX, y, { maxWidth: 110 });
     y += 5;
   }
   doc.setDrawColor(27, 58, 107);
@@ -903,6 +1111,14 @@ export function generatePaymentReceipt(data: PaymentReceiptData): void {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.text('Cachet / Signature', 95, y);
+
+  drawSchoolFooter(doc, {
+    schoolName: data.schoolName,
+    schoolCity: data.schoolCity || '',
+    schoolCode: '',
+    docFooterLine: data.docFooterLine,
+    motto: data.motto,
+  });
 
   doc.save(`recu_${data.receiptNo || 'paiement'}.pdf`);
 }

@@ -19,7 +19,7 @@ export async function uploadAvatar(file: File, folder: string, id: string): Prom
     return null;
   }
 
-  const allowedFolders = new Set(['eleves', 'enseignants', 'admins']);
+  const allowedFolders = new Set(['eleves', 'enseignants', 'admins', 'ecoles']);
   if (!allowedFolders.has(folder)) {
     console.error('Upload refusé : dossier invalide');
     return null;

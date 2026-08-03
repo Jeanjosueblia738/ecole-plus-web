@@ -51,6 +51,10 @@ export const authStorage = {
       return null;
     }
   },
+  /** Met à jour le cookie tenant (branding) sans nouveau login */
+  setTenant: (tenant: AuthTenant) => {
+    Cookies.set(TENANT_KEY, JSON.stringify(tenant), cookieOpts);
+  },
   isLoggedIn: () => !!Cookies.get(USER_KEY),
   clear: async () => {
     await fetch('/api/auth/session?kind=ecole', { method: 'DELETE' });

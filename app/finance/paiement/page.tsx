@@ -10,7 +10,7 @@ import { financeApi, studentsApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
-import { generatePaymentReceipt } from '@/lib/pdf';
+import { generatePaymentReceipt, brandFromTenant } from '@/lib/pdf';
 
 const METHODS = [
   { value: 'especes', label: 'Espèces' },
@@ -135,9 +135,15 @@ export default function FinancePaiementPage() {
     const r = success?.receipt;
     if (!r) return;
     const tenant = authStorage.getTenant();
-    generatePaymentReceipt({
-      schoolName: tenant?.name || 'Établissement',
-      schoolCity: tenant?.city || '',
+    const brand = brandFromTenant(tenant);
+    void generatePaymentReceipt({
+      schoolName: brand.schoolName,
+      schoolCity: brand.schoolCity,
+      schoolPhone: brand.schoolPhone || undefined,
+      schoolAddress: brand.schoolAddress || undefined,
+      logoUrl: brand.logoUrl || undefined,
+      docFooterLine: brand.docFooterLine || undefined,
+      motto: brand.motto || undefined,
       receiptNo: r.receiptNo || success.receiptNo,
       studentName: r.student,
       matricule: r.matricule,

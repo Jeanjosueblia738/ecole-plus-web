@@ -10,7 +10,7 @@ import { financeApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
-import { generatePaymentReceipt } from '@/lib/pdf';
+import { generatePaymentReceipt, brandFromTenant } from '@/lib/pdf';
 
 const FILTERS = ['Tous', 'Validé', 'Partiel', 'Impayé'] as const;
 
@@ -74,9 +74,15 @@ export default function FinanceHistoriquePage() {
 
   const download = (p: any) => {
     const tenant = authStorage.getTenant();
-    generatePaymentReceipt({
-      schoolName: tenant?.name || 'Établissement',
-      schoolCity: tenant?.city || '',
+    const brand = brandFromTenant(tenant);
+    void generatePaymentReceipt({
+      schoolName: brand.schoolName,
+      schoolCity: brand.schoolCity,
+      schoolPhone: brand.schoolPhone || undefined,
+      schoolAddress: brand.schoolAddress || undefined,
+      logoUrl: brand.logoUrl || undefined,
+      docFooterLine: brand.docFooterLine || undefined,
+      motto: brand.motto || undefined,
       receiptNo: p.receiptNo || `REC-${String(p.id).slice(0, 8)}`,
       studentName: p.studentName,
       matricule: '',

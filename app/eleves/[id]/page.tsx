@@ -14,6 +14,7 @@ import {
   generateCertificatScolarite,
   generateReleveNotes,
   aggregateSubjects,
+  brandFromTenant,
 } from '@/lib/pdf';
 
 export default function EleveDetailPage() {
@@ -71,19 +72,20 @@ export default function EleveDetailPage() {
     }
   };
 
-  const schoolDocBase = () => ({
-    schoolName: tenant?.name || 'Établissement',
-    schoolCity: tenant?.city || '',
-    schoolCode: tenant?.code || '',
-    studentName: `${student?.firstName ?? ''} ${student?.lastName ?? ''}`.trim(),
-    studentRegistration: student?.registrationNo || '',
-    className: student?.class?.name || '—',
-    level: student?.class?.level || '—',
-    year,
-    gender: student?.gender,
-    dateOfBirth: student?.dateOfBirth,
-    parentName: student?.parentName,
-  });
+  const schoolDocBase = () => {
+    const brand = brandFromTenant(tenant);
+    return {
+      ...brand,
+      studentName: `${student?.firstName ?? ''} ${student?.lastName ?? ''}`.trim(),
+      studentRegistration: student?.registrationNo || '',
+      className: student?.class?.name || '—',
+      level: student?.class?.level || '—',
+      year,
+      gender: student?.gender,
+      dateOfBirth: student?.dateOfBirth,
+      parentName: student?.parentName,
+    };
+  };
 
   const downloadReleve = async () => {
     if (!student) return;
@@ -99,7 +101,7 @@ export default function EleveDetailPage() {
       const lines = aggregateSubjects(bulletinGrades);
       const coef = lines.reduce((s, l) => s + l.coefficient, 0) || 1;
       const moyenne = lines.reduce((s, l) => s + l.total, 0) / coef;
-      generateReleveNotes({
+      await generateReleveNotes({
         ...schoolDocBase(),
         trimestre: pdfTrimestre,
         grades: bulletinGrades,
@@ -446,14 +448,14 @@ export default function EleveDetailPage() {
                   <div className="flex flex-wrap gap-3 items-end">
                     <button
                       type="button"
-                      onClick={() => student && generateAttestationScolarite(schoolDocBase())}
+                      onClick={() => student && void generateAttestationScolarite(schoolDocBase())}
                       className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                       Attestation de scolarité
                     </button>
                     <button
                       type="button"
-                      onClick={() => student && generateCertificatScolarite(schoolDocBase())}
+                      onClick={() => student && void generateCertificatScolarite(schoolDocBase())}
                       className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
                       Certificat de scolarité

@@ -20,8 +20,14 @@ async function forward(req: NextRequest, path: string[], method: string) {
   const url = new URL(`${API_URL}/${joined}`);
   req.nextUrl.searchParams.forEach((v, k) => url.searchParams.set(k, v));
 
+  const isTenantSelf =
+    joined === 'tenants/me' ||
+    joined.startsWith('tenants/me/') ||
+    joined === 'tenants/my-group' ||
+    joined.startsWith('tenants/my-group/');
+
   const isSa =
-    joined.startsWith('tenants') ||
+    (!isTenantSelf && joined.startsWith('tenants')) ||
     joined.startsWith('school-groups') ||
     joined.startsWith('auth/super-admin') ||
     joined.startsWith('super-admin') ||
