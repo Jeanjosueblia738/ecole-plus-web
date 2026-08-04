@@ -20,13 +20,13 @@ export interface BulletinData {
   schoolName: string;
   schoolCity: string;
   schoolCode: string;
-  schoolPhone?: string;
-  schoolAddress?: string;
-  schoolStatus?: string; // Public / Privé
-  drena?: string;
-  logoUrl?: string;
-  docHeaderLine?: string;
-  docFooterLine?: string;
+  schoolPhone?: string | null;
+  schoolAddress?: string | null;
+  schoolStatus?: string | null; // Public / Privé
+  drena?: string | null;
+  logoUrl?: string | null;
+  docHeaderLine?: string | null;
+  docFooterLine?: string | null;
   studentName: string;
   studentRegistration: string;
   className: string;
@@ -51,8 +51,8 @@ export interface BulletinData {
   absencesJustified?: number;
   absencesUnjustified?: number;
   appreciation?: string;
-  directorName?: string;
-  motto?: string;
+  directorName?: string | null;
+  motto?: string | null;
   /** Décision conseil de classe (si saisie) */
   councilMention?: string;
   councilDecision?: string;
@@ -852,15 +852,15 @@ export interface SchoolDocData {
   schoolName: string;
   schoolCity: string;
   schoolCode: string;
-  schoolAddress?: string;
-  schoolPhone?: string;
-  logoUrl?: string;
-  docHeaderLine?: string;
-  docFooterLine?: string;
-  motto?: string;
-  schoolStatus?: string;
-  drena?: string;
-  directorName?: string;
+  schoolAddress?: string | null;
+  schoolPhone?: string | null;
+  logoUrl?: string | null;
+  docHeaderLine?: string | null;
+  docFooterLine?: string | null;
+  motto?: string | null;
+  schoolStatus?: string | null;
+  drena?: string | null;
+  directorName?: string | null;
   studentName: string;
   studentRegistration: string;
   className: string;
@@ -1021,11 +1021,11 @@ export async function generateReleveNotes(data: ReleveNotesData): Promise<void> 
 export interface PaymentReceiptData {
   schoolName: string;
   schoolCity?: string;
-  schoolPhone?: string;
-  schoolAddress?: string;
-  logoUrl?: string;
-  docFooterLine?: string;
-  motto?: string;
+  schoolPhone?: string | null;
+  schoolAddress?: string | null;
+  logoUrl?: string | null;
+  docFooterLine?: string | null;
+  motto?: string | null;
   receiptNo: string;
   studentName: string;
   matricule?: string;
