@@ -82,21 +82,26 @@ export default function PaiePage() {
 
   const submitManual = async (e: React.FormEvent) => {
     e.preventDefault();
-    await financeApi.createPayroll({
-      label: form.label || `Paie ${form.month}/${gen.year}`,
-      year: String(now.getFullYear()),
-      month: Number(form.month),
-      slips: [
-        {
-          employeeName: form.employeeName,
-          baseSalaryXof: Number(form.baseSalaryXof),
-          allowancesXof: Number(form.allowancesXof) || 0,
-          deductionsXof: Number(form.deductionsXof) || 0,
-        },
-      ],
-    });
-    setShowManual(false);
-    await load();
+    try {
+      await financeApi.createPayroll({
+        label: form.label || `Paie ${form.month}/${gen.year}`,
+        year: String(now.getFullYear()),
+        month: Number(form.month),
+        slips: [
+          {
+            employeeName: form.employeeName,
+            baseSalaryXof: Number(form.baseSalaryXof),
+            allowancesXof: Number(form.allowancesXof) || 0,
+            deductionsXof: Number(form.deductionsXof) || 0,
+          },
+        ],
+      });
+      setShowManual(false);
+      await load();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message;
+      alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec création du bulletin.');
+    }
   };
 
   return (
@@ -258,8 +263,13 @@ export default function PaiePage() {
                         <button
                           className="px-3 py-1.5 rounded-lg border text-xs font-medium"
                           onClick={async () => {
-                            await financeApi.payrollStatus(r.id, 'VALIDATED');
-                            await load();
+                            try {
+                              await financeApi.payrollStatus(r.id, 'VALIDATED');
+                              await load();
+                            } catch (err: any) {
+                              const msg = err?.response?.data?.message;
+                              alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Validation impossible.');
+                            }
                           }}
                         >
                           Valider
@@ -297,8 +307,13 @@ export default function PaiePage() {
                         <button
                           className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium"
                           onClick={async () => {
-                            await financeApi.payrollStatus(r.id, 'PAID');
-                            await load();
+                            try {
+                              await financeApi.payrollStatus(r.id, 'PAID');
+                              await load();
+                            } catch (err: any) {
+                              const msg = err?.response?.data?.message;
+                              alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Mise à jour impossible.');
+                            }
                           }}
                         >
                           Marquer payé

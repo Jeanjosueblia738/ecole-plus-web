@@ -61,17 +61,22 @@ export default function BudgetPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await financeApi.createBudget({
-      year,
-      label: form.label,
-      lines: [{
-        category: form.category,
-        label: form.lineLabel || form.category,
-        plannedXof: Number(form.plannedXof),
-      }],
-    });
-    setShow(false);
-    await load();
+    try {
+      await financeApi.createBudget({
+        year,
+        label: form.label,
+        lines: [{
+          category: form.category,
+          label: form.lineLabel || form.category,
+          plannedXof: Number(form.plannedXof),
+        }],
+      });
+      setShow(false);
+      await load();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message;
+      alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec enregistrement du budget.');
+    }
   };
 
   return (

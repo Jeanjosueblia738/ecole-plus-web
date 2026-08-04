@@ -131,7 +131,10 @@ export default function EmploiDuTempsPage() {
   };
 
   const handleSave = async () => {
-    if (!form.classId || !form.subject || !form.startTime || !form.endTime) { return; }
+    if (!form.classId || !form.subject || !form.startTime || !form.endTime) {
+      setError('Classe, matière, heure de début et de fin sont obligatoires.');
+      return;
+    }
     setSaving(true);
     try {
       await api.post('/timetable', form);

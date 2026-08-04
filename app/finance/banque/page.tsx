@@ -113,12 +113,17 @@ export default function BanquePage() {
           {showAccount && (
             <form className="bg-white border rounded-xl p-4 grid sm:grid-cols-3 gap-3" onSubmit={async (e) => {
               e.preventDefault();
-              await financeApi.createBankAccount({
-                ...accForm,
-                openingBalanceXof: Number(accForm.openingBalanceXof) || 0,
-              });
-              setShowAccount(false);
-              await load();
+              try {
+                await financeApi.createBankAccount({
+                  ...accForm,
+                  openingBalanceXof: Number(accForm.openingBalanceXof) || 0,
+                });
+                setShowAccount(false);
+                await load();
+              } catch (err: any) {
+                const msg = err?.response?.data?.message;
+                alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec création du compte.');
+              }
             }}>
               <input required className="border rounded-lg px-3 py-2 text-sm" placeholder="Nom du compte"
                 value={accForm.name} onChange={(e) => setAccForm({ ...accForm, name: e.target.value })} />
@@ -136,15 +141,20 @@ export default function BanquePage() {
           {showTx && selected && (
             <form className="bg-white border rounded-xl p-4 grid sm:grid-cols-3 gap-3" onSubmit={async (e) => {
               e.preventDefault();
-              await financeApi.createBankTransaction({
-                accountId: selected,
-                type: txForm.type,
-                amountXof: Number(txForm.amountXof),
-                label: txForm.label,
-              });
-              setShowTx(false);
-              setTxForm({ type: 'CREDIT', amountXof: '', label: '' });
-              await loadDetail(selected);
+              try {
+                await financeApi.createBankTransaction({
+                  accountId: selected,
+                  type: txForm.type,
+                  amountXof: Number(txForm.amountXof),
+                  label: txForm.label,
+                });
+                setShowTx(false);
+                setTxForm({ type: 'CREDIT', amountXof: '', label: '' });
+                await loadDetail(selected);
+              } catch (err: any) {
+                const msg = err?.response?.data?.message;
+                alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec enregistrement du mouvement.');
+              }
             }}>
               <select className="border rounded-lg px-3 py-2 text-sm" value={txForm.type}
                 onChange={(e) => setTxForm({ ...txForm, type: e.target.value })}>
@@ -165,15 +175,20 @@ export default function BanquePage() {
           {showRec && selected && (
             <form className="bg-white border rounded-xl p-4 grid sm:grid-cols-3 gap-3" onSubmit={async (e) => {
               e.preventDefault();
-              await financeApi.reconcileBank({
-                accountId: selected,
-                periodStart: recForm.periodStart,
-                periodEnd: recForm.periodEnd,
-                statementBalanceXof: Number(recForm.statementBalanceXof),
-                markReconciledIds: txs.filter((t) => !t.isReconciled).map((t) => t.id),
-              });
-              setShowRec(false);
-              await loadDetail(selected);
+              try {
+                await financeApi.reconcileBank({
+                  accountId: selected,
+                  periodStart: recForm.periodStart,
+                  periodEnd: recForm.periodEnd,
+                  statementBalanceXof: Number(recForm.statementBalanceXof),
+                  markReconciledIds: txs.filter((t) => !t.isReconciled).map((t) => t.id),
+                });
+                setShowRec(false);
+                await loadDetail(selected);
+              } catch (err: any) {
+                const msg = err?.response?.data?.message;
+                alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec du rapprochement.');
+              }
             }}>
               <input required type="date" className="border rounded-lg px-3 py-2 text-sm"
                 value={recForm.periodStart} onChange={(e) => setRecForm({ ...recForm, periodStart: e.target.value })} />

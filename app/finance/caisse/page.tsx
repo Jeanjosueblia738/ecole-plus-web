@@ -30,17 +30,25 @@ export default function CaissePage() {
 
   const load = async () => {
     setLoading(true);
+    setMsg('');
     try {
-      const [cur, list, banks] = await Promise.all([
+      const [cur, list] = await Promise.all([
         financeApi.cashCurrent(),
         financeApi.cashSessions(20),
-        canOps
-          ? financeApi.listBankAccounts().catch(() => ({ data: [] }))
-          : Promise.resolve({ data: [] }),
       ]);
       setCurrent(cur.data || null);
       setSessions(Array.isArray(list.data) ? list.data : []);
-      setAccounts(Array.isArray(banks.data) ? banks.data : []);
+      if (canOps) {
+        try {
+          const banks = await financeApi.listBankAccounts();
+          setAccounts(Array.isArray(banks.data) ? banks.data : []);
+        } catch {
+          setAccounts([]);
+          setMsg('Impossible de charger les comptes bancaires (versement).');
+        }
+      } else {
+        setAccounts([]);
+      }
     } catch {
       setMsg('Impossible de charger la caisse.');
     } finally {

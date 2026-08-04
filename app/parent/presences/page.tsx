@@ -12,12 +12,15 @@ export default function ParentPresencesPage() {
   const [studentId, setStudentId] = useState('');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [rowsError, setRowsError] = useState('');
 
   useEffect(() => {
     if (!authStorage.isLoggedIn() || authStorage.getUser()?.role !== 'PARENT') {
       router.push('/login');
       return;
     }
+    setLoadError('');
     parentApi
       .myChildren()
       .then(({ data }) => {
@@ -25,11 +28,13 @@ export default function ParentPresencesPage() {
         setChildren(list);
         if (list[0]) setStudentId(list[0].id);
       })
+      .catch(() => setLoadError('Impossible de charger vos enfants.'))
       .finally(() => setLoading(false));
   }, [router]);
 
   useEffect(() => {
     if (!studentId) return;
+    setRowsError('');
     attendanceApi
       .getByStudent(studentId)
       .then(({ data }) => {
@@ -38,7 +43,10 @@ export default function ParentPresencesPage() {
           : data?.attendances || data?.records || [];
         setRows(list);
       })
-      .catch(() => setRows([]));
+      .catch(() => {
+        setRows([]);
+        setRowsError('Impossible de charger les présences.');
+      });
   }, [studentId]);
 
   if (loading) {
@@ -52,6 +60,11 @@ export default function ParentPresencesPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold text-gray-900">Présences</h1>
+      {loadError && (
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">
+          {loadError}
+        </div>
+      )}
       <select
         value={studentId}
         onChange={(e) => setStudentId(e.target.value)}
@@ -63,8 +76,13 @@ export default function ParentPresencesPage() {
           </option>
         ))}
       </select>
+      {rowsError && (
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">
+          {rowsError}
+        </div>
+      )}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        {rows.length === 0 ? (
+        {rowsError ? null : rows.length === 0 ? (
           <p className="p-8 text-center text-gray-400 text-sm">Aucun enregistrement</p>
         ) : (
           <ul className="divide-y divide-gray-50">

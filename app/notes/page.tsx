@@ -63,7 +63,10 @@ export default function NotesPage() {
           setCoefficient(String(rows[0].coefficient));
         }
       })
-      .catch(() => setCatalog([]));
+      .catch(() => {
+        setCatalog([]);
+        setLoadError((prev) => prev || 'Impossible de charger le catalogue de matières.');
+      });
   }, [router]);
 
   const onSubjectChange = (name: string) => {
@@ -150,6 +153,12 @@ export default function NotesPage() {
           subtitle={selectedClassName ? `Classe : ${selectedClassName}` : 'Sélectionnez une classe'}
         />
         <main className="flex-1 p-6">
+
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-6">
+              {loadError}
+            </div>
+          )}
 
           {/* Paramètres de saisie */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">

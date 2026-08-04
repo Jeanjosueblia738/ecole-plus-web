@@ -36,6 +36,7 @@ export default function SuperAdminPage() {
   const [meta, setMeta] = useState<any>(null);
   const [saUser, setSaUser] = useState<any>({});
   const [mounted, setMounted] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const getHeaders = () => saAuth.authHeader();
 
@@ -55,6 +56,7 @@ export default function SuperAdminPage() {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const headers = getHeaders();
       const [tenantsRes, statsRes] = await Promise.allSettled([
@@ -64,9 +66,16 @@ export default function SuperAdminPage() {
       if (tenantsRes.status === 'fulfilled') {
         setTenants(tenantsRes.value.data.data ?? []);
         setMeta(tenantsRes.value.data.meta);
+      } else {
+        setTenants([]);
+        setMeta(null);
+        setLoadError('Impossible de charger les établissements.');
       }
       if (statsRes.status === 'fulfilled') { setStats(statsRes.value.data); }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      setLoadError('Impossible de charger les établissements.');
+    }
     finally { setLoading(false); }
   };
 
@@ -75,7 +84,11 @@ export default function SuperAdminPage() {
     try {
       await api.patch(`/tenants/${id}/${isActive ? 'suspend' : 'activate'}`, {}, { headers: getHeaders() });
       setTenants(t => t.map(x => x.id === id ? { ...x, isActive: !isActive } : x));
-    } catch (e) { console.error(e); }
+    } catch (e: any) {
+      console.error(e);
+      const msg = e?.response?.data?.message;
+      alert(Array.isArray(msg) ? msg.join(' · ') : msg || (isActive ? 'Suspension impossible.' : 'Activation impossible.'));
+    }
     finally { setActionLoading(null); }
   };
 
@@ -216,6 +229,11 @@ export default function SuperAdminPage() {
             <h3 className="font-semibold text-gray-800">Établissements ({filtered.length})</h3>
             {meta && <p className="text-sm text-gray-400">Page {meta.page} / {meta.pages} — {meta.total} total</p>}
           </div>
+          {loadError && (
+            <div className="mx-6 mt-4 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+              {loadError}
+            </div>
+          )}
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="animate-spin w-8 h-8 border-4 border-brand border-t-transparent rounded-full" />

@@ -62,6 +62,7 @@ export default function DisciplinePage() {
   });
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [studentsError, setStudentsError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -100,12 +101,17 @@ export default function DisciplinePage() {
   useEffect(() => {
     if (!form.classId) {
       setStudents([]);
+      setStudentsError('');
       return;
     }
+    setStudentsError('');
     studentsApi
       .getAll({ classId: form.classId })
       .then(({ data }) => setStudents(Array.isArray(data) ? data : []))
-      .catch(() => setStudents([]));
+      .catch(() => {
+        setStudents([]);
+        setStudentsError('Impossible de charger les élèves.');
+      });
   }, [form.classId]);
 
   const loadRows = async () => {
@@ -414,6 +420,9 @@ export default function DisciplinePage() {
                     </option>
                   ))}
                 </select>
+                {studentsError && (
+                  <p className="mt-1 text-xs text-red-600">{studentsError}</p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

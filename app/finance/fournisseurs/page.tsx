@@ -42,10 +42,15 @@ export default function FournisseursPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await financeApi.createSupplier(form);
-    setShow(false);
-    setForm({ name: '', phone: '', category: '', email: '' });
-    await load();
+    try {
+      await financeApi.createSupplier(form);
+      setShow(false);
+      setForm({ name: '', phone: '', category: '', email: '' });
+      await load();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message;
+      alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec enregistrement du fournisseur.');
+    }
   };
 
   return (
@@ -102,8 +107,13 @@ export default function FournisseursPage() {
                     type="button"
                     className="text-xs font-medium text-brand border rounded-lg px-3 py-1.5"
                     onClick={async () => {
-                      await financeApi.updateSupplier(r.id, { isActive: !r.isActive });
-                      await load();
+                      try {
+                        await financeApi.updateSupplier(r.id, { isActive: !r.isActive });
+                        await load();
+                      } catch (err: any) {
+                        const msg = err?.response?.data?.message;
+                        alert(Array.isArray(msg) ? msg.join(' · ') : msg || 'Échec mise à jour du fournisseur.');
+                      }
                     }}
                   >
                     {r.isActive ? 'Désactiver' : 'Réactiver'}

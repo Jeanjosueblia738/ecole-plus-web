@@ -63,6 +63,7 @@ export default function ParentFinanceInner() {
 
   useEffect(() => {
     if (!studentId) return;
+    setError('');
     financeApi
       .getStudentFinance(studentId)
       .then(({ data }) => {
@@ -84,7 +85,10 @@ export default function ParentFinanceInner() {
           setAmount(String(Math.max(0, Math.round(due || 0))));
         }
       })
-      .catch(() => setFinance(null));
+      .catch(() => {
+        setFinance(null);
+        setError('Impossible de charger les frais de cet élève.');
+      });
   }, [studentId]);
 
   const fees = finance?.fees || finance?.studentFees || [];

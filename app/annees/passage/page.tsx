@@ -119,8 +119,16 @@ export default function PassagePage() {
     }
     classesApi
       .getAll(toYear.label)
-      .then(({ data }) => setTargetClasses(Array.isArray(data) ? data : []))
-      .catch(() => setTargetClasses([]));
+      .then(({ data }) => {
+        setTargetClasses(Array.isArray(data) ? data : []);
+        setError((prev) =>
+          prev === 'Impossible de charger les classes cibles.' ? '' : prev,
+        );
+      })
+      .catch(() => {
+        setTargetClasses([]);
+        setError('Impossible de charger les classes cibles.');
+      });
   }, [toYear?.label]);
 
   const updateRow = (studentId: string, patch: Partial<StudentRow>) => {
@@ -230,7 +238,7 @@ export default function PassagePage() {
                 </label>
               </div>
 
-              {toYear && targetClasses.length === 0 && (
+              {toYear && targetClasses.length === 0 && error !== 'Impossible de charger les classes cibles.' && (
                 <p className="text-sm text-amber-700 bg-amber-50 px-4 py-3 rounded-lg">
                   Aucune classe pour {toYear.label}. Clonez d&apos;abord les classes depuis
                   Années scolaires.

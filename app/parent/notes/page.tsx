@@ -12,12 +12,15 @@ export default function ParentNotesPage() {
   const [studentId, setStudentId] = useState('');
   const [grades, setGrades] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [gradesError, setGradesError] = useState('');
 
   useEffect(() => {
     if (!authStorage.isLoggedIn() || authStorage.getUser()?.role !== 'PARENT') {
       router.push('/login');
       return;
     }
+    setLoadError('');
     parentApi
       .myChildren()
       .then(({ data }) => {
@@ -25,15 +28,20 @@ export default function ParentNotesPage() {
         setChildren(list);
         if (list[0]) setStudentId(list[0].id);
       })
+      .catch(() => setLoadError('Impossible de charger vos enfants.'))
       .finally(() => setLoading(false));
   }, [router]);
 
   useEffect(() => {
     if (!studentId) return;
+    setGradesError('');
     gradesApi
       .getByStudent(studentId)
       .then(({ data }) => setGrades(Array.isArray(data) ? data : data?.grades || []))
-      .catch(() => setGrades([]));
+      .catch(() => {
+        setGrades([]);
+        setGradesError('Impossible de charger les notes.');
+      });
   }, [studentId]);
 
   if (loading) {
@@ -47,6 +55,11 @@ export default function ParentNotesPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold text-gray-900">Notes</h1>
+      {loadError && (
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">
+          {loadError}
+        </div>
+      )}
       <select
         value={studentId}
         onChange={(e) => setStudentId(e.target.value)}
@@ -58,8 +71,13 @@ export default function ParentNotesPage() {
           </option>
         ))}
       </select>
+      {gradesError && (
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">
+          {gradesError}
+        </div>
+      )}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-        {grades.length === 0 ? (
+        {gradesError ? null : grades.length === 0 ? (
           <p className="p-8 text-center text-gray-400 text-sm">Aucune note</p>
         ) : (
           <table className="w-full text-sm">

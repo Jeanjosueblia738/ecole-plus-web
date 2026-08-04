@@ -14,6 +14,7 @@ export default function DrenaDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [saUser, setSaUser] = useState<any>({});
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -26,11 +27,14 @@ export default function DrenaDashboardPage() {
 
   const loadStats = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const { data } = await api.get('/tenants/stats', { headers: saAuth.authHeader() });
       setStats(data);
     } catch (e) {
       console.error(e);
+      setStats(null);
+      setLoadError('Impossible de charger les statistiques DRENA.');
     } finally {
       setLoading(false);
     }
@@ -89,6 +93,10 @@ export default function DrenaDashboardPage() {
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="animate-spin w-10 h-10 border-4 border-brand border-t-transparent rounded-full" />
+          </div>
+        ) : loadError ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+            {loadError}
           </div>
         ) : (
           <>
