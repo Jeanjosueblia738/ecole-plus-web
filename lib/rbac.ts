@@ -114,7 +114,7 @@ export const can = {
   /** Comptes marchands MM (frais parents) — Admin / Fondateur uniquement */
   managePaymentMerchants: ['ADMIN', 'FOUNDER'] as Role[],
   /** Identité documents (logo, en-tête, pied) */
-  manageTenantBranding: ['ADMIN', 'FOUNDER'] as Role[],
+  manageTenantBranding: ['ADMIN', 'FOUNDER', 'DIRECTOR'] as Role[],
   /** Écriture journal OHADA — comptable seul */
   writeOhada: ['ACCOUNTANT'] as Role[],
   manageAcademicYears: ['ADMIN', 'FOUNDER'] as Role[],

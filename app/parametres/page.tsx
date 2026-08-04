@@ -176,15 +176,20 @@ export default function ParametresPage() {
             </div>
           </div>
 
-          {canBrand && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+          {canBrand ? (
+            <div
+              id="identite-documents"
+              className="bg-white rounded-xl shadow-sm border-2 border-brand/30 p-6 mb-4"
+            >
               <div className="flex items-center gap-3 mb-2">
-                <FileText className="w-5 h-5 text-blue-600" />
-                <h2 className="font-semibold text-gray-800">Identité & documents</h2>
+                <FileText className="w-5 h-5 text-brand" />
+                <h2 className="font-semibold text-gray-800">
+                  Logo &amp; documents administratifs
+                </h2>
               </div>
               <p className="text-sm text-gray-500 mb-4">
-                Logo, en-tête et pied de page utilisés sur bulletins, attestations,
-                certificats, relevés et reçus.
+                Ajoutez le logo de l&apos;école et les textes d&apos;en-tête / pied de
+                page pour les bulletins, attestations, certificats et reçus.
               </p>
               {loadingBrand ? (
                 <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -192,14 +197,22 @@ export default function ParametresPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex justify-center mb-2">
-                    <PhotoUpload
-                      currentUrl={form.logoUrl || undefined}
-                      name={tenant?.name}
-                      folder="ecoles"
-                      entityId={tenant?.id || 'school'}
-                      onUpload={(url) => setField('logoUrl', url)}
-                    />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2 text-center">
+                      Logo de l&apos;établissement
+                    </p>
+                    <div className="flex justify-center mb-2">
+                      <PhotoUpload
+                        currentUrl={form.logoUrl || undefined}
+                        name={tenant?.name}
+                        folder="ecoles"
+                        entityId={tenant?.id || 'school'}
+                        onUpload={(url) => setField('logoUrl', url)}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 text-center">
+                      Cliquez sur l&apos;image pour uploader (PNG ou JPG)
+                    </p>
                   </div>
                   <label className="block text-sm">
                     <span className="text-gray-500">Adresse</span>
@@ -286,10 +299,15 @@ export default function ParametresPage() {
                     ) : (
                       <Save className="w-4 h-4" />
                     )}
-                    Enregistrer
+                    Enregistrer logo &amp; documents
                   </button>
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-4 text-sm text-amber-900">
+              Le logo et les textes des documents administratifs sont gérés par un
+              Admin ou Fondateur de l&apos;établissement.
             </div>
           )}
 
