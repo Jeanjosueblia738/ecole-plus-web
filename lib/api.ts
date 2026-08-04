@@ -10,6 +10,15 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
+      const reqUrl = String(error.config?.url || '');
+      // Ne pas déconnecter si le refresh branding / profil école échoue
+      // (ex. ancienne route SuperAdmin capturant /tenants/me).
+      if (
+        reqUrl.includes('/tenants/me') ||
+        reqUrl.includes('tenants/me')
+      ) {
+        return Promise.reject(error);
+      }
       const path = window.location.pathname;
       const { default: Cookies } = await import('js-cookie');
       if (path.startsWith('/super-admin')) {
