@@ -53,7 +53,10 @@ export default function ParametresPage() {
   const [form, setForm] = useState<BrandForm>(tenantToForm(null));
   const [saving, setSaving] = useState(false);
   const [loadingBrand, setLoadingBrand] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [brandStale, setBrandStale] = useState(false);
+  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(
+    null,
+  );
 
   const canMerchants = hasRole(user?.role, can.managePaymentMerchants);
   const canYears = hasRole(user?.role, can.manageAcademicYears);
@@ -75,15 +78,17 @@ export default function ParametresPage() {
     setForm(tenantToForm(t));
     if (canBrand) {
       setLoadingBrand(true);
+      setBrandStale(false);
       tenantsApi
         .getMe()
         .then(({ data }) => {
           setTenant(data);
           setForm(tenantToForm(data));
           authStorage.setTenant(data);
+          setBrandStale(false);
         })
         .catch(() => {
-          /* cookie session suffit */
+          setBrandStale(true);
         })
         .finally(() => setLoadingBrand(false));
     }
@@ -111,12 +116,17 @@ export default function ParametresPage() {
       setTenant(data);
       setForm(tenantToForm(data));
       authStorage.setTenant(data);
-      setMsg('Identité documents enregistrée.');
+      setBrandStale(false);
+      setMsg({ type: 'ok', text: 'Identité documents enregistrée.' });
     } catch (e: any) {
-      setMsg(
-        e?.response?.data?.message ||
-          'Enregistrement impossible. Vérifiez les champs (logo https).',
-      );
+      const raw = e?.response?.data?.message;
+      setMsg({
+        type: 'err',
+        text: Array.isArray(raw)
+          ? raw.join(' · ')
+          : raw ||
+            'Enregistrement impossible. Vérifiez les champs (logo https).',
+      });
     } finally {
       setSaving(false);
     }
@@ -197,6 +207,12 @@ export default function ParametresPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {brandStale && (
+                    <div className="bg-amber-50 border border-amber-100 text-amber-900 px-3 py-2 rounded-lg text-sm">
+                      Impossible de rafraîchir l&apos;identité depuis le serveur —
+                      les informations affichées peuvent être obsolètes.
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm font-medium text-gray-700 mb-2 text-center">
                       Logo de l&apos;établissement
@@ -286,7 +302,15 @@ export default function ParametresPage() {
                     </label>
                   </div>
                   {msg && (
-                    <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">{msg}</p>
+                    <p
+                      className={`text-sm rounded-lg px-3 py-2 ${
+                        msg.type === 'ok'
+                          ? 'text-green-700 bg-green-50'
+                          : 'text-red-700 bg-red-50'
+                      }`}
+                    >
+                      {msg.text}
+                    </p>
                   )}
                   <button
                     type="button"

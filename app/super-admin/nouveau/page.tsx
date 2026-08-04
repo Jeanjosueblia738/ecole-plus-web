@@ -173,7 +173,7 @@ export default function CreateTenantPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-xl text-sm font-medium hover:bg-blue-900 disabled:opacity-60"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-xl text-sm font-medium hover:bg-brand-dark disabled:opacity-60"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Créer l&apos;établissement

@@ -60,6 +60,7 @@ export default function DisciplinePage() {
     total: 0,
     byType: {},
   });
+  const [statsError, setStatsError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [studentsError, setStudentsError] = useState('');
@@ -88,10 +89,18 @@ export default function DisciplinePage() {
         }
       })
       .catch(() => setLoadError('Impossible de charger les classes.'));
+    setStatsError('');
     disciplineApi
       .stats(year)
-      .then(({ data }) => setStats(data))
-      .catch(() => undefined);
+      .then(({ data }) => {
+        setStats(data);
+        setStatsError('');
+      })
+      .catch(() =>
+        setStatsError(
+          'Impossible de charger les statistiques. Les indicateurs peuvent être incomplets.',
+        ),
+      );
   }, [router, year, role]);
 
   useEffect(() => {
@@ -173,8 +182,15 @@ export default function DisciplinePage() {
         studentId: '',
       }));
       await loadRows();
-      const { data } = await disciplineApi.stats(year);
-      setStats(data);
+      try {
+        const { data } = await disciplineApi.stats(year);
+        setStats(data);
+        setStatsError('');
+      } catch {
+        setStatsError(
+          'Impossible d’actualiser les statistiques. Les indicateurs précédents sont conservés.',
+        );
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message;
       setFormError(
@@ -191,8 +207,15 @@ export default function DisciplinePage() {
     try {
       await disciplineApi.delete(id);
       await loadRows();
-      const { data } = await disciplineApi.stats(year);
-      setStats(data);
+      try {
+        const { data } = await disciplineApi.stats(year);
+        setStats(data);
+        setStatsError('');
+      } catch {
+        setStatsError(
+          'Impossible d’actualiser les statistiques. Les indicateurs précédents sont conservés.',
+        );
+      }
     } catch {
       alert('Suppression impossible');
     }
@@ -224,6 +247,12 @@ export default function DisciplinePage() {
               </div>
             ))}
           </div>
+
+          {statsError && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" /> {statsError}
+            </div>
+          )}
 
           {loadError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">

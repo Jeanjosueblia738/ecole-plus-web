@@ -25,11 +25,13 @@ export default function ParentAutorisationsPage() {
   const [studentId, setStudentId] = useState('');
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [form, setForm] = useState({ startDate: '', endDate: '', reason: '' });
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [kidsRes, listRes] = await Promise.all([
         parentApi.myChildren(),
@@ -43,6 +45,7 @@ export default function ParentAutorisationsPage() {
       setRows(Array.isArray(listRes.data) ? listRes.data : []);
     } catch {
       setRows([]);
+      setLoadError('Impossible de charger les autorisations.');
     } finally {
       setLoading(false);
     }
@@ -81,6 +84,11 @@ export default function ParentAutorisationsPage() {
       </header>
 
       <main className="p-4 max-w-xl mx-auto space-y-4">
+        {loadError && (
+          <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm">
+            {loadError}
+          </div>
+        )}
         <form
           onSubmit={async (e) => {
             e.preventDefault();

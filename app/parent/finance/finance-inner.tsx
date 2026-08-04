@@ -54,7 +54,7 @@ export default function ParentFinanceInner() {
             typeof o === 'string' ? o : o.provider || o.code,
           )
           .filter(Boolean);
-        setEnabled(codes.length ? codes : PROVIDERS.map((p) => p.value));
+        setEnabled(codes);
         if (codes[0]) setProvider(codes[0]);
       })
       .catch(() => setError('Chargement impossible'))
@@ -214,54 +214,63 @@ export default function ParentFinanceInner() {
           </ul>
         )}
 
-        <form onSubmit={pay} className="space-y-3 border-t border-gray-100 pt-4">
+        <div className="border-t border-gray-100 pt-4 space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
             <Smartphone className="w-4 h-4 text-brand" />
             Payer par Mobile Money
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <select
-              value={provider}
-              onChange={(e) => setProvider(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
-            >
-              {PROVIDERS.filter(
-                (p) => !enabled.length || enabled.includes(p.value),
-              ).map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              min={100}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Montant FCFA"
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
-            />
-          </div>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Téléphone Mobile Money (ex: 0700000000)"
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
-          />
-          <button
-            type="submit"
-            disabled={paying || !feeId}
-            className="w-full sm:w-auto px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium disabled:opacity-60"
-          >
-            {paying ? (
-              <span className="inline-flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" /> Traitement…
-              </span>
-            ) : (
-              'Payer maintenant'
-            )}
-          </button>
-        </form>
+          {enabled.length === 0 ? (
+            <div className="bg-amber-50 border border-amber-100 text-amber-900 px-4 py-3 rounded-xl text-sm">
+              Aucun moyen de paiement n&apos;est configuré pour cet établissement.
+              Contactez l&apos;école pour activer Wave, Orange Money, MTN ou Moov.
+            </div>
+          ) : (
+            <form onSubmit={pay} className="space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
+                <select
+                  value={provider}
+                  onChange={(e) => setProvider(e.target.value)}
+                  className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
+                >
+                  {PROVIDERS.filter((p) => enabled.includes(p.value)).map(
+                    (p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label}
+                      </option>
+                    ),
+                  )}
+                </select>
+                <input
+                  type="number"
+                  min={100}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="Montant FCFA"
+                  className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
+                />
+              </div>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Téléphone Mobile Money (ex: 0700000000)"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
+              />
+              <button
+                type="submit"
+                disabled={paying || !feeId}
+                className="w-full sm:w-auto px-6 py-2.5 bg-brand text-white rounded-xl text-sm font-medium disabled:opacity-60"
+              >
+                {paying ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Traitement…
+                  </span>
+                ) : (
+                  'Payer maintenant'
+                )}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
