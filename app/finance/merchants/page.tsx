@@ -58,7 +58,7 @@ export default function FinanceMerchantsPage() {
           merchantPhone: m.merchantPhone || '',
           merchantName: m.merchantName || '',
           merchantId: m.merchantId || '',
-          sandbox: m.sandbox,
+          sandbox: m.sandbox === true,
           apiKey: '',
           apiSecret: '',
           webhookSecret: '',
@@ -224,7 +224,7 @@ export default function FinanceMerchantsPage() {
                     <label className="flex items-center gap-2 text-sm text-gray-600">
                       <input
                         type="checkbox"
-                        checked={d.sandbox !== false}
+                        checked={!!d.sandbox}
                         onChange={(e) => setDraft(m.provider, 'sandbox', e.target.checked)}
                       />
                       Mode sandbox

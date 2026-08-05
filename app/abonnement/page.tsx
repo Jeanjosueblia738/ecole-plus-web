@@ -19,6 +19,7 @@ import {
   yearlyPrice,
   type PublicPlanKey,
 } from '@/lib/subscription-plans';
+import { normalizeCiPhone } from '@/lib/phone-ci';
 
 const PAYMENT_METHODS = [
   { key: 'ORANGE_MONEY', label: 'Orange Money', emoji: '🟠' },
@@ -118,13 +119,21 @@ export default function AbonnementPage() {
 
   const handlePay = async () => {
     if (!selectedPlan || !phoneNumber.trim()) return;
+    const normalized = normalizeCiPhone(phoneNumber);
+    if (!normalized) {
+      setPaymentResult({
+        success: false,
+        message: 'Numéro invalide — format CI attendu (ex. +225 07… ou 07…).',
+      });
+      return;
+    }
     setPaying(true);
     setPaymentResult(null);
     try {
       const { data } = await api.post('/subscription/pay', {
         plan: selectedPlan,
         paymentMethod,
-        phoneNumber: phoneNumber.trim(),
+        phoneNumber: normalized,
         billingPeriod,
       });
       setPaymentResult(data);
@@ -209,12 +218,16 @@ export default function AbonnementPage() {
           {paymentResult && (
             <div
               className={`rounded-xl p-4 border flex items-center gap-3 ${
-                paymentResult.success
-                  ? 'bg-green-50 border-green-200'
-                  : 'bg-red-50 border-red-200'
+                paymentResult.simulated
+                  ? 'bg-amber-50 border-amber-200'
+                  : paymentResult.success
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-red-50 border-red-200'
               }`}
             >
-              {paymentResult.success ? (
+              {paymentResult.simulated ? (
+                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              ) : paymentResult.success ? (
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
               ) : (
                 <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -222,12 +235,19 @@ export default function AbonnementPage() {
               <div>
                 <p
                   className={`font-medium text-sm ${
-                    paymentResult.success ? 'text-green-800' : 'text-red-800'
+                    paymentResult.simulated
+                      ? 'text-amber-900'
+                      : paymentResult.success
+                        ? 'text-green-800'
+                        : 'text-red-800'
                   }`}
                 >
-                  {paymentResult.message}
+                  {paymentResult.simulated
+                    ? paymentResult.message ||
+                      'Paiement simulé — aucun débit réel. En production, désactivez la simulation.'
+                    : paymentResult.message}
                 </p>
-                {paymentResult.transactionId && (
+                {paymentResult.transactionId && !paymentResult.simulated && (
                   <p className="text-xs text-green-600 mt-0.5">
                     ID : {paymentResult.transactionId}
                   </p>

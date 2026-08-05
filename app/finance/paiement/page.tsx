@@ -11,6 +11,7 @@ import { authStorage } from '@/lib/auth';
 import { can, hasRole } from '@/lib/rbac';
 import { currentSchoolYear } from '@/lib/school-year';
 import { generatePaymentReceipt, brandFromTenant } from '@/lib/pdf';
+import { normalizeCiPhone } from '@/lib/phone-ci';
 
 const METHODS = [
   { value: 'especes', label: 'Espèces' },
@@ -86,9 +87,14 @@ export default function FinancePaiementPage() {
       setError('Saisissez le numéro de chèque');
       return;
     }
-    if (method === 'mobile_money' && !phone.trim()) {
-      setError('Saisissez le numéro Mobile Money');
-      return;
+    let mmPhone: string | undefined;
+    if (method === 'mobile_money') {
+      const normalized = normalizeCiPhone(phone);
+      if (!normalized) {
+        setError('Numéro Mobile Money invalide (format CI : +225… ou 07…).');
+        return;
+      }
+      mmPhone = normalized;
     }
 
     const amount = Number(selectedFee?.amountXof || 0);
@@ -112,8 +118,8 @@ export default function FinancePaiementPage() {
         amountPaid: amount,
         paymentMode,
         ...(method === 'cheque' ? { receiptNo: chequeNo.trim() } : {}),
-        ...(method === 'mobile_money'
-          ? { phoneNumber: phone.trim().replace(/\s/g, '') }
+        ...(method === 'mobile_money' && mmPhone
+          ? { phoneNumber: mmPhone }
           : {}),
       });
       setSuccess(data);

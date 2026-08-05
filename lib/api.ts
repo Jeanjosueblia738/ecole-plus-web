@@ -6,36 +6,59 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+/** Garde single-flight : plusieurs 401 parallèles → un seul DELETE + redirect */
+let handling401 = false;
+
+function isAuthRelatedUrl(url: string): boolean {
+  const u = url.toLowerCase();
+  return (
+    u.includes('/auth/login') ||
+    u.includes('/login') ||
+    u.includes('/auth/') ||
+    u.includes('auth/login')
+  );
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       const reqUrl = String(error.config?.url || '');
-      // Ne pas déconnecter si le refresh branding / profil école échoue
-      // (ex. ancienne route SuperAdmin capturant /tenants/me).
+      // Ne pas déconnecter sur échec login / auth, ni sur refresh branding
       if (
+        isAuthRelatedUrl(reqUrl) ||
         reqUrl.includes('/tenants/me') ||
         reqUrl.includes('tenants/me')
       ) {
         return Promise.reject(error);
       }
       const path = window.location.pathname;
-      const { default: Cookies } = await import('js-cookie');
-      if (path.startsWith('/super-admin')) {
-        await fetch('/api/auth/session?kind=sa', { method: 'DELETE' });
-        Cookies.remove('sa_user', { path: '/' });
-        if (!path.startsWith('/super-admin/login')) {
+      const onLoginPage =
+        path.startsWith('/login') || path.startsWith('/super-admin/login');
+      // Déjà sur une page login → ne pas DELETE la session (évite boucles)
+      if (onLoginPage || isAuthRelatedUrl(reqUrl)) {
+        return Promise.reject(error);
+      }
+      if (handling401) {
+        return Promise.reject(error);
+      }
+      handling401 = true;
+      try {
+        const { default: Cookies } = await import('js-cookie');
+        if (path.startsWith('/super-admin')) {
+          await fetch('/api/auth/session?kind=sa', { method: 'DELETE' });
+          Cookies.remove('sa_user', { path: '/' });
           const next = encodeURIComponent(path);
           window.location.href = `/super-admin/login?next=${next}`;
-        }
-      } else {
-        await fetch('/api/auth/session?kind=ecole', { method: 'DELETE' });
-        Cookies.remove('ecole_user', { path: '/' });
-        Cookies.remove('ecole_tenant', { path: '/' });
-        if (!path.startsWith('/login')) {
+        } else {
+          await fetch('/api/auth/session?kind=ecole', { method: 'DELETE' });
+          Cookies.remove('ecole_user', { path: '/' });
+          Cookies.remove('ecole_tenant', { path: '/' });
           const next = encodeURIComponent(path + window.location.search);
           window.location.href = `/login?next=${next}`;
         }
+      } catch {
+        handling401 = false;
       }
     }
     return Promise.reject(error);

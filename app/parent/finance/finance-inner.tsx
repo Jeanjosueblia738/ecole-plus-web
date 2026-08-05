@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Smartphone } from 'lucide-react';
 import { parentApi, financeApi, paymentsApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { normalizeCiPhone } from '@/lib/phone-ci';
 
 const PROVIDERS = [
   { value: 'WAVE', label: 'Wave' },
@@ -12,6 +13,19 @@ const PROVIDERS = [
   { value: 'MTN_MOMO', label: 'MTN MoMo' },
   { value: 'MOOV_MONEY', label: 'Moov Money' },
 ];
+
+function feeRemaining(f: any): number {
+  return Math.max(
+    0,
+    Math.round(
+      f.amountDue ??
+        f.remaining ??
+        f.balance ??
+        (f.amount || 0) - (f.amountPaid || 0) ||
+        0,
+    ),
+  );
+}
 
 export default function ParentFinanceInner() {
   const router = useRouter();
@@ -27,6 +41,7 @@ export default function ParentFinanceInner() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageKind, setMessageKind] = useState<'info' | 'warn'>('info');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -35,6 +50,7 @@ export default function ParentFinanceInner() {
       return;
     }
     if (params.get('paid') === '1') {
+      setMessageKind('info');
       setMessage('Retour de paiement — si validé, le solde sera mis à jour.');
     }
     Promise.all([parentApi.myChildren(), paymentsApi.enabledMerchants()])
@@ -71,18 +87,13 @@ export default function ParentFinanceInner() {
         const fees = data?.fees || data?.studentFees || [];
         const open = fees.find(
           (f: any) =>
-            (f.amountDue ?? f.remaining ?? f.balance ?? 0) > 0 ||
+            feeRemaining(f) > 0 ||
             f.status === 'UNPAID' ||
             f.status === 'PARTIAL',
         );
         if (open) {
           setFeeId(open.id || open.feeId);
-          const due =
-            open.amountDue ??
-            open.remaining ??
-            open.balance ??
-            open.amount - (open.amountPaid || 0);
-          setAmount(String(Math.max(0, Math.round(due || 0))));
+          setAmount(String(feeRemaining(open)));
         }
       })
       .catch(() => {
@@ -93,13 +104,35 @@ export default function ParentFinanceInner() {
 
   const fees = finance?.fees || finance?.studentFees || [];
 
+  const selectedRemaining = useMemo(() => {
+    const f = fees.find((x: any) => (x.id || x.feeId) === feeId);
+    return f ? feeRemaining(f) : 0;
+  }, [fees, feeId]);
+
   const pay = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
     const amt = parseInt(amount, 10);
-    if (!feeId || !amt || amt < 100 || !phone.trim()) {
-      setError('Frais, montant (≥100) et téléphone requis');
+    if (!feeId || !amt || amt < 100) {
+      setError('Frais et montant (≥100) requis');
+      return;
+    }
+    if (selectedRemaining > 0 && amt > selectedRemaining) {
+      setError(
+        `Le montant ne peut pas dépasser le reste dû (${selectedRemaining.toLocaleString('fr-FR')} FCFA).`,
+      );
+      return;
+    }
+    if (selectedRemaining > 0 && amt < selectedRemaining) {
+      const ok = window.confirm(
+        `Paiement partiel : ${amt.toLocaleString('fr-FR')} FCFA sur ${selectedRemaining.toLocaleString('fr-FR')} FCFA restants. Continuer ?`,
+      );
+      if (!ok) return;
+    }
+    const normalized = normalizeCiPhone(phone);
+    if (!normalized) {
+      setError('Numéro Mobile Money invalide (format CI : +225… ou 07…).');
       return;
     }
     setPaying(true);
@@ -109,17 +142,26 @@ export default function ParentFinanceInner() {
         studentId,
         feeId,
         amountXof: amt,
-        payerPhone: phone.trim(),
+        payerPhone: normalized,
       });
       if (data?.checkoutUrl) {
         window.location.href = data.checkoutUrl;
         return;
       }
-      if (data?.status === 'SUCCESS') {
+      if (data?.simulated) {
+        setMessageKind('warn');
+        setMessage(
+          'Paiement simulé : aucun débit réel. Le solde peut paraître mis à jour en environnement de test uniquement.',
+        );
+        const refreshed = await financeApi.getStudentFinance(studentId);
+        setFinance(refreshed.data);
+      } else if (data?.status === 'SUCCESS') {
+        setMessageKind('info');
         setMessage(data.message || 'Paiement confirmé.');
         const refreshed = await financeApi.getStudentFinance(studentId);
         setFinance(refreshed.data);
       } else {
+        setMessageKind('info');
         setMessage(
           data?.ussdHint ||
             data?.message ||
@@ -152,7 +194,13 @@ export default function ParentFinanceInner() {
       </div>
 
       {message && (
-        <div className="bg-blue-50 text-blue-800 px-4 py-3 rounded-xl text-sm">
+        <div
+          className={`px-4 py-3 rounded-xl text-sm ${
+            messageKind === 'warn'
+              ? 'bg-amber-50 text-amber-900 border border-amber-200'
+              : 'bg-blue-50 text-blue-800'
+          }`}
+        >
           {message}
         </div>
       )}
@@ -182,18 +230,14 @@ export default function ParentFinanceInner() {
           <ul className="space-y-2 mb-4">
             {fees.map((f: any) => {
               const id = f.id || f.feeId;
-              const due =
-                f.amountDue ??
-                f.remaining ??
-                f.balance ??
-                (f.amount || 0) - (f.amountPaid || 0);
+              const due = feeRemaining(f);
               return (
                 <li key={id}>
                   <button
                     type="button"
                     onClick={() => {
                       setFeeId(id);
-                      setAmount(String(Math.max(0, Math.round(due || 0))));
+                      setAmount(String(due));
                     }}
                     className={`w-full text-left px-3 py-2.5 rounded-xl border text-sm ${
                       feeId === id
@@ -205,7 +249,7 @@ export default function ParentFinanceInner() {
                       {f.label || f.fee?.label || f.name || 'Frais'}
                     </span>
                     <span className="float-right text-gray-600">
-                      {Math.round(due || 0).toLocaleString('fr-FR')} FCFA
+                      {due.toLocaleString('fr-FR')} FCFA
                     </span>
                   </button>
                 </li>
@@ -243,8 +287,19 @@ export default function ParentFinanceInner() {
                 <input
                   type="number"
                   min={100}
+                  max={selectedRemaining > 0 ? selectedRemaining : undefined}
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (selectedRemaining > 0 && v !== '') {
+                      const n = parseInt(v, 10);
+                      if (!Number.isNaN(n) && n > selectedRemaining) {
+                        setAmount(String(selectedRemaining));
+                        return;
+                      }
+                    }
+                    setAmount(v);
+                  }}
                   placeholder="Montant FCFA"
                   className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm"
                 />

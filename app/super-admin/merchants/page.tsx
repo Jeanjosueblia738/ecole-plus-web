@@ -62,7 +62,7 @@ export default function SuperAdminMerchantsPage() {
           merchantPhone: m.merchantPhone || '',
           merchantName: m.merchantName || '',
           merchantId: m.merchantId || '',
-          sandbox: m.sandbox,
+          sandbox: m.sandbox === true,
           ...emptySecrets,
         };
       }
@@ -175,7 +175,9 @@ export default function SuperAdminMerchantsPage() {
             <p className="font-medium">Numéro / ID marchand = compte qui reçoit les fonds</p>
             <p className="text-xs mt-1">
               Les clés API seront utilisées quand les SDK officiels seront branchés.
-              En sandbox, <code className="bg-amber-100 px-1 rounded">PAYMENT_ALLOW_SIMULATION=true</code> permet de tester sans API.
+              La simulation (<code className="bg-amber-100 px-1 rounded">PAYMENT_ALLOW_SIMULATION=true</code>)
+              n’est utile qu’en test — en production, conservez{' '}
+              <code className="bg-amber-100 px-1 rounded">PAYMENT_ALLOW_SIMULATION=false</code>.
             </p>
           </div>
         </div>
@@ -272,7 +274,7 @@ export default function SuperAdminMerchantsPage() {
                   <label className="flex items-center gap-2 text-sm text-gray-600">
                     <input
                       type="checkbox"
-                      checked={d.sandbox !== false}
+                      checked={!!d.sandbox}
                       onChange={(e) => setDraft(m.provider, 'sandbox', e.target.checked)}
                     />
                     Mode sandbox

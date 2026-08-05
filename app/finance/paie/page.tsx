@@ -23,6 +23,7 @@ export default function PaiePage() {
   const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState('');
   const [showManual, setShowManual] = useState(false);
+  const [waveNotice, setWaveNotice] = useState<{ kind: 'ok' | 'warn'; text: string } | null>(null);
   const [gen, setGen] = useState({
     month: String(now.getMonth() + 1),
     year: String(now.getFullYear()),
@@ -171,6 +172,17 @@ export default function PaiePage() {
               {loadError}
             </div>
           )}
+          {waveNotice && (
+            <div
+              className={`rounded-xl px-4 py-3 text-sm border ${
+                waveNotice.kind === 'warn'
+                  ? 'bg-amber-50 border-amber-200 text-amber-900'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}
+            >
+              {waveNotice.text}
+            </div>
+          )}
 
           {showManual && (
             <form
@@ -281,13 +293,30 @@ export default function PaiePage() {
                           disabled={busy === r.id}
                           onClick={async () => {
                             setBusy(r.id);
+                            setWaveNotice(null);
                             try {
                               const { data } = await financeApi.payPayrollWave(r.id);
-                              alert(
-                                data?.allPaid
-                                  ? 'Tous les versements Wave sont terminés (ou simulés).'
-                                  : `Versements initiés — voir détail (${(data?.results || []).length}).`,
-                              );
+                              const simulated =
+                                data?.simulated ||
+                                data?.simulatedSuccess ||
+                                (Array.isArray(data?.results) &&
+                                  data.results.some(
+                                    (x: any) => x?.simulated || x?.simulatedSuccess,
+                                  ));
+                              if (simulated) {
+                                setWaveNotice({
+                                  kind: 'warn',
+                                  text:
+                                    'Versement Wave simulé — aucun transfert réel. En production, conservez PAYMENT_ALLOW_SIMULATION=false.',
+                                });
+                              } else {
+                                setWaveNotice({
+                                  kind: 'ok',
+                                  text: data?.allPaid
+                                    ? 'Tous les versements Wave sont terminés.'
+                                    : `Versements initiés — voir détail (${(data?.results || []).length}).`,
+                                });
+                              }
                               await load();
                             } catch (e: any) {
                               alert(
@@ -307,6 +336,12 @@ export default function PaiePage() {
                         <button
                           className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium"
                           onClick={async () => {
+                            if (r.status === 'VALIDATED') {
+                              const ok = window.confirm(
+                                'Marquer payé sans passer par Wave ? Cela contourne le versement Mobile Money. Continuer uniquement si le paiement a déjà été fait hors plateforme.',
+                              );
+                              if (!ok) return;
+                            }
                             try {
                               await financeApi.payrollStatus(r.id, 'PAID');
                               await load();

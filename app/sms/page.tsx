@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import { smsApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
 import { canAccessPath, hasRole } from '@/lib/rbac';
+import { normalizeCiPhone } from '@/lib/phone-ci';
 
 const fmt = (n: number) => new Intl.NumberFormat('fr-CI').format(n || 0);
 const fmtMoney = (n: number) => fmt(n) + ' FCFA';
@@ -18,6 +19,7 @@ export default function SmsDashboardPage() {
   const canBuy = hasRole(role, ['ADMIN', 'FOUNDER']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState<{ kind: 'ok' | 'warn'; text: string } | null>(null);
   const [packs, setPacks] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -58,6 +60,46 @@ export default function SmsDashboardPage() {
   const bal = analytics?.balance;
   const totals = analytics?.totals;
 
+  const buyPack = async (packId: string) => {
+    setNotice(null);
+    setError('');
+    const normalized = normalizeCiPhone(phone);
+    if (!normalized) {
+      setError('Numéro invalide — format CI attendu (ex. 07 XX XX XX XX ou +225…).');
+      return;
+    }
+    setBusy(packId);
+    try {
+      const { data } = await smsApi.purchase({
+        packId,
+        payerPhone: normalized,
+      });
+      if (data?.checkoutUrl) {
+        window.open(data.checkoutUrl, '_blank');
+      }
+      if (data?.simulated) {
+        setNotice({
+          kind: 'warn',
+          text:
+            'Réponse simulée : aucun paiement réel n’a été débité et les crédits n’ont pas été réellement achetés. Vérifiez Wave et désactivez la simulation en production.',
+        });
+      } else {
+        setNotice({
+          kind: 'ok',
+          text: data?.message || 'Paiement initié — validez sur votre téléphone Wave.',
+        });
+      }
+      await load();
+    } catch (e: any) {
+      setError(
+        e?.response?.data?.message ||
+          'Achat impossible — configurez Wave école.',
+      );
+    } finally {
+      setBusy('');
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
@@ -70,6 +112,17 @@ export default function SmsDashboardPage() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
               {error}
+            </div>
+          )}
+          {notice && (
+            <div
+              className={`rounded-xl px-4 py-3 text-sm border ${
+                notice.kind === 'warn'
+                  ? 'bg-amber-50 border-amber-200 text-amber-900'
+                  : 'bg-blue-50 border-blue-200 text-blue-800'
+              }`}
+            >
+              {notice.text}
             </div>
           )}
 
@@ -124,11 +177,11 @@ export default function SmsDashboardPage() {
                 <div className="bg-white border rounded-xl p-4 space-y-4">
                   <h2 className="font-semibold text-gray-800">Souscrire un forfait SMS</h2>
                   <p className="text-xs text-gray-500">
-                    Paiement Wave via le compte Mobile Money de l’école (sandbox = simulation).
+                    Paiement Wave via le compte Mobile Money configuré pour l’école.
                   </p>
                   <input
                     className="border rounded-lg px-3 py-2 text-sm w-full max-w-sm"
-                    placeholder="N° Wave payeur"
+                    placeholder="N° Wave payeur (ex. +225 07…)"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
@@ -144,31 +197,7 @@ export default function SmsDashboardPage() {
                         <button
                           type="button"
                           disabled={!phone.trim() || busy === p.id}
-                          onClick={async () => {
-                            setBusy(p.id);
-                            try {
-                              const { data } = await smsApi.purchase({
-                                packId: p.id,
-                                payerPhone: phone.trim(),
-                              });
-                              if (data?.checkoutUrl) {
-                                window.open(data.checkoutUrl, '_blank');
-                              }
-                              alert(
-                                data?.simulated
-                                  ? `${data.credits} SMS crédités (simulation).`
-                                  : data?.message || 'Paiement initié',
-                              );
-                              await load();
-                            } catch (e: any) {
-                              alert(
-                                e?.response?.data?.message ||
-                                  'Achat impossible — configurez Wave école.',
-                              );
-                            } finally {
-                              setBusy('');
-                            }
-                          }}
+                          onClick={() => buyPack(p.id)}
                           className="mt-auto px-3 py-2 rounded-lg bg-brand text-white text-sm font-medium disabled:opacity-50"
                         >
                           {busy === p.id ? '…' : 'Acheter'}
