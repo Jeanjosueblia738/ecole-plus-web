@@ -15,16 +15,12 @@ const PROVIDERS = [
 ];
 
 function feeRemaining(f: any): number {
-  return Math.max(
-    0,
-    Math.round(
-      f.amountDue ??
-        f.remaining ??
-        f.balance ??
-        (f.amount || 0) - (f.amountPaid || 0) ||
-        0,
-    ),
-  );
+  const raw =
+    f.amountDue ??
+    f.remaining ??
+    f.balance ??
+    ((Number(f.amount) || 0) - (Number(f.amountPaid) || 0));
+  return Math.max(0, Math.round(Number(raw) || 0));
 }
 
 export default function ParentFinanceInner() {
