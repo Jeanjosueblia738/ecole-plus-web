@@ -42,6 +42,16 @@ async function forward(req: NextRequest, path: string[], method: string) {
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
+  // Inscription école : secret serveur uniquement (jamais NEXT_PUBLIC_*)
+  if (joined === 'tenants/register') {
+    const registerSecret = (
+      process.env.REGISTER_SECRET ||
+      process.env.TENANT_REGISTER_SECRET ||
+      ''
+    ).trim();
+    if (registerSecret) headers['X-Register-Secret'] = registerSecret;
+  }
+
   const init: RequestInit = {
     method,
     headers,
@@ -87,6 +97,21 @@ async function forward(req: NextRequest, path: string[], method: string) {
           statusCode: upstream.status,
         },
         { status: upstream.status },
+      );
+    }
+
+    // Railway: service arrêté / domaine orphelin → "Application not found"
+    if (
+      upstream.status === 404 &&
+      /Application not found/i.test(text)
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            'L’API ECOLE+ est hors ligne (service Railway arrêté ou domaine invalide). Relancez le déploiement API, puis réessayez.',
+          statusCode: 503,
+        },
+        { status: 503 },
       );
     }
 
